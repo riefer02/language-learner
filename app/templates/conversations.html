@@ -1,0 +1,59 @@
+{% extends "base.html" %} {% block title %} - Conversations{% endblock %} {%
+block content %}
+<div class="conversations">
+  <h2>Conversations</h2>
+  <a
+    href="{{ url_for('main.new_conversation') }}"
+    class="btn"
+    style="margin-bottom: 20px"
+    >Create New Conversation</a
+  >
+  {% if conversations.items %}
+  <div id="conversations-container">
+    {% for conv in conversations.items %}
+    <div class="phrase-card" data-id="{{ conv.id }}">
+      <div class="phrase-english"><strong>{{ conv.title }}</strong></div>
+      <div class="phrase-korean">{{ conv.description }}</div>
+      <div class="audio-player">
+        <audio src="{{ conv.audio_path }}" controls preload="none"></audio>
+        <a
+          href="{{ url_for('main.conversation_detail', conversation_id=conv.id) }}"
+          class="btn"
+          style="margin-left: 10px"
+          >View</a
+        >
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if conversations.pages > 1 %}
+  <div class="pagination">
+    {% if conversations.has_prev %}
+    <a
+      href="{{ url_for('main.conversations', page=conversations.prev_num) }}"
+      class="btn"
+      >&laquo; Previous</a
+    >
+    {% endif %}
+    <span class="current-page"
+      >Page {{ conversations.page }} of {{ conversations.pages }}</span
+    >
+    {% if conversations.has_next %}
+    <a
+      href="{{ url_for('main.conversations', page=conversations.next_num) }}"
+      class="btn"
+      >Next &raquo;</a
+    >
+    {% endif %}
+  </div>
+  {% endif %} {% else %}
+  <div class="empty-library">
+    <p>
+      No conversations yet.
+      <a href="{{ url_for('main.new_conversation') }}">Create one</a> to get
+      started.
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

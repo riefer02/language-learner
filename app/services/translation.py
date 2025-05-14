@@ -59,3 +59,57 @@ def translate_to_korean(text):
             time.sleep(RETRY_DELAY)
 
     raise RuntimeError("Failed to translate after maximum retries")
+
+
+def generate_conversation_scenario(prompt, min_lines=2, max_lines=4):
+    """
+    Generate a short conversation scenario (2-4 lines) using OpenAI, returning structured JSON with title, description, and lines.
+    Each line includes: speaker (1 or 2), english_text, korean_text.
+    """
+    if not prompt or len(prompt.strip()) == 0:
+        raise ValueError("Empty prompt provided for conversation generation")
+
+    system_prompt = (
+        "You are a helpful assistant for language learners. "
+        "Given a scenario prompt, generate a short, realistic conversation in English and Korean between two speakers. "
+        f"The conversation should have between {min_lines} and {max_lines} lines. "
+        "Return a JSON object with the following structure: "
+        "{ 'title': <title>, 'description': <description>, 'lines': [ { 'speaker': 1 or 2, 'english_text': <text>, 'korean_text': <text> }, ... ] } "
+        "Speakers should alternate. Keep lines concise and natural."
+    )
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4.1-nano",
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.4,
+                max_tokens=600,
+            )
+            response_content = response.choices[0].message.content
+            current_app.logger.info(f"OpenAI raw response: {response_content!r}")
+            scenario_data = json.loads(response_content)
+            # Basic validation
+            if not scenario_data.get("lines") or not isinstance(
+                scenario_data["lines"], list
+            ):
+                raise ValueError("No lines found in conversation response")
+            return scenario_data
+        except json.JSONDecodeError as e:
+            current_app.logger.error(
+                f"JSON decode error: {e}, Response: {response_content if 'response_content' in locals() else 'N/A'}"
+            )
+            if attempt == MAX_RETRIES - 1:
+                raise
+        except Exception as e:
+            current_app.logger.error(
+                f"Conversation generation error (attempt {attempt + 1}/{MAX_RETRIES}): {e}"
+            )
+            if attempt == MAX_RETRIES - 1:
+                raise
+            time.sleep(RETRY_DELAY)
+    raise RuntimeError("Failed to generate conversation after maximum retries")

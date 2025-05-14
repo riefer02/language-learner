@@ -1,0 +1,38 @@
+{% extends "base.html" %} {% block title %} - New Conversation{% endblock %} {%
+block content %}
+<div class="new-conversation">
+  <h2>Create a New Conversation Scenario</h2>
+  <form id="conversation-form" aria-live="polite">
+    <div class="form-group">
+      <label for="scenario-prompt"
+        >Describe a scenario (e.g., ordering at a bar, asking for
+        directions):</label
+      >
+      <input
+        type="text"
+        id="scenario-prompt"
+        placeholder="e.g., Ordering two drinks at a bar"
+        required
+        maxlength="200"
+      />
+      <small
+        >Describe a real-life situation for a short conversation (max 200
+        characters).</small
+      >
+    </div>
+    <button type="submit" id="generate-btn">Generate Conversation</button>
+  </form>
+  <div id="loading" class="loading-indicator hidden" aria-hidden="true">
+    <div class="spinner"></div>
+    <p>Generating conversation and audio...</p>
+  </div>
+  <div
+    id="error-message"
+    class="error-message hidden"
+    aria-live="assertive"
+  ></div>
+  <div id="result" class="result hidden" aria-live="polite"></div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/new_conversation.js') }}"></script>
+{% endblock %}

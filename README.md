@@ -19,6 +19,14 @@ An application for learning Korean that includes both a command-line interface a
 - Progress tracking for learning journey
 - SQLite database for storing user data and learning materials
 
+### Conversational Scenarios
+
+- Generate short, realistic Korean conversations (2–4 lines, 2 speakers) from a scenario prompt
+- Each line is spoken by a different voice and saved as an individual audio file
+- All lines are merged into a single audio file for playback as a full conversation
+- Accessible via the web interface: create, list, and view conversations
+- Conversations and their lines are stored in the database (see `Conversation` and `ConversationLine` models)
+
 ## Prerequisites
 
 - Python 3.7.1 or newer
@@ -111,14 +119,15 @@ To run the web application:
    python run.py
    ```
 3. Open your web browser and navigate to `http://localhost:5000`
+4. Use the **Conversations** link in the navigation bar to create and study conversational scenarios
 
 ## Project Structure
 
 - `/app` - Web application components
-  - `/services` - Backend services for translation, audio, etc.
+  - `/services` - Backend services for translation, audio, conversation generation
   - `/static` - Static assets (CSS, JS, audio files)
-  - `/templates` - HTML templates
-  - `/utils` - Utility functions
+  - `/templates` - HTML templates (including conversations UI)
+  - `/utils` - Utility functions (including audio merging)
 - `/audio_output` - Generated audio files from the CLI tool
 - `hangul.py` - CLI tool entry point
 - `run.py` - Web application entry point
@@ -136,3 +145,19 @@ make clean
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Troubleshooting
+
+### Audio Merging (ffmpeg)
+
+The conversation feature requires [ffmpeg](https://ffmpeg.org/) to be installed and available in your system PATH for audio merging. If you see errors related to audio file reading or merging, ensure ffmpeg is installed:
+
+- **macOS:**
+  ```sh
+  brew install ffmpeg
+  ```
+- **Ubuntu/Debian:**
+  ```sh
+  sudo apt-get install ffmpeg
+  ```
+- **Windows:** Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to your PATH.

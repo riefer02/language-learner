@@ -13,6 +13,10 @@ help:
 	@echo "  init-db    - Initialize the database"
 	@echo "  clean      - Remove generated files and directories"
 	@echo "  backup-db  - Backup the database"
+	@echo "  db-init    - Initialize the database"
+	@echo "  db-migrate - Migrate the database"
+	@echo "  db-upgrade - Upgrade the database"
+	@echo "  db-downgrade - Downgrade the database"
 
 # Target to set up the environment
 .PHONY: install
@@ -65,4 +69,19 @@ clean:
 	rm -f korean_learner.db
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.py[co]" -delete
-	@echo "Cleanup complete." 
+	@echo "Cleanup complete."
+
+# Database migration targets
+.PHONY: db-init db-migrate db-upgrade db-downgrade
+
+db-init: install
+	FLASK_APP=run.py venv/bin/flask db init
+
+db-migrate: install
+	FLASK_APP=run.py venv/bin/flask db migrate -m "$(m)"
+
+db-upgrade: install
+	FLASK_APP=run.py venv/bin/flask db upgrade
+
+db-downgrade: install
+	FLASK_APP=run.py venv/bin/flask db downgrade 

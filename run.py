@@ -1,10 +1,14 @@
 import os
 from app import create_app, db
 from app.models import Phrase
+from flask_migrate import Migrate
 
 # Determine environment
 env = os.environ.get("FLASK_ENV", "development")
 app = create_app(env)
+
+# Initialize Flask-Migrate
+migrate = Migrate(app, db)
 
 
 @app.shell_context_processor

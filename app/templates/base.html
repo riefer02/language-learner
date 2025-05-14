@@ -29,6 +29,13 @@
               >Library</a
             >
           </li>
+          <li>
+            <a
+              href="{{ url_for('main.conversations') }}"
+              aria-current="{{ 'page' if request.path == url_for('main.conversations') else 'false' }}"
+              >Conversations</a
+            >
+          </li>
         </ul>
       </div>
     </nav>
