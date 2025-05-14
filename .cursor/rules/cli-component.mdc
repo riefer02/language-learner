@@ -1,5 +1,29 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# CLI Component
+
+## Overview
+The CLI component of the Korean Language Learner provides a command-line interface for translating English text to Korean and generating audio files of the translations.
+
+## Main File
+[hangul.py](mdc:hangul.py) - The main entry point for the CLI tool
+
+## Features
+- Translates English text to Korean using OpenAI's GPT-4o model
+- Generates audio files using OpenAI's Text-to-Speech API
+- Saves audio output as MP3 files in the `/audio_output` directory
+- Accepts input interactively or as command-line arguments
+
+## Usage
+- Interactive Mode: `python hangul.py` or `make run`
+- With Phrase Argument: `python hangul.py "Your phrase"` or `make runp phrase="Your phrase"`
+
+## Dependencies
+- OpenAI API for translation and audio generation
+- Environment variables from [.env](mdc:.env) for API keys
+
+## Integration
+The CLI component is independent of the web application but shares common configuration settings and can be used alongside the web application.

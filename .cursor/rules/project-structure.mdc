@@ -1,5 +1,36 @@
 ---
-description:
-globs:
-alwaysApply: false
+description: 
+globs: 
+alwaysApply: true
 ---
+# Korean Language Learner Project Structure
+
+## Overview
+This project is a Korean Language Learning application with both CLI and web interfaces. It allows users to:
+1. Translate English phrases to Korean
+2. Generate audio pronunciation files
+3. Learn Korean through a structured web interface
+
+## Main Entry Points
+- [hangul.py](mdc:hangul.py) - CLI tool for translation and audio generation
+- [run.py](mdc:run.py) - Web application entry point
+- [config.py](mdc:config.py) - Configuration settings
+
+## Core Components
+- **CLI Tool**: Translates English to Korean and generates audio using OpenAI
+- **Web Application**: Flask-based interface with learning features
+- **Database**: SQLite database ([korean_learner.db](mdc:korean_learner.db)) for storing user data and learning progress
+
+## Directory Structure
+- `/app` - Web application components
+  - `/services` - Backend services for translation, audio, etc.
+  - `/static` - Static assets (CSS, JS, audio files)
+  - `/templates` - HTML templates
+  - `/utils` - Utility functions
+- `/audio_output` - Generated audio files from the CLI tool
+- `/venv` - Python virtual environment
+
+## Setup and Configuration
+- [requirements.txt](mdc:requirements.txt) - Python dependencies
+- [.env](mdc:.env) - Environment variables (OpenAI API key)
+- [Makefile](mdc:Makefile) - Commands for installation and running the application
