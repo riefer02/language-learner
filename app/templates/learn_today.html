@@ -32,6 +32,13 @@
     </div>
   </div>
 
+  {% if weekly.has_data %}
+  <p class="learn-meta">
+    This week: {{ weekly.reviews }} reviews · {{ weekly.can_dos }} can-dos ·
+    {{ weekly.active_days }}/7 active days.
+  </p>
+  {% endif %}
+
   <div class="learn-primary">
     {% if summary.due %}
     <a class="btn btn-primary btn-large" href="{{ url_for('learn.review') }}">

@@ -17,7 +17,7 @@ from sqlalchemy.orm.exc import StaleDataError
 from werkzeug.exceptions import BadRequest
 
 from app import db
-from app.learning.analytics import record_event
+from app.learning.analytics import record_event, weekly_recap
 from app.learning.hangul_data import HANGUL_LESSONS
 from app.learning.scenes import (
     can_do_artifacts,
@@ -106,6 +106,7 @@ def today():
         summary=summary,
         user=user,
         next_mission=next_scene(user.id),
+        weekly=weekly_recap(user.id),
     )
 
 
@@ -495,6 +496,7 @@ def progress():
         skills=skill_breakdown(user.id),
         reviews=recent_reviews(user.id),
         can_dos=can_do_artifacts(user.id),
+        weekly=weekly_recap(user.id),
     )
 
 

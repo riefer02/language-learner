@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 from app.learning.scheduler import ensure_utc, utcnow
-from app.models import Event, User
+from app.models import CanDoArtifact, Event, ReviewLog, User
 
 
 def record_event(user_id, name, **props):
@@ -24,6 +24,77 @@ def record_event(user_id, name, **props):
     except SQLAlchemyError:
         db.session.rollback()
     return event
+
+
+def weekly_recap(user_id, now=None):
+    """Last 7 learner-local days plus a 30-day recall-success estimate."""
+    from app.learning.service import learner_timezone, local_day_bounds
+
+    now = ensure_utc(now or utcnow())
+    tz = learner_timezone()
+    start, _end, _today = local_day_bounds(now - timedelta(days=6))
+
+    logs = (
+        ReviewLog.query.filter(
+            ReviewLog.user_id == user_id,
+            ReviewLog.reviewed_at >= start,
+            ReviewLog.reviewed_at <= now,
+        )
+        .order_by(ReviewLog.reviewed_at.asc())
+        .all()
+    )
+
+    counts = {}
+    for log in logs:
+        local_date = ensure_utc(log.reviewed_at).astimezone(tz).date()
+        counts[local_date] = counts.get(local_date, 0) + 1
+
+    activity = []
+    for offset in range(6, -1, -1):
+        day = (now.astimezone(tz).date() - timedelta(days=offset))
+        activity.append(
+            {
+                "date": day.isoformat(),
+                "label": day.strftime("%a"),
+                "count": counts.get(day, 0),
+            }
+        )
+    peak = max([item["count"] for item in activity] + [1])
+
+    thirty_start = now - timedelta(days=30)
+    recent = (
+        ReviewLog.query.filter(
+            ReviewLog.user_id == user_id,
+            ReviewLog.reviewed_at >= thirty_start,
+        )
+        .all()
+    )
+    recall_success = (
+        round(
+            sum(1 for log in recent if (log.rating or 0) >= 3)
+            / len(recent),
+            3,
+        )
+        if recent
+        else None
+    )
+
+    can_dos = CanDoArtifact.query.filter(
+        CanDoArtifact.user_id == user_id,
+        CanDoArtifact.created_at >= start,
+    ).count()
+
+    return {
+        "reviews": len(logs),
+        "distinct_cards": len({log.card_id for log in logs}),
+        "new_cards": sum(1 for log in logs if log.was_new),
+        "active_days": sum(1 for item in activity if item["count"] > 0),
+        "can_dos": can_dos,
+        "recall_success": recall_success,
+        "activity": activity,
+        "peak": peak,
+        "has_data": bool(logs or can_dos),
+    }
 
 
 def metrics_summary(now=None):
