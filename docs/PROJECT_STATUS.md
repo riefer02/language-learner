@@ -13,12 +13,12 @@
 - **Learn loop:** `/learn` today view, `/learn/review` retrieval card, 1–4 grading, FSRS-6 scheduling, review log
 - **Seed deck:** 30 hand-curated Korean items (survival phrases, core nouns, five grammar patterns), one review card per item
 - **Daily new-card cap:** 10 new cards per day; review cards are always prioritized
-- **Hangul bootcamp:** three lessons (letters, vowels/blocks, batchim and sound changes) with interactive reading drills
+- **Hangul bootcamp:** seven lessons (letters, vowels/blocks, batchim, double batchim, signs/menus/numbers, connected speech, final reading check) with 88 interactive drills
 - **Progress view:** skill breakdown, recent reviews, practiced-card count
 - **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **104 automated tests**, ruff clean, CI with an empty-database migration gate
+- **132 automated tests**, ruff clean, CI with an empty-database migration gate
 
 ## What changed in Phase 0
 
@@ -57,7 +57,7 @@
 - Real user accounts, sessions, OAuth, and per-user data isolation (local single-user only)
 - Postgres deployment; SQLite is still the default
 - Placement test and an adaptive starting point (onboarding captures self-report only)
-- Hangul days 4–7: typing drills, double batchim, fluency practice
+- Hangul typing drills and timed fluency coaching (the 7-lesson decoding curriculum is complete)
 - Microphone capture beyond the first-word keepsake, ASR, pronunciation scoring, Sound Gym
 - Scene/roleplay engine and conversation debrief
 - Grammar explanation UI beyond short notes on seed items
@@ -87,4 +87,4 @@
 - **Competitive teardown:** [`research/04-competitive-teardown.md`](research/04-competitive-teardown.md)
 - **Architecture and AI:** [`research/05-tech-and-ai.md`](research/05-tech-and-ai.md)
 
-**Immediate next sprint:** onboarding + first spoken sentence → audio for seed items (pre-generated, cached) → Hangul bootcamp days 1–3 → 20 alpha users and activation instrumentation → then Phase 2 speech capture and scoring.
+**Immediate next sprint:** run `flask generate-item-audio` after rotating the key to pre-generate the 30 seed MP3s → 20 alpha users and activation/D1/D7 instrumentation → then Phase 2 speech capture and scoring.

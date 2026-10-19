@@ -16,7 +16,7 @@ An application for learning Korean that includes both a command-line interface a
 ### Web Application
 
 - **Onboarding:** `/welcome` captures goal, daily time, experience, and timezone, then teaches a first spoken 안녕하세요 with local-only recording
-- **Hangul bootcamp:** `/learn/hangul` has three lessons (letters, vowels/blocks, batchim and sound changes) with interactive reading drills
+- **Hangul bootcamp:** `/learn/hangul` has seven lessons (letters, vowels/blocks, batchim, double batchim, real-world text, connected speech, and a final reading check) with 88 interactive drills
 - **Learn loop:** `/learn` shows what is due, `/learn/review` presents a retrieval card and grades it with FSRS-6, and `/learn/progress` shows practiced cards and recent reviews
 - **Starter deck:** `flask seed-content` adds 30 Korean items and creates review cards for the local learner
 - **Daily guardrail:** 10 new cards per day by default; review cards come first
@@ -136,8 +136,14 @@ To run the web application:
    ```bash
    flask seed-content
    ```
-4. Open your web browser and navigate to `http://localhost:5000`
-5. Start at **Learn**. The first visit opens a two-minute onboarding flow and a first spoken sentence; after that, the daily review loop is ready. Use **Hangul** for the reading bootcamp, or **Conversations** to create and study conversational scenarios.
+4. Optional: pre-generate audio for the review deck. This spends API credits,
+   so check the dry run first:
+   ```bash
+   flask generate-item-audio --dry-run
+   flask generate-item-audio
+   ```
+5. Open your web browser and navigate to `http://localhost:5000`
+6. Start at **Learn**. The first visit opens a two-minute onboarding flow and a first spoken sentence; after that, the daily review loop is ready. Use **Hangul** for the reading bootcamp, or **Conversations** to create and study conversational scenarios.
 
 ## Project Structure
 

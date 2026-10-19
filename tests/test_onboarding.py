@@ -115,7 +115,7 @@ def test_hangul_index_and_lessons(client):
 
     assert index.status_code == 200
     assert b"Hangul bootcamp" in index.data
-    assert b"Read Korean by Sunday" in index.data
+    assert b"Read Hangul, one block at a time" in index.data
 
     lesson = client.get("/learn/hangul/letters")
 

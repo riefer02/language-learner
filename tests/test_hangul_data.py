@@ -4,11 +4,23 @@ import pytest
 
 from app.learning.hangul_data import HANGUL_LESSONS
 
-EXPECTED_SLUGS = ["letters", "vowels-and-blocks", "batchim-sound-changes"]
+EXPECTED_SLUGS = [
+    "letters",
+    "vowels-and-blocks",
+    "batchim-sound-changes",
+    "double-batchim",
+    "signs-menus-numbers",
+    "connected-speech",
+    "reading-check",
+]
 EXPECTED_DRILL_COUNTS = {
     "letters": 10,
     "vowels-and-blocks": 10,
     "batchim-sound-changes": 12,
+    "double-batchim": 12,
+    "signs-menus-numbers": 12,
+    "connected-speech": 12,
+    "reading-check": 20,
 }
 LESSON_KEYS = {
     "slug",
@@ -29,7 +41,7 @@ def _lesson_ids(lesson):
     return lesson["slug"]
 
 
-def test_curriculum_has_the_three_expected_lessons():
+def test_curriculum_has_the_seven_expected_lessons():
     assert [lesson["slug"] for lesson in HANGUL_LESSONS] == EXPECTED_SLUGS
 
 
@@ -42,7 +54,13 @@ def test_slugs_are_unique():
 def test_days_are_unique_and_ordered():
     days = [lesson["day"] for lesson in HANGUL_LESSONS]
 
-    assert days == [1, 2, 3]
+    assert days == list(range(1, 8))
+
+
+def test_total_drill_count_is_at_least_eighty():
+    total = sum(len(lesson["drills"]) for lesson in HANGUL_LESSONS)
+
+    assert total >= 80
 
 
 @pytest.mark.parametrize("lesson", HANGUL_LESSONS, ids=_lesson_ids)

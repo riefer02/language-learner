@@ -4,7 +4,7 @@
 <div class="hangul">
   <div class="review-top">
     <a href="{{ url_for('learn.hangul') }}">← Hangul</a>
-    <span class="review-count">Day {{ lesson.day }} of 3</span>
+    <span class="review-count">Day {{ lesson.day }} of {{ lesson_total }}</span>
   </div>
 
   <p class="learn-eyebrow">Day {{ lesson.day }}</p>

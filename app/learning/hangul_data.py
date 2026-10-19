@@ -1,4 +1,4 @@
-"""Hand-authored Hangul curriculum for the first three lessons.
+"""Hand-authored Hangul curriculum for the seven-lesson bootcamp.
 
 This module is intentionally data-only: plain dicts, lists, and strings.  A
 Flask/Jinja route can render it without touching models or the database.
@@ -618,6 +618,867 @@ HANGUL_LESSONS = [
             "Liaison is normal, not sloppy: 한국어 is 한구거.",
             "These rules are simplified. Dialect and fast speech vary; listen and adjust.",
             "Do not try to apply every rule consciously while speaking. Learn a few patterns, then practice with audio.",
+        ],
+    },
+    {
+        "slug": "double-batchim",
+        "day": 4,
+        "title": "Double batchim and clusters",
+        "subtitle": "Eleven final clusters, one surviving sound, and the vowel test",
+        "goal": (
+            "Read common words with double final consonants and predict "
+            "whether the first or second consonant is heard."
+        ),
+        "summary": (
+            "A double batchim packs two consonants into the final position. In "
+            "isolation or before a consonant, only one of them is pronounced. "
+            "Before a vowel, the second consonant often moves to the next "
+            "syllable. Learn the eleven clusters through common words rather "
+            "than as an abstract list."
+        ),
+        "can_do": (
+            "I can read high-frequency double-final words such as 닭, 삶, 값, "
+            "없다, 앉다, and 여덟, and I can explain why 닭 is [닥] but 닭이 is "
+            "[달기]."
+        ),
+        "sections": [
+            {
+                "heading": "Two consonants, one final sound",
+                "body": (
+                    "A double batchim (겹받침) is a final cluster of two "
+                    "consonants: ㄳ, ㄵ, ㄶ, ㄺ, ㄻ, ㄼ, ㄽ, ㄾ, ㄿ, ㅀ, ㅄ. "
+                    "Korean does not pronounce both at the end of a syllable. "
+                    "In careful speech one consonant is heard and the other is "
+                    "silent. The choice is not random, but it is easier to learn "
+                    "one word at a time than to memorize an abstract rule. The "
+                    "next section gives the usual pattern, and the section after "
+                    "that shows what changes before a vowel."
+                ),
+            },
+            {
+                "heading": "The eleven clusters in isolation",
+                "body": (
+                    "Read the example, then cover the last column. The sound in "
+                    "brackets is the actual pronunciation, not a spelling "
+                    "pronunciation. ㄳ, ㄽ, ㄾ, and ㄿ are rare in everyday "
+                    "words; do not let them slow you down."
+                ),
+                "table": {
+                    "headers": ["Cluster", "Final sound", "Example", "Sounds like"],
+                    "rows": [
+                        ["ㄳ", "[ㄱ]", "삯", "[삭]"],
+                        ["ㄵ", "[ㄴ]", "앉다", "[안따]"],
+                        ["ㄶ", "[ㄴ]", "많다", "[만타]"],
+                        ["ㄺ", "[ㄱ]", "닭", "[닥]"],
+                        ["ㄻ", "[ㅁ]", "삶", "[삼]"],
+                        ["ㄼ", "[ㄹ]", "여덟", "[여덜]"],
+                        ["ㄽ", "[ㄹ]", "돌솥", "[돌솔]"],
+                        ["ㄾ", "[ㄹ]", "핥다", "[할따]"],
+                        ["ㄿ", "[ㅂ]", "읊다", "[읍따]"],
+                        ["ㅀ", "[ㄹ]", "잃다", "[일타]"],
+                        ["ㅄ", "[ㅂ]", "값", "[갑]"],
+                    ],
+                },
+            },
+            {
+                "heading": "Before a vowel, the second consonant moves",
+                "body": (
+                    "When the next syllable starts with ㅇ, the final cluster "
+                    "splits. The first consonant stays as batchim and the second "
+                    "moves to the next syllable. This is why the same word can "
+                    "sound different in isolation and in a phrase. The ㅎ in ㄶ "
+                    "and ㅀ does not move; it disappears or pushes an aspiration "
+                    "onto the next consonant."
+                ),
+                "table": {
+                    "headers": ["Written", "Sounds like", "Why"],
+                    "rows": [
+                        ["닭이", "[달기]", "ㄹ stays; ㄱ moves to 이."],
+                        ["삶을", "[살믈]", "ㄹ stays; ㅁ moves to 을."],
+                        ["앉아", "[안자]", "ㄴ stays; ㅈ moves to 아."],
+                        ["많아", "[마나]", "ㄴ stays; ㅎ disappears."],
+                        ["읽어", "[일거]", "ㄹ stays; ㄱ moves to 어."],
+                        ["없어", "[업써]", "ㅂ stays; ㅅ moves and tenses to ㅆ."],
+                        ["값이", "[갑씨]", "ㅂ stays; ㅅ moves and tenses to ㅆ."],
+                    ],
+                },
+            },
+            {
+                "heading": "Ten words to keep",
+                "body": (
+                    "These ten words are common enough to meet in menus, signs, "
+                    "and simple sentences. Read each one aloud before checking "
+                    "the middle column."
+                ),
+                "table": {
+                    "headers": ["Word", "Sounds like", "Meaning"],
+                    "rows": [
+                        ["닭", "[닥]", "chicken"],
+                        ["삶", "[삼]", "life"],
+                        ["값", "[갑]", "price"],
+                        ["없다", "[업따]", "to not exist; to not have"],
+                        ["앉다", "[안따]", "to sit"],
+                        ["많다", "[만타]", "to be many"],
+                        ["젊다", "[점따]", "to be young"],
+                        ["읽다", "[익따]", "to read"],
+                        ["여덟", "[여덜]", "eight"],
+                        ["외곽", "[외곽]", "outskirts (a single ㄱ final, for contrast)"],
+                    ],
+                },
+            },
+            {
+                "heading": "Two exceptions worth knowing",
+                "body": (
+                    "The usual pattern for ㄼ is [ㄹ], as in 여덟 [여덜] and "
+                    "넓다 [널따]. 밟다 is the common exception: it is [밥따], "
+                    "with the ㅂ heard instead. Some speakers also pronounce "
+                    "넓다 as [널따] consistently, so trust the word, not the "
+                    "cluster. This is the main reason to learn clusters inside "
+                    "words."
+                ),
+            },
+        ],
+        "drills": [
+            {
+                "prompt": "Read this word: 닭",
+                "options": ["dak", "dal", "dalk", "dang"],
+                "answer": "dak",
+                "explanation": "ㄺ is [ㄱ] at the end: 닭 sounds like 닥, dak.",
+            },
+            {
+                "prompt": "Read this word: 삶",
+                "options": ["sam", "sal", "salm", "sap"],
+                "answer": "sam",
+                "explanation": "ㄻ is [ㅁ]: 삶 sounds like 삼, sam.",
+            },
+            {
+                "prompt": "Read this word: 값",
+                "options": ["gap", "gal", "gaps", "gam"],
+                "answer": "gap",
+                "explanation": "ㅄ is [ㅂ]: 값 sounds like 갑, gap.",
+            },
+            {
+                "prompt": "How does 없다 sound?",
+                "options": ["업따", "업다", "엄따", "없다"],
+                "answer": "업따",
+                "explanation": "ㅄ is [ㅂ], and the following ㄷ tenses: [업따].",
+            },
+            {
+                "prompt": "How does 앉다 sound?",
+                "options": ["안따", "알따", "압따", "안타"],
+                "answer": "안따",
+                "explanation": "ㄵ is [ㄴ], and the ㄷ of 다 tenses to ㄸ: [안따].",
+            },
+            {
+                "prompt": "How does 많다 sound?",
+                "options": ["만타", "만따", "말타", "막타"],
+                "answer": "만타",
+                "explanation": "ㄶ is [ㄴ], and the ㅎ aspirates the next ㄷ to ㅌ: [만타].",
+            },
+            {
+                "prompt": "How does 젊다 sound?",
+                "options": ["점따", "절따", "접따", "점타"],
+                "answer": "점따",
+                "explanation": "ㄻ is [ㅁ], and the following ㄷ tenses: [점따].",
+            },
+            {
+                "prompt": "How does 읽다 sound?",
+                "options": ["익따", "일따", "잉따", "익다"],
+                "answer": "익따",
+                "explanation": "ㄺ is [ㄱ] before a consonant, and ㄷ tenses: [익따].",
+            },
+            {
+                "prompt": "Read this word: 여덟",
+                "options": ["yeodeol", "yeodeop", "yeodeot", "yeodeolp"],
+                "answer": "yeodeol",
+                "explanation": "ㄼ is usually [ㄹ]: 여덟 sounds like 여덜, yeodeol.",
+            },
+            {
+                "prompt": "How does 읊다 sound?",
+                "options": ["읍따", "을따", "엎따", "읍다"],
+                "answer": "읍따",
+                "explanation": "ㄿ is [ㅂ], and the following ㄷ tenses: [읍따].",
+            },
+            {
+                "prompt": "How does 밟다 sound?",
+                "options": ["밥따", "발따", "박따", "밥다"],
+                "answer": "밥따",
+                "explanation": "밟다 is the common exception to ㄼ = [ㄹ]; it is [밥따].",
+            },
+            {
+                "prompt": "How does 읽어 sound?",
+                "options": ["일거", "익어", "일어", "익거"],
+                "answer": "일거",
+                "explanation": "Before a vowel, ㄹ stays and ㄱ moves: [일거].",
+            },
+        ],
+        "notes": [
+            "Do not memorize all eleven clusters at once. Start with 삯, 앉다, 많다, 닭, 삶, 여덟, 값, and 없다; they cover most of what you will meet.",
+            "The bracketed sound is the actual pronunciation. The spelling keeps both consonants for history and for the before-a-vowel case.",
+            "ㄳ, ㄽ, ㄾ, and ㄿ are rare in daily text. Recognize them, then move on.",
+            "Before a vowel, the second consonant often moves: 닭이 [달기], 값이 [갑씨].",
+            "ㄼ is usually [ㄹ], but 밟다 is [밥따]. Learn the word, not just the rule.",
+        ],
+    },
+    {
+        "slug": "signs-menus-numbers",
+        "day": 5,
+        "title": "Read real text: signs, menus, numbers",
+        "subtitle": "High-frequency public words and the two number systems",
+        "goal": (
+            "Read common signs and menu items, and choose the right number "
+            "system for prices, phone numbers, dates, hours, and counters."
+        ),
+        "summary": (
+            "Public Korean is repetitive, so a small vocabulary unlocks a lot "
+            "of text. Sino-Korean numbers handle prices, phone numbers, dates, "
+            "and minutes; native Korean numbers handle counters, hours, and "
+            "age. Read known nouns and numbers first, then let context fill in "
+            "the rest."
+        ),
+        "can_do": (
+            "I can read common signs and menu words such as 출구, 화장실, 커피, "
+            "and 영업시간, and I can read a price, a date, and a counter phrase "
+            "with the right number system."
+        ),
+        "sections": [
+            {
+                "heading": "Start with public text",
+                "body": (
+                    "Signs and menus repeat the same nouns everywhere. You do "
+                    "not need grammar to recognize 출구 or 화장실. Look for the "
+                    "noun you know, then use the layout, the picture, and the "
+                    "number to guess the rest. These ten words are a good "
+                    "starter set for a first trip or a first menu."
+                ),
+                "table": {
+                    "headers": ["Korean", "Meaning", "Where you see it"],
+                    "rows": [
+                        ["커피", "coffee", "Cafe signs and menus"],
+                        ["아메리카노", "Americano", "Cafe menus"],
+                        ["주차", "parking", "Parking signs and receipts"],
+                        ["출구", "exit", "Subway, station, and building signs"],
+                        ["입구", "entrance", "Doors and building signs"],
+                        ["화장실", "restroom", "Public signs"],
+                        ["영업시간", "business hours", "Doors and shop windows"],
+                        ["할인", "discount", "Sale signs and receipts"],
+                        ["무료", "free", "Admission and parking signs"],
+                        ["매표소", "ticket office", "Stations, cinemas, and museums"],
+                    ],
+                },
+            },
+            {
+                "heading": "Sino-Korean numbers: 1–10",
+                "body": (
+                    "Sino-Korean numbers came from Chinese and handle most "
+                    "counting of money, dates, minutes, and phone digits. Zero "
+                    "is 영 or 공; 공 is common when reading phone numbers aloud. "
+                    "Large numbers are built in ten-thousands, so 3,000 is 삼천 "
+                    "and 30,000 is 삼만."
+                ),
+                "table": {
+                    "headers": ["Number", "Korean", "Romanization"],
+                    "rows": [
+                        ["1", "일", "il"],
+                        ["2", "이", "i"],
+                        ["3", "삼", "sam"],
+                        ["4", "사", "sa"],
+                        ["5", "오", "o"],
+                        ["6", "육", "yuk"],
+                        ["7", "칠", "chil"],
+                        ["8", "팔", "pal"],
+                        ["9", "구", "gu"],
+                        ["10", "십", "sip"],
+                    ],
+                },
+            },
+            {
+                "heading": "Native Korean numbers: 1–10",
+                "body": (
+                    "Native numbers are used with counters and for hours and "
+                    "age. Before a counter, 하나 becomes 한, 둘 becomes 두, 셋 "
+                    "becomes 세, and 넷 becomes 네: 한 잔, 두 명, 세 시, 네 살. "
+                    "Twenty is 스물 alone but 스무 살 with the age counter."
+                ),
+                "table": {
+                    "headers": ["Number", "Korean", "Romanization"],
+                    "rows": [
+                        ["1", "하나", "hana"],
+                        ["2", "둘", "dul"],
+                        ["3", "셋", "set"],
+                        ["4", "넷", "net"],
+                        ["5", "다섯", "daseot"],
+                        ["6", "여섯", "yeoseot"],
+                        ["7", "일곱", "ilgop"],
+                        ["8", "여덟", "yeodeol"],
+                        ["9", "아홉", "ahop"],
+                        ["10", "열", "yeol"],
+                    ],
+                },
+            },
+            {
+                "heading": "Numbers in the wild",
+                "body": (
+                    "The fastest way to choose a number system is to ask what "
+                    "is being counted. Money, dates, and minutes are Sino. "
+                    "Objects, people, hours, and age are native. Phone numbers "
+                    "are read one digit at a time, with zero as 공."
+                ),
+                "table": {
+                    "headers": ["Written", "Read aloud", "Why"],
+                    "rows": [
+                        ["3,000원", "삼천 원", "Prices use Sino-Korean; 원 is the currency."],
+                        ["02-1234-5678", "공이 일이삼사 오육칠팔", "Phone digits are read one by one; 0 is 공."],
+                        ["2026년 10월 19일", "이천이십육 년 시월 십구 일", "Dates use Sino-Korean; 10월 is 시월, 6월 is 유월."],
+                        ["오후 세 시", "오후 세 시", "Hours use native numbers; 오후 means p.m."],
+                        ["십오 분", "십오 분", "Minutes use Sino-Korean numbers."],
+                        ["커피 두 잔", "커피 두 잔", "The counter 잔 takes native numbers; 둘 becomes 두."],
+                    ],
+                },
+            },
+            {
+                "heading": "Spacing and punctuation",
+                "body": (
+                    "Korean puts spaces between words, but particles and verb "
+                    "endings attach to the word in front: 학교에, 커피를, 먹어요. "
+                    "Signs often drop spaces for visual reasons, so 영업시간 "
+                    "appears as one block. Modern Korean uses Western "
+                    "punctuation: periods, commas, question marks, and quotation "
+                    "marks. Numbers and units usually stay together, as in "
+                    "3,000원 or 10%. A middle dot (·) often separates items on a "
+                    "sign. When spacing looks strange, read known chunks rather "
+                    "than individual letters."
+                ),
+            },
+            {
+                "heading": "A field strategy for signs",
+                "body": (
+                    "Read the number first, then the noun. On a menu, prices "
+                    "usually sit on the right, and the item name is on the left. "
+                    "On a station sign, look for the arrow and the exit number. "
+                    "Skip words you do not know; one recognized noun plus the "
+                    "context is often enough to act. Carry a translation app for "
+                    "the rest, and add the words you meet to your review deck."
+                ),
+            },
+        ],
+        "drills": [
+            {
+                "prompt": "What does this sign mean? 커피",
+                "options": ["coffee", "tea", "water", "juice"],
+                "answer": "coffee",
+                "explanation": "커피 is coffee, one of the most common cafe words.",
+            },
+            {
+                "prompt": "What does this sign mean? 주차",
+                "options": ["parking", "entrance", "exit", "ticket office"],
+                "answer": "parking",
+                "explanation": "주차 means parking; 주차장 is a parking lot.",
+            },
+            {
+                "prompt": "What does this sign mean? 출구",
+                "options": ["exit", "entrance", "restroom", "discount"],
+                "answer": "exit",
+                "explanation": "출구 is an exit; 입구 is an entrance.",
+            },
+            {
+                "prompt": "What does this sign mean? 영업시간",
+                "options": ["business hours", "free", "discount", "parking"],
+                "answer": "business hours",
+                "explanation": "영업 means business or operation; 시간 means time or hours.",
+            },
+            {
+                "prompt": "What does this sign mean? 무료",
+                "options": ["free", "discount", "closed", "paid"],
+                "answer": "free",
+                "explanation": "무료 means free of charge; 유료 means paid.",
+            },
+            {
+                "prompt": "What does this sign mean? 매표소",
+                "options": ["ticket office", "restroom", "parking lot", "cafe"],
+                "answer": "ticket office",
+                "explanation": "표 is a ticket, so 매표소 is the place that sells tickets.",
+            },
+            {
+                "prompt": "What does this menu item mean? 아메리카노",
+                "options": ["Americano", "latte", "green tea", "orange juice"],
+                "answer": "Americano",
+                "explanation": "아메리카노 is a loanword from Americano, a common cafe order.",
+            },
+            {
+                "prompt": "What does this sign mean? 화장실",
+                "options": ["restroom", "ticket office", "exit", "business hours"],
+                "answer": "restroom",
+                "explanation": "화장실 is the restroom or bathroom.",
+            },
+            {
+                "prompt": "How do you read this price? 3,000원",
+                "options": ["삼천 원", "삼백 원", "삼만 원", "사천 원"],
+                "answer": "삼천 원",
+                "explanation": "3,000 is 삼천, and 원 is the currency: sam cheon won.",
+            },
+            {
+                "prompt": "How many cups? 커피 두 잔",
+                "options": ["two cups", "three cups", "one cup", "two bottles"],
+                "answer": "two cups",
+                "explanation": "두 is the counter form of 둘, and 잔 counts cups or glasses.",
+            },
+            {
+                "prompt": "How do you read this year? 2026년",
+                "options": ["이천이십육 년", "이천이십오 년", "이천육 년", "이십이육 년"],
+                "answer": "이천이십육 년",
+                "explanation": "2026 is 이천이십육; 년 means year.",
+            },
+            {
+                "prompt": "What does 10% 할인 mean?",
+                "options": ["10% off", "10% free", "10 minutes", "10,000 won"],
+                "answer": "10% off",
+                "explanation": "할인 means a discount, so 10% 할인 is 10 percent off.",
+            },
+        ],
+        "notes": [
+            "Start with high-frequency public text: exits, restrooms, hours, prices, and coffee.",
+            "Do not decode every unknown word on a sign. Find the noun and the number first.",
+            "Use Sino-Korean for prices, phone numbers, dates, and minutes; use native numbers for counters, hours, and age.",
+            "Particles stick to words: 커피를, 학교에. Signs sometimes drop spaces completely.",
+            "A menu is a vocabulary list, not a grammar test. Learn five items you will actually order.",
+        ],
+    },
+    {
+        "slug": "connected-speech",
+        "day": 6,
+        "title": "Connected speech: sound changes in context",
+        "subtitle": "What happens when the rules meet a real phrase",
+        "goal": (
+            "Predict the pronunciation of common short phrases by applying "
+            "liaison, assimilation, palatalization, aspiration, and "
+            "tensification together."
+        ),
+        "summary": (
+            "In isolation, a word follows one rule. In a phrase, several rules "
+            "meet at once. The same batchim can sound different depending on "
+            "the next syllable. Read phrases as chunks, not as separate "
+            "blocks, and treat the rules as a first guess rather than a "
+            "complete description of fast speech."
+        ),
+        "can_do": (
+            "I can read short phrases such as 한국어를, 같이 가요, 좋아요, and "
+            "없어요, and I can explain which sound change is happening."
+        ),
+        "sections": [
+            {
+                "heading": "Rules meet phrases",
+                "body": (
+                    "Day 3 introduced liaison, nasalization, lateralization, "
+                    "palatalization, aspiration, and tensification one at a "
+                    "time. Real phrases combine them. In 한국어를, the final ㄱ "
+                    "of 국 moves to 어; in 학교에, the ㄱ of 교 tenses; in "
+                    "좋아요, the ㅎ disappears. Do not read each block and then "
+                    "stitch the sounds together. Read the whole phrase and let "
+                    "the changes happen at the boundary."
+                ),
+            },
+            {
+                "heading": "Seven patterns to review",
+                "body": (
+                    "These examples cover the main classroom rules. The "
+                    "bracketed form is the actual pronunciation. Notice that "
+                    "some rules depend on the next sound, not just the spelling."
+                ),
+                "table": {
+                    "headers": ["Pattern", "Written", "Sounds like", "What happens"],
+                    "rows": [
+                        ["Liaison", "한국어를", "[한구거를]", "Final ㄱ moves to 어."],
+                        ["Nasalization", "국물", "[궁물]", "ㄱ before ㅁ becomes ㅇ."],
+                        ["Lateralization", "연락", "[열락]", "ㄴ before ㄹ becomes ㄹ."],
+                        ["Palatalization", "같이", "[가치]", "ㅌ before 이 becomes ㅊ."],
+                        ["Aspiration", "축하해요", "[추카해요]", "ㄱ plus ㅎ becomes ㅋ."],
+                        ["Tensification", "학교에", "[학꾜에]", "ㄱ before ㄱ becomes ㄲ."],
+                        ["ㅎ deletion", "좋아요", "[조아요]", "ㅎ disappears between vowels."],
+                    ],
+                },
+            },
+            {
+                "heading": "The ten phrases",
+                "body": (
+                    "Read each phrase aloud as one unit. The third column names "
+                    "the main change; some phrases also have a smaller change "
+                    "inside a word. 전화해요 is included as a control: it sounds "
+                    "close to its spelling, which is a useful reminder that not "
+                    "every phrase is dramatic."
+                ),
+                "table": {
+                    "headers": ["Written", "Sounds like", "Main change"],
+                    "rows": [
+                        ["한국어를", "[한구거를]", "Liaison: ㄱ moves to 어."],
+                        ["학교에", "[학꾜에]", "Tensification: ㄱ becomes ㄲ."],
+                        ["같이 가요", "[가치 가요]", "Palatalization: ㅌ becomes ㅊ."],
+                        ["좋아요", "[조아요]", "ㅎ deletion between vowels."],
+                        ["먹어요", "[머거요]", "Liaison: ㄱ moves to 어."],
+                        ["전화해요", "[전화해요]", "No major change here."],
+                        ["괜찮아요", "[괜차나요]", "ㄶ becomes ㄴ and ㅎ disappears."],
+                        ["앉아요", "[안자요]", "ㄵ becomes ㄴ; ㅈ moves to 아."],
+                        ["읽어요", "[일거요]", "ㄺ becomes ㄹ before a vowel; ㄱ moves."],
+                        ["없어요", "[업써요]", "ㅄ becomes ㅂ; ㅅ moves and tenses."],
+                    ],
+                },
+            },
+            {
+                "heading": "Why the same letter gives different results",
+                "body": (
+                    "A rule is not a property of a letter; it is a relationship "
+                    "between neighboring sounds. ㄺ is [ㄱ] in 닭 but its ㄹ "
+                    "survives in 읽어요. The ㅎ in 좋아요 disappears, but the ㅎ "
+                    "in 축하해요 turns the preceding ㄱ into ㅋ. This is why "
+                    "memorizing a single table is less useful than reading "
+                    "whole phrases and listening for the result."
+                ),
+            },
+            {
+                "heading": "Practice in phrases, not syllables",
+                "body": (
+                    "Take one phrase and read it three ways: slowly with clear "
+                    "boundaries, at a normal speed, then fast enough to sound "
+                    "natural. Record yourself and compare with a native audio "
+                    "clip if you have one. Shadowing, repeating immediately "
+                    "after the audio, is especially useful for connected "
+                    "speech. Five phrases a day is enough; accuracy matters more "
+                    "than volume."
+                ),
+            },
+        ],
+        "drills": [
+            {
+                "prompt": "How does 한국어를 sound?",
+                "options": ["한구거를", "한국어를", "한구고를", "한궁어를"],
+                "answer": "한구거를",
+                "explanation": "The final ㄱ of 국 moves to 어: [한구거를].",
+            },
+            {
+                "prompt": "How does 학교에 sound?",
+                "options": ["학꾜에", "학교에", "학쿄에", "한교에"],
+                "answer": "학꾜에",
+                "explanation": "The ㄱ of 교 tenses after the final ㄱ: [학꾜에].",
+            },
+            {
+                "prompt": "How does 같이 가요 sound?",
+                "options": ["가치 가요", "가티 가요", "가지 가요", "갓이 가요"],
+                "answer": "가치 가요",
+                "explanation": "ㅌ before 이 palatalizes to ㅊ: [가치 가요].",
+            },
+            {
+                "prompt": "How does 좋아요 sound?",
+                "options": ["조아요", "좋아요", "조하요", "초아요"],
+                "answer": "조아요",
+                "explanation": "The ㅎ disappears between vowels: [조아요].",
+            },
+            {
+                "prompt": "How does 먹어요 sound?",
+                "options": ["머거요", "먹어요", "머고요", "먹거요"],
+                "answer": "머거요",
+                "explanation": "The final ㄱ moves to 어: [머거요].",
+            },
+            {
+                "prompt": "How does 괜찮아요 sound?",
+                "options": ["괜차나요", "괜찮아요", "괜찬하요", "괜차아요"],
+                "answer": "괜차나요",
+                "explanation": "ㄶ becomes ㄴ and the ㅎ disappears: [괜차나요].",
+            },
+            {
+                "prompt": "How does 연락 sound?",
+                "options": ["열락", "연락", "연낙", "열낙"],
+                "answer": "열락",
+                "explanation": "ㄴ before ㄹ becomes ㄹ: [열락], lateralization.",
+            },
+            {
+                "prompt": "How does 읽어요 sound?",
+                "options": ["일거요", "익어요", "일어요", "익거요"],
+                "answer": "일거요",
+                "explanation": "Before a vowel, ㄹ stays and ㄱ moves: [일거요].",
+            },
+            {
+                "prompt": "How does 없어요 sound?",
+                "options": ["업써요", "업서요", "없어요", "엄써요"],
+                "answer": "업써요",
+                "explanation": "ㅄ becomes ㅂ, and the moving ㅅ tenses: [업써요].",
+            },
+            {
+                "prompt": "What does 전화해요 mean?",
+                "options": [
+                    "I call (on the phone)",
+                    "I eat",
+                    "I sit",
+                    "I read",
+                ],
+                "answer": "I call (on the phone)",
+                "explanation": "전화하다 means to telephone; 해요 is the polite present ending.",
+            },
+            {
+                "prompt": "How does 국물 sound?",
+                "options": ["궁물", "국물", "군물", "굼물"],
+                "answer": "궁물",
+                "explanation": "ㄱ before ㅁ nasalizes to ㅇ: [궁물].",
+            },
+            {
+                "prompt": "How does 축하해요 sound?",
+                "options": ["추카해요", "축하해요", "추하해요", "축카해요"],
+                "answer": "추카해요",
+                "explanation": "ㄱ plus ㅎ becomes ㅋ: [추카해요], aspiration.",
+            },
+        ],
+        "notes": [
+            "Fast speech varies. These are classroom approximations, not a complete phonology.",
+            "Rules interact: ㄺ is [ㄱ] in 닭 but [ㄹ] before a vowel in 읽어요.",
+            "Read phrases as chunks, not syllable by syllable.",
+            "Listen to the same phrase at slow and normal speed; your ear will correct the rule.",
+            "Do not stop a conversation to apply a rule. Guess, speak, and adjust.",
+        ],
+    },
+    {
+        "slug": "reading-check",
+        "day": 7,
+        "title": "Read anything check",
+        "subtitle": "A 20-item decoding check, not a fluency certificate",
+        "goal": (
+            "Check your decoding across jamo, CV/CVC blocks, double finals, "
+            "public text, and connected speech, then choose a realistic next "
+            "practice routine."
+        ),
+        "summary": (
+            "This is a mixed check, not a new rule lesson. It spans the "
+            "alphabet, syllable blocks, final clusters, public vocabulary, and "
+            "sound changes. A good score means the decoding layer is working. "
+            "It does not mean you are fluent or that you can understand a "
+            "newspaper."
+        ),
+        "can_do": (
+            "I can decode common signs, menus, and simple sentences and make a "
+            "reasonable guess at their meaning. I am not fluent: speed and "
+            "vocabulary still need daily practice."
+        ),
+        "sections": [
+            {
+                "heading": "What this check covers",
+                "body": (
+                    "Twenty items, no time limit. Read each prompt aloud, choose "
+                    "an answer, then read the explanation even when you are "
+                    "right. The items cover jamo, CV and CVC blocks, double "
+                    "finals, public text, and sound changes. This checks "
+                    "decoding, not vocabulary size or grammar. A high score "
+                    "means you can turn letters into sounds; it does not mean "
+                    "you understand everything you can pronounce."
+                ),
+            },
+            {
+                "heading": "Score yourself honestly",
+                "body": (
+                    "Use the score to choose the next step, not to judge "
+                    "yourself. One lucky guess is not mastery, and one mistake "
+                    "is not failure. If you missed an item, say the correct "
+                    "pronunciation aloud before moving on."
+                ),
+                "table": {
+                    "headers": ["Score", "What it means", "Next step"],
+                    "rows": [
+                        ["18–20", "Solid decoding for the material in these lessons.", "Move to graded reading and typing."],
+                        ["14–17", "Most patterns are there, but some are still slow.", "Re-read the weak lesson and repeat its drills."],
+                        ["0–13", "The basics need another pass.", "Redo Days 1–3, then retake this check."],
+                    ],
+                },
+            },
+            {
+                "heading": "What to do next",
+                "body": (
+                    "Decoding improves through short, regular contact. Pick one "
+                    "reading source you can understand most of, and keep the "
+                    "other two practices small enough that you will actually do "
+                    "them. Ten accurate minutes a day beats a two-hour session "
+                    "once a week."
+                ),
+                "table": {
+                    "headers": ["Practice", "What to do", "Time"],
+                    "rows": [
+                        ["Graded reading", "Read short texts you understand about 80–90%; read aloud, then check the meaning.", "10 min/day"],
+                        ["Typing", "Type the day's words in 2-beolsik; say each syllable as you type.", "5–10 min/day"],
+                        ["Daily review", "Re-read one old lesson's drills and five old words.", "5 min/day"],
+                    ],
+                },
+            },
+            {
+                "heading": "Type what you read: 2-beolsik",
+                "body": (
+                    "The standard Korean keyboard is 2-beolsik (두벌식). "
+                    "Consonants sit on the left hand and vowels on the right. "
+                    "The mapping is worth learning early because typing forces "
+                    "you to break each block into its letters. Open a text "
+                    "editor with the 2-beolsik layout, type 가나다, 한국어, 커피, "
+                    "화장실, and 값 ten times each, and say each syllable aloud "
+                    "as you type. Accuracy first; speed comes later."
+                ),
+                "table": {
+                    "headers": ["Keys (QWERTY)", "Letters", "Note"],
+                    "rows": [
+                        ["r s e f a", "ㄱ ㄴ ㄷ ㄹ ㅁ", "Left hand, home row."],
+                        ["q w t d g", "ㅂ ㅈ ㅅ ㅇ ㅎ", "ㅂ is q, not b; ㅇ is d."],
+                        ["z x c v", "ㅋ ㅌ ㅊ ㅍ", "Left hand, bottom row."],
+                        ["k i j u h y n b m l o p", "ㅏ ㅑ ㅓ ㅕ ㅗ ㅛ ㅜ ㅠ ㅡ ㅣ ㅐ ㅔ", "Right hand, all basic vowels."],
+                        ["Shift + r e q t w", "ㄲ ㄸ ㅃ ㅆ ㅉ", "Tense consonants."],
+                    ],
+                },
+            },
+            {
+                "heading": "A realistic expectation",
+                "body": (
+                    "A comfortable reading speed for simple text is often "
+                    "given as 100–150 syllables per minute. Getting there "
+                    "takes weeks of short daily sessions, not one week. At "
+                    "first, 20–40 syllables per minute is normal. Decoding is "
+                    "only one layer: vocabulary and grammar decide whether you "
+                    "understand the sentence. Do not compare your speed with a "
+                    "native speaker's."
+                ),
+            },
+            {
+                "heading": "What “read anything” really means",
+                "body": (
+                    "In this course, “read anything” means decode the letters "
+                    "and make a reasonable guess at common public text such as "
+                    "signs, menus, and short sentences. It does not mean read a "
+                    "newspaper or a novel without study. Those need thousands "
+                    "of words and a lot of grammar. You have learned the "
+                    "alphabet layer, which is a real milestone and a good "
+                    "foundation for the next one."
+                ),
+            },
+        ],
+        "drills": [
+            {
+                "prompt": "Which consonant sounds like a light tap between r and l?",
+                "options": ["ㄹ", "ㄴ", "ㄷ", "ㅁ"],
+                "answer": "ㄹ",
+                "explanation": "ㄹ is a light tap, between English r and l; it is not the strong English r.",
+            },
+            {
+                "prompt": "Which vowel is ㅓ?",
+                "options": ["eo", "a", "o", "u"],
+                "answer": "eo",
+                "explanation": "ㅓ is romanized eo, a relaxed vowel between uh and aw.",
+            },
+            {
+                "prompt": "Which letter is silent at the start of a syllable?",
+                "options": ["ㅇ", "ㅎ", "ㄱ", "ㅅ"],
+                "answer": "ㅇ",
+                "explanation": "ㅇ is silent at the start and [ŋ] at the end of a syllable.",
+            },
+            {
+                "prompt": "Which block is ma?",
+                "options": ["마", "바", "나", "다"],
+                "answer": "마",
+                "explanation": "ㅁ + ㅏ = 마, pronounced ma.",
+            },
+            {
+                "prompt": "Which block is han?",
+                "options": ["한", "함", "항", "할"],
+                "answer": "한",
+                "explanation": "ㅎ + ㅏ + ㄴ = 한, pronounced han.",
+            },
+            {
+                "prompt": "Read this block: 밥",
+                "options": ["bap", "bat", "ban", "bam"],
+                "answer": "bap",
+                "explanation": "Final ㅂ is an unreleased [p]: 밥 sounds like bap.",
+            },
+            {
+                "prompt": "Read this block: 강",
+                "options": ["gang", "gan", "gam", "ga"],
+                "answer": "gang",
+                "explanation": "Final ㅇ is [ŋ], the ng in sing: gang.",
+            },
+            {
+                "prompt": "Read this word: 닭",
+                "options": ["dak", "dal", "dalk", "dang"],
+                "answer": "dak",
+                "explanation": "ㄺ reduces to [ㄱ]: 닭 sounds like 닥, dak.",
+            },
+            {
+                "prompt": "Read this word: 삶",
+                "options": ["sam", "sal", "salm", "sap"],
+                "answer": "sam",
+                "explanation": "ㄻ reduces to [ㅁ]: 삶 sounds like 삼, sam.",
+            },
+            {
+                "prompt": "Read this word: 값",
+                "options": ["gap", "gal", "gaps", "gam"],
+                "answer": "gap",
+                "explanation": "ㅄ reduces to [ㅂ]: 값 sounds like 갑, gap.",
+            },
+            {
+                "prompt": "Read this word: 여덟",
+                "options": ["yeodeol", "yeodeop", "yeodeot", "yeodeolp"],
+                "answer": "yeodeol",
+                "explanation": "ㄼ is usually [ㄹ]: 여덟 sounds like 여덜, yeodeol.",
+            },
+            {
+                "prompt": "What does this sign mean? 출구",
+                "options": ["exit", "entrance", "parking", "ticket office"],
+                "answer": "exit",
+                "explanation": "출구 is an exit; 입구 is an entrance.",
+            },
+            {
+                "prompt": "What does this sign mean? 화장실",
+                "options": ["restroom", "cafe", "ticket office", "business hours"],
+                "answer": "restroom",
+                "explanation": "화장실 is the restroom or bathroom.",
+            },
+            {
+                "prompt": "What does this sign mean? 영업시간",
+                "options": ["business hours", "free", "discount", "parking"],
+                "answer": "business hours",
+                "explanation": "영업 means business or operation; 시간 means time or hours.",
+            },
+            {
+                "prompt": "How do you read this price? 3,000원",
+                "options": ["삼천 원", "삼백 원", "삼만 원", "사천 원"],
+                "answer": "삼천 원",
+                "explanation": "3,000 is 삼천, and 원 is the currency.",
+            },
+            {
+                "prompt": "What does this sign mean? 무료",
+                "options": ["free", "discount", "closed", "paid"],
+                "answer": "free",
+                "explanation": "무료 means free of charge; 유료 means paid.",
+            },
+            {
+                "prompt": "How does 한국어 sound?",
+                "options": ["한구거", "한국어", "한구고", "한구크"],
+                "answer": "한구거",
+                "explanation": "The final ㄱ moves to 어: [한구거], liaison.",
+            },
+            {
+                "prompt": "How does 같이 sound?",
+                "options": ["가치", "가티", "가지", "갓이"],
+                "answer": "가치",
+                "explanation": "ㅌ before 이 palatalizes to ㅊ: [가치].",
+            },
+            {
+                "prompt": "How does 좋아요 sound?",
+                "options": ["조아요", "좋아요", "조하요", "초아요"],
+                "answer": "조아요",
+                "explanation": "The ㅎ disappears between vowels: [조아요].",
+            },
+            {
+                "prompt": "How does 학교에 sound?",
+                "options": ["학꾜에", "학교에", "학쿄에", "한교에"],
+                "answer": "학꾜에",
+                "explanation": "The ㄱ of 교 tenses after the final ㄱ: [학꾜에].",
+            },
+        ],
+        "notes": [
+            "This check measures decoding, not fluency. A high score does not mean you understand a newspaper.",
+            "If you scored below 14, redo Days 1–3 before retaking the check; that is normal, not a failure.",
+            "100–150 syllables per minute takes weeks of short daily practice; 20–40 is a reasonable start.",
+            "Use graded reading, typing, and five-minute review as the next routine.",
+            "Add new words to review as you meet them; decoding without vocabulary still leaves meaning out.",
         ],
     },
 ]

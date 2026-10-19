@@ -75,7 +75,7 @@
 | P1-05 | Daily planner | Learning | 2/10/25-minute plans; review-first; 5–10 new cap | [~] 10-new/day cap + review-first queue done; duration modes pending |
 | P1-06 | Today / Review / You screens | Experience | Mobile-first; keyboard/IME; Korean `lang`; can-do artifact | [~] Today + Review done; You/can-do pending |
 | P1-07 | Onboarding + first spoken sentence | Experience | Goal/time/experience; local record/playback; account after win | [x] local onboarding + recording; real accounts pending |
-| P1-08 | Hangul bootcamp days 1–7 | Learning/Experience | Read-aloud checks; typing; batchim/liaison drills | [~] days 1–3 with interactive drills; days 4–7 pending |
+| P1-08 | Hangul bootcamp days 1–7 | Learning/Experience | Read-aloud checks; typing; batchim/liaison drills | [x] 7 lessons, 88 interactive drills; timed typing/fluency coaching next |
 | P1-09 | Can-do + progress model | Learning | Skill map, retention, artifacts; no XP hero metric | [~] skill breakdown + recent reviews; can-do artifacts and retention pending |
 | P1-10 | Alpha instrumentation | Quality | Activation, D1/D7, review latency, error rate | [ ] |
 
@@ -158,10 +158,11 @@ P1-09 ─> P3 (adaptive/beta)
 | P0-09 Rate limiter | Platform | done | Thread-safe bounded limiter, per-endpoint, `Retry-After` |
 | P0-10 Errors | Platform | done | 404/415/500, request IDs, no raw exception leakage |
 | P0-11 Headers/auth | Platform | done | CSP, frame/referrer headers, optional basic auth |
-| P0-12 Tests/CI | Quality | done | 104 tests, ruff, empty-DB migration gate |
+| P0-12 Tests/CI | Quality | done | 132 tests, ruff, empty-DB migration gate |
 | P1-02/04/05/06 vertical slice | Learning/Experience | done | Local user, 30 seed items, FSRS review, 10-new/day cap, Today/Review/Progress screens |
 | P1-07 Onboarding + first word | Experience | done | Goal/time/experience/timezone, first spoken 안녕하세요, local recording |
-| P1-08 Hangul days 1–3 | Learning/Experience | done | 3 lessons, 32 drills, mobile tables, Korean font fallback |
+| P1-08 Hangul days 1–7 | Learning/Experience | done | 7 lessons, 88 drills, mobile tables, Korean font fallback |
+| Seed audio pipeline | AI/Media | done | `flask generate-item-audio` with dry-run, limit, force, rollback |
 
 **Sprint exit demo:** ✅ boot with no key → ✅ `pytest` green → ✅ `flask db upgrade` from empty → ✅ failure path leaves zero rows/files → ✅ review a seeded card → ✅ grade it → ✅ see the due count drop and the next card.
 
@@ -214,3 +215,5 @@ P1-09 ─> P3 (adaptive/beta)
 | 2026-10-19 | Independent review fixes: submit-time due/new-card invariants, idempotency guard, item audio protected from media-gc, proxy-safe IPs, request-ID logging, config-driven models, commit boundaries, Hangul validation, CSRF on review form, local-day accounting |
 | 2026-10-19 | Onboarding shipped: goal/time/experience/timezone, first spoken 안녕하세요 with local recording, profile persisted on the local user |
 | 2026-10-19 | Hangul bootcamp days 1–3 shipped: letters, vowels/blocks, batchim and sound changes, 32 interactive reading drills, mobile tables, correct Korean font fallback |
+| 2026-10-19 | Hangul days 4–7 shipped: double batchim, signs/menus/numbers, connected speech, final reading check; 88 drills total |
+| 2026-10-19 | Seed-audio pipeline: `flask generate-item-audio` with dry-run, limit, force, per-item commit, rollback, and idempotent skip |
