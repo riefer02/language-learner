@@ -19,11 +19,11 @@
 - **Sound Gym:** 11 minimal-pair perception drills, 8 production prompts, local-only recording, and transcript-based speech checks
 - **Speech evidence:** `SpeechAttempt` records what the model heard and a transcript-match score — explicitly not a pronunciation grade; raw audio is never stored
 - **Alpha instrumentation:** append-only `Event` table and `flask metrics` for activation, review users, speech attempts, D1/D7
-- **Progress view:** skill breakdown, last-7-days activity, recent recall signal, can-do proof, recent reviews, practiced-card count
+- **Progress view:** skill breakdown, last-7-days activity, 7+/30+ day delayed-retention signal, can-do proof, recent reviews, practiced-card count
 - **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **177 automated tests**, ruff clean, CI with an empty-database migration gate
+- **178 automated tests**, ruff clean, CI with an empty-database migration gate
 
 ## What changed in Phase 0
 

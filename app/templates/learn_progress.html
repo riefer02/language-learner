@@ -80,6 +80,29 @@
     {% endif %}
   </section>
 
+  <section class="learn-how" aria-labelledby="retention-heading">
+    <h3 id="retention-heading">Delayed retention</h3>
+    <div class="week-stats">
+      <div>
+        <b>{% if retention.day7.rate is not none %}{{ (retention.day7.rate * 100) | round | int }}%{% else %}—{% endif %}</b>
+        <span>7+ day recall</span>
+      </div>
+      <div>
+        <b>{% if retention.day30.rate is not none %}{{ (retention.day30.rate * 100) | round | int }}%{% else %}—{% endif %}</b>
+        <span>30+ day recall</span>
+      </div>
+      <div>
+        <b>{{ retention.total_delayed }}</b>
+        <span>delayed reviews</span>
+      </div>
+    </div>
+    <p class="learn-meta">
+      Measured from the gap between real reviews of the same card. This is
+      delayed-review evidence, not a proctored score. A blank value means there
+      are not enough delayed reviews yet.
+    </p>
+  </section>
+
   <section class="learn-how" aria-labelledby="can-do-heading">
     <h3 id="can-do-heading">Can-do proof</h3>
     {% if can_dos %}

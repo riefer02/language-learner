@@ -26,6 +26,49 @@ def record_event(user_id, name, **props):
     return event
 
 
+def retention_signal(user_id):
+    """Delayed-review retention from real review gaps.
+
+    For each review, compare the gap from the previous review of the same card.
+    A 7+ day gap is evidence of delayed retention; a 30+ day gap is the longer
+    horizon. This is not a proctored test, and it is not a proficiency score.
+    """
+    logs = (
+        ReviewLog.query.filter(ReviewLog.user_id == user_id)
+        .order_by(ReviewLog.card_id.asc(), ReviewLog.reviewed_at.asc())
+        .all()
+    )
+
+    buckets = {"day7": [], "day30": []}
+    previous = {}
+    for log in logs:
+        reviewed = ensure_utc(log.reviewed_at)
+        prior = previous.get(log.card_id)
+        if prior is not None:
+            gap_days = (reviewed - prior).total_seconds() / 86400
+            if gap_days >= 30:
+                buckets["day30"].append(log.rating)
+            elif gap_days >= 7:
+                buckets["day7"].append(log.rating)
+        previous[log.card_id] = reviewed
+
+    def summarize(ratings):
+        if not ratings:
+            return {"rate": None, "n": 0}
+        return {
+            "rate": round(
+                sum(1 for rating in ratings if rating >= 3) / len(ratings), 3
+            ),
+            "n": len(ratings),
+        }
+
+    return {
+        "day7": summarize(buckets["day7"]),
+        "day30": summarize(buckets["day30"]),
+        "total_delayed": len(buckets["day7"]) + len(buckets["day30"]),
+    }
+
+
 def weekly_recap(user_id, now=None):
     """Last 7 learner-local days plus a 30-day recall-success estimate."""
     from app.learning.service import learner_timezone, local_day_bounds
