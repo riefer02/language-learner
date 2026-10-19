@@ -69,6 +69,7 @@ class Config:
     )
     SPEECH_MAX_BYTES = _env_int("SPEECH_MAX_BYTES", 5 * 1024 * 1024)
     SPEECH_ACCEPT_THRESHOLD = 0.72
+    SCENE_MATCH_THRESHOLD = 0.78
 
     # Optional stop-gap auth. Real per-user accounts arrive in Phase 1.
     REQUIRE_AUTH = _env_bool("REQUIRE_AUTH", False)

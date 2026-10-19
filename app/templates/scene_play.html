@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %} - {{ scene.title }}{% endblock %}
+{% block content %}
+<div class="scene-play">
+  <div class="review-top">
+    <a href="{{ url_for('learn.scenes') }}">← Scenes</a>
+    <span class="review-count">Step {{ step_number }} of {{ total_steps }}</span>
+  </div>
+
+  <div class="mission-card">
+    <p class="learn-eyebrow">Mission · Level {{ scene.level }}</p>
+    <h2>{{ scene.title }}</h2>
+    <p class="scene-goal">{{ scene.goal }}</p>
+    <p class="scene-meta">
+      {{ scene.persona }} · {{ scene.setting }}
+    </p>
+  </div>
+
+  <div class="chat" aria-live="polite">
+    {% for entry in transcript %}
+    <div class="bubble bubble-character">
+      <div class="bubble-label">{{ scene.persona }}</div>
+      <div lang="ko">{{ entry.character }}</div>
+    </div>
+    <div class="bubble bubble-learner">
+      <div class="bubble-label">You</div>
+      <div lang="ko">{{ entry.learner }}</div>
+    </div>
+    {% endfor %}
+
+    <div class="bubble bubble-character">
+      <div class="bubble-label">{{ scene.persona }}</div>
+      <div class="bubble-korean" lang="ko">{{ step.character_korean }}</div>
+      <div class="bubble-english">{{ step.character_english }}</div>
+      <button
+        type="button"
+        class="btn speak-btn bubble-speak"
+        data-speak="{{ step.character_korean }}"
+        aria-label="Hear the {{ scene.persona }} line in Korean"
+      >
+        Hear it
+      </button>
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="scene-error" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form
+    class="scene-answer-form"
+    method="post"
+    action="{{ url_for('learn.scene_answer', slug=scene.slug) }}"
+  >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <label for="scene-answer">Your line in Korean</label>
+    <input
+      id="scene-answer"
+      name="answer"
+      type="text"
+      lang="ko"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      value="{{ last_answer }}"
+      placeholder="Type your Korean line"
+      required
+    />
+    {% if hint %}
+    <p class="scene-hint"><strong>Hint:</strong> {{ hint }}</p>
+    {% else %}
+    <details class="scene-hint-details">
+      <summary>Need a hint?</summary>
+      <p>{{ step.hint }}</p>
+    </details>
+    {% endif %}
+    <button type="submit" class="btn btn-primary btn-large">Say it</button>
+  </form>
+
+  <form
+    class="scene-reset"
+    method="post"
+    action="{{ url_for('learn.scene_reset', slug=scene.slug) }}"
+  >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <button type="submit" class="link-button">Restart this scene</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/scene.js') }}"></script>
+{% endblock %}

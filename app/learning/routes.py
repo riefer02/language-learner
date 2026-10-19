@@ -19,6 +19,14 @@ from werkzeug.exceptions import BadRequest
 from app import db
 from app.learning.analytics import record_event
 from app.learning.hangul_data import HANGUL_LESSONS
+from app.learning.scenes import (
+    get_or_create_session,
+    get_scene,
+    list_scenes_with_status,
+    reset_session,
+    session_transcript,
+    submit_answer,
+)
 from app.learning.scheduler import (
     apply_rating,
     ensure_utc,
@@ -86,6 +94,125 @@ def today():
     summary = stats(user.id)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
     return render_template("learn_today.html", summary=summary, user=user)
+
+
+@learn.route("/scenes")
+def scenes():
+    user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
+    return render_template(
+        "scene_list.html", rows=list_scenes_with_status(user.id)
+    )
+
+
+@learn.route("/scenes/<slug>")
+def scene_detail(slug):
+    user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
+    scene = get_scene(slug)
+    if scene is None:
+        abort(404)
+    session = get_or_create_session(user.id, slug)
+    transcript = session_transcript(session)
+    if session.completed:
+        return render_template(
+            "scene_complete.html",
+            scene=scene,
+            session=session,
+            transcript=transcript,
+        )
+    step = scene["steps"][session.step_index]
+    return render_template(
+        "scene_play.html",
+        scene=scene,
+        session=session,
+        step=step,
+        step_number=session.step_index + 1,
+        total_steps=len(scene["steps"]),
+        transcript=transcript,
+        error=None,
+        last_answer="",
+    )
+
+
+@learn.route("/scenes/<slug>/answer", methods=["POST"])
+def scene_answer(slug):
+    user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
+    scene = get_scene(slug)
+    if scene is None:
+        abort(404)
+    session = get_or_create_session(user.id, slug)
+
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        try:
+            validate_csrf(request.form.get("csrf_token"))
+        except Exception as error:
+            raise BadRequest("Invalid or missing CSRF token") from error
+
+    answer = (request.form.get("answer") or "").strip()
+    if not answer:
+        step = scene["steps"][session.step_index]
+        return render_template(
+            "scene_play.html",
+            scene=scene,
+            session=session,
+            step=step,
+            step_number=session.step_index + 1,
+            total_steps=len(scene["steps"]),
+            transcript=session_transcript(session),
+            error="Type or say one line before continuing.",
+            last_answer="",
+        )
+
+    result = submit_answer(user, session, scene, answer)
+    if result["accepted"]:
+        if result["completed"]:
+            record_event(user.id, "scene_completed", scene_slug=slug)
+        else:
+            record_event(
+                user.id,
+                "scene_step",
+                scene_slug=slug,
+                step_index=result["step_index"],
+            )
+        return redirect(url_for("learn.scene_detail", slug=slug))
+
+    step = scene["steps"][session.step_index]
+    return render_template(
+        "scene_play.html",
+        scene=scene,
+        session=session,
+        step=step,
+        step_number=session.step_index + 1,
+        total_steps=len(scene["steps"]),
+        transcript=session_transcript(session),
+        error="Not quite. Use the hint, then try once more.",
+        hint=result["hint"],
+        last_answer=answer,
+    )
+
+
+@learn.route("/scenes/<slug>/reset", methods=["POST"])
+def scene_reset(slug):
+    user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
+    scene = get_scene(slug)
+    if scene is None:
+        abort(404)
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        try:
+            validate_csrf(request.form.get("csrf_token"))
+        except Exception as error:
+            raise BadRequest("Invalid or missing CSRF token") from error
+    session = get_or_create_session(user.id, slug)
+    reset_session(session)
+    record_event(user.id, "scene_reset", scene_slug=slug)
+    return redirect(url_for("learn.scene_detail", slug=slug))
 
 
 @learn.route("/sound-gym")

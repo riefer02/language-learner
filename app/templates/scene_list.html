@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %} - Scenes{% endblock %}
+{% block content %}
+<div class="scenes">
+  <p class="learn-eyebrow">Real missions</p>
+  <h2>Use Korean before you feel ready.</h2>
+  <p class="learn-sub">
+    A short scene, one line at a time. Finish the mission, then keep the chunks
+    in your review queue.
+  </p>
+
+  <div class="scene-grid">
+    {% for row in rows %}
+    {% set scene = row.scene %}
+    <a class="scene-card" href="{{ url_for('learn.scene_detail', slug=scene.slug) }}">
+      <div class="scene-card-top">
+        <span class="scene-level">Level {{ scene.level }}</span>
+        <span class="status-badge status-{{ row.status }}">
+          {% if row.status == "completed" %}Completed{% elif row.status == "in_progress" %}In progress{% else %}New{% endif %}
+        </span>
+      </div>
+      <h3>{{ scene.title }}</h3>
+      <p class="scene-subtitle">{{ scene.subtitle }}</p>
+      <p class="scene-goal">{{ scene.goal }}</p>
+      <p class="scene-meta">
+        {{ scene.persona }} · {{ row.total_steps }} steps
+        {% if row.status == "in_progress" %}· step {{ row.step_index + 1 }}{% endif %}
+      </p>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="learn-primary">
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.today') }}">
+      Back to Today
+    </a>
+  </div>
+</div>
+{% endblock %}

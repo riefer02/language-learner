@@ -49,6 +49,7 @@ jobs:
               "review_card",
               "review_log",
               "speech_attempt",
+              "scene_session",
               "event",
               "alembic_version",
           }

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %} - {{ scene.title }} complete{% endblock %}
+{% block content %}
+<div class="scene-play">
+  <p class="learn-eyebrow">Mission complete</p>
+  <h2>{{ scene.title }}</h2>
+  <p class="learn-sub">{{ scene.can_do }}</p>
+
+  <div class="debrief-card">
+    <h3>What went well</h3>
+    <ul>
+      {% for strength in scene.debrief.strengths %}
+      <li>{{ strength }}</li>
+      {% endfor %}
+    </ul>
+    <h3>One thing to fix</h3>
+    <p>{{ scene.debrief.fix }}</p>
+  </div>
+
+  <div class="debrief-card">
+    <h3>Cards added to your review queue</h3>
+    <ul>
+      {% for card in scene.debrief.cards %}
+      <li>
+        <strong lang="ko">{{ card.korean }}</strong>
+        <span lang="en"> — {{ card.english }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="learn-meta">
+      These chunks are now scheduled by FSRS. They will appear in your next
+      review session.
+    </p>
+  </div>
+
+  <div class="learn-primary">
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.review') }}">
+      Review the new cards
+    </a>
+  </div>
+
+  <div class="learn-library-link">
+    <a href="{{ url_for('learn.scenes') }}">Back to scenes</a>
+    <span aria-hidden="true">·</span>
+    <form
+      method="post"
+      action="{{ url_for('learn.scene_reset', slug=scene.slug) }}"
+      class="inline-form"
+    >
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <button type="submit" class="link-button">Play again</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -14,6 +14,7 @@
 - **Seed deck:** 30 hand-curated Korean items (survival phrases, core nouns, five grammar patterns), one review card per item
 - **Daily new-card cap:** 10 new cards per day; review cards are always prioritized
 - **Hangul bootcamp:** seven lessons (letters, vowels/blocks, batchim, double batchim, signs/menus/numbers, connected speech, final reading check) with 88 interactive drills
+- **Mission scenes:** four scripted roleplays (café, directions, pharmacy, workplace intro) with tolerant answer matching, hints, resumable progress, and a debrief that adds three chunks to the review deck
 - **Sound Gym:** 11 minimal-pair perception drills, 8 production prompts, local-only recording, and transcript-based speech checks
 - **Speech evidence:** `SpeechAttempt` records what the model heard and a transcript-match score — explicitly not a pronunciation grade; raw audio is never stored
 - **Alpha instrumentation:** append-only `Event` table and `flask metrics` for activation, review users, speech attempts, D1/D7
@@ -21,7 +22,7 @@
 - **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **148 automated tests**, ruff clean, CI with an empty-database migration gate
+- **169 automated tests**, ruff clean, CI with an empty-database migration gate
 
 ## What changed in Phase 0
 
@@ -55,9 +56,13 @@
 |---|---|
 | ![Hangul index](screenshots/hangul-index.png) | ![Hangul lesson](screenshots/hangul-lesson.png) |
 
-| Sound Gym |
-|---|
-| ![Sound Gym](screenshots/sound-gym.png) |
+| Sound Gym | Mission scenes |
+|---|---|
+| ![Sound Gym](screenshots/sound-gym.png) | ![Scenes](screenshots/scenes.png) |
+
+| Scene play | Scene debrief |
+|---|---|
+| ![Scene play](screenshots/scene-play.png) | ![Scene complete](screenshots/scene-complete.png) |
 
 ## What still does not exist
 
@@ -66,8 +71,9 @@
 - Placement test and an adaptive starting point (onboarding captures self-report only)
 - Hangul typing drills and timed fluency coaching (the 7-lesson decoding curriculum is complete)
 - Phoneme-level pronunciation scoring, prosody feedback, and calibrated L2 ASR (current checks are transcript-based)
-- Native-reviewed audio for the seed deck and Sound Gym (browser TTS is a stopgap)
-- Scene/roleplay engine and conversation debrief
+- Native-reviewed audio for the seed deck, Sound Gym, and scene characters (browser TTS is a stopgap)
+- Speech answers inside scenes (scenes currently use typed Korean; speech scoring is available in the Sound Gym)
+- Branching scene state and adaptive difficulty (scenes are scripted, 3 steps each)
 - Grammar explanation UI beyond short notes on seed items
 - Can-do artifacts, full skill map, retention dashboard, weekly recap
 - Streak repair, reminders, notifications, vacation mode, and a flexible habit system (a basic day streak exists)
@@ -95,4 +101,4 @@
 - **Competitive teardown:** [`research/04-competitive-teardown.md`](research/04-competitive-teardown.md)
 - **Architecture and AI:** [`research/05-tech-and-ai.md`](research/05-tech-and-ai.md)
 
-**Immediate next sprint:** run `flask generate-item-audio` after rotating the key to pre-generate the 30 seed MP3s → 20 alpha users and `flask metrics` review → add phoneme evidence (Azure/SpeechSuper) behind the existing speech interface → scene roleplay and debrief.
+**Immediate next sprint:** run `flask generate-item-audio` after rotating the key to pre-generate the 30 seed MP3s → wire speech answers into scenes → add phoneme evidence (Azure/SpeechSuper) behind the existing speech interface → 20 alpha users and a `flask metrics` review.

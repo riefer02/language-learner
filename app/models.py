@@ -199,6 +199,34 @@ class ReviewLog(db.Model):
     card = db.relationship("ReviewCard")
 
 
+class SceneSession(db.Model):
+    """Progress through one scripted mission scene for one learner."""
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id", "scene_slug", name="uq_scene_session_user_scene"
+        ),
+        db.Index("ix_scene_session_user", "user_id", "completed"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    scene_slug = db.Column(db.String(60), nullable=False)
+    step_index = db.Column(db.Integer, nullable=False, default=0)
+    completed = db.Column(db.Boolean, nullable=False, default=False)
+    transcript = db.Column(db.Text, nullable=True)
+    started_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+    )
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    user = db.relationship("User")
+
+
 class SpeechAttempt(db.Model):
     """One transcript-based speech check. Raw audio is never stored."""
 
