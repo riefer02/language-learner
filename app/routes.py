@@ -10,11 +10,11 @@ from flask import (
     request,
 )
 from pydantic import ValidationError
-from sqlalchemy import text
+from sqlalchemy import or_, text
 from sqlalchemy.orm import selectinload
 
 from app import db
-from app.models import Conversation, ConversationLine, Phrase
+from app.models import Conversation, ConversationLine, Item, Phrase
 from app.services.ai import OpenAIConfigError
 from app.services.audio import generate_audio
 from app.services.translation import (
@@ -82,6 +82,46 @@ def library():
         Phrase.created_at.desc(), Phrase.id.desc()
     ).paginate(page=page, per_page=per_page, error_out=False)
     return render_template("library.html", phrases=phrases)
+
+
+@main.route("/resources")
+def resources():
+    query_text = (request.args.get("q") or "").strip()[:100]
+    item_type = request.args.get("type", "")
+    level = request.args.get("level", type=int)
+
+    query = Item.query
+    if query_text:
+        like = f"%{query_text}%"
+        query = query.filter(
+            or_(
+                Item.korean.ilike(like),
+                Item.english.ilike(like),
+                Item.romanization.ilike(like),
+                Item.notes.ilike(like),
+            )
+        )
+    if item_type in {"lexeme", "chunk", "grammar", "sentence"}:
+        query = query.filter(Item.item_type == item_type)
+    if level in {1, 2, 3, 4, 5, 6}:
+        query = query.filter(Item.level == level)
+
+    items = query.order_by(Item.level.asc(), Item.id.asc()).limit(100).all()
+    counts = {
+        "total": Item.query.count(),
+        "grammar": Item.query.filter_by(item_type="grammar").count(),
+        "chunks": Item.query.filter_by(item_type="chunk").count(),
+        "words": Item.query.filter_by(item_type="lexeme").count(),
+    }
+
+    return render_template(
+        "resources.html",
+        items=items,
+        q=query_text,
+        item_type=item_type,
+        level=level,
+        counts=counts,
+    )
 
 
 @main.route("/healthz")

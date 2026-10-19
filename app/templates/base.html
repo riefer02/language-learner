@@ -25,30 +25,30 @@
           </li>
           <li>
             <a
+              href="{{ url_for('learn.scenes') }}"
+              aria-current="{{ 'page' if request.path.startswith('/learn/scenes') else 'false' }}"
+              >Scenes</a
+            >
+          </li>
+          <li>
+            <a
               href="{{ url_for('learn.hangul') }}"
-              aria-current="{{ 'page' if request.blueprint == 'learn' and request.path.startswith('/learn/hangul') else 'false' }}"
+              aria-current="{{ 'page' if request.path.startswith('/learn/hangul') else 'false' }}"
               >Hangul</a
             >
           </li>
           <li>
             <a
-              href="{{ url_for('main.index') }}"
-              aria-current="{{ 'page' if request.path == url_for('main.index') else 'false' }}"
-              >New Phrase</a
+              href="{{ url_for('learn.progress') }}"
+              aria-current="{{ 'page' if request.endpoint == 'learn.progress' else 'false' }}"
+              >Progress</a
             >
           </li>
           <li>
             <a
-              href="{{ url_for('main.library') }}"
-              aria-current="{{ 'page' if request.path == url_for('main.library') else 'false' }}"
-              >Library</a
-            >
-          </li>
-          <li>
-            <a
-              href="{{ url_for('main.conversations') }}"
-              aria-current="{{ 'page' if request.path == url_for('main.conversations') else 'false' }}"
-              >Conversations</a
+              href="{{ url_for('main.resources') }}"
+              aria-current="{{ 'page' if request.endpoint == 'main.resources' else 'false' }}"
+              >Resources</a
             >
           </li>
         </ul>

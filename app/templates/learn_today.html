@@ -74,6 +74,7 @@
   </div>
   {% endif %}
 
+  {% if summary.reviews_today == 0 and summary.learned == 0 %}
   <div class="learn-how">
     <h3>How this works</h3>
     <ol>
@@ -82,19 +83,16 @@
       <li><strong>Come back tomorrow.</strong> A short daily loop beats a long weekend cram.</li>
     </ol>
   </div>
+  {% endif %}
 
   <div class="learn-library-link">
     <a href="{{ url_for('learn.scenes') }}">Mission scenes</a>
     <span aria-hidden="true">·</span>
-    <a href="{{ url_for('learn.hangul') }}">Hangul bootcamp</a>
+    <a href="{{ url_for('learn.hangul') }}">Hangul</a>
     <span aria-hidden="true">·</span>
     <a href="{{ url_for('learn.sound_gym') }}">Sound Gym</a>
     <span aria-hidden="true">·</span>
-    <a href="{{ url_for('learn.progress') }}">View progress</a>
-    <span aria-hidden="true">·</span>
-    <a href="{{ url_for('main.library') }}">Browse the phrase library</a>
-    <span aria-hidden="true">·</span>
-    <a href="{{ url_for('main.conversations') }}">Conversation scenarios</a>
+    <a href="{{ url_for('main.resources') }}">Resources</a>
   </div>
 </div>
 {% endblock %}

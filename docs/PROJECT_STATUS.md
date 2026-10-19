@@ -19,11 +19,12 @@
 - **Sound Gym:** 11 minimal-pair perception drills, 8 production prompts, local-only recording, and transcript-based speech checks
 - **Speech evidence:** `SpeechAttempt` records what the model heard and a transcript-match score — explicitly not a pronunciation grade; raw audio is never stored
 - **Alpha instrumentation:** append-only `Event` table and `flask metrics` for activation, review users, speech attempts, D1/D7
+- **Resources:** searchable Korean/English/romanization/notes lookup with type and level filters, plus quick links to Hangul, scenes, Sound Gym, library, conversations, and translation
 - **Progress view:** skill breakdown, last-7-days activity, 7+/30+ day delayed-retention signal, can-do proof, recent reviews, practiced-card count
 - **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **180 automated tests**, ruff clean, CI with an empty-database migration gate
+- **185 automated tests**, ruff clean, CI with an empty-database migration gate
 
 ## What changed in Phase 0
 
@@ -69,6 +70,10 @@
 |---|---|
 | ![Scene voice input](screenshots/scene-play-voice.png) | ![Weekly progress](screenshots/progress-weekly.png) |
 
+| Resources | Resource search |
+|---|---|
+| ![Resources](screenshots/resources.png) | ![Resource search](screenshots/resources-search.png) |
+
 ## What still does not exist
 
 - Real user accounts, sessions, OAuth, and per-user data isolation (local single-user only)
@@ -79,11 +84,11 @@
 - Native-reviewed audio for the seed deck, Sound Gym, and scene characters (browser TTS is a stopgap)
 - Branching scene state and adaptive difficulty (scenes are scripted, 3 steps each)
 - Native-reviewed character audio for scenes (browser TTS is a stopgap)
-- Grammar explanation UI beyond short notes on seed items
-- Can-do artifacts, full skill map, retention dashboard, weekly recap
-- Streak repair, reminders, notifications, vacation mode, and a flexible habit system (a basic day streak exists)
+- Fuller grammar reference: parsed examples, register notes, and contrast pages beyond short item notes
+- Notifications, reminders, notification preferences, and PWA push
+- Streak repair, vacation mode, and a flexible habit system (a basic day streak exists)
 - PWA/offline support
-- Content pipeline: 30 items and 3 Hangul lessons only; no 20-scene library, no native review queue, no audio for seed items
+- Content pipeline: 30 items, 7 Hangul lessons, and 4 scenes only; no 20-scene library, no native review queue, no audio for seed items
 - Speech/TTS cost controls beyond caching (no per-user budget)
 - Postgres/Redis/multi-worker production setup
 

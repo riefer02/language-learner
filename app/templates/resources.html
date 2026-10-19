@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %} - Resources{% endblock %}
+{% block content %}
+<div class="resources">
+  <p class="learn-eyebrow">Resources</p>
+  <h2>Look it up. Then use it.</h2>
+  <p class="learn-sub">
+    Search your Korean deck, check a grammar note, or jump back into a
+    reference. Definitions are short on purpose.
+  </p>
+
+  <form class="resource-search" method="get" action="{{ url_for('main.resources') }}">
+    <label class="sr-only" for="resource-q">Search Korean or English</label>
+    <input
+      id="resource-q"
+      type="search"
+      name="q"
+      value="{{ q }}"
+      placeholder="Search Korean, English, or romanization"
+      autocomplete="off"
+    />
+    <select name="type" aria-label="Filter by type">
+      <option value="" {% if not item_type %}selected{% endif %}>All types</option>
+      <option value="chunk" {% if item_type == "chunk" %}selected{% endif %}>Phrases</option>
+      <option value="lexeme" {% if item_type == "lexeme" %}selected{% endif %}>Words</option>
+      <option value="grammar" {% if item_type == "grammar" %}selected{% endif %}>Grammar</option>
+      <option value="sentence" {% if item_type == "sentence" %}selected{% endif %}>Sentences</option>
+    </select>
+    <select name="level" aria-label="Filter by level">
+      <option value="">All levels</option>
+      {% for option in [1, 2, 3, 4, 5, 6] %}
+      <option value="{{ option }}" {% if level == option %}selected{% endif %}>Level {{ option }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn">Search</button>
+  </form>
+
+  {% if q or item_type or level %}
+  <div class="resource-results">
+    <p class="learn-meta">
+      {{ items|length }} result{% if items|length != 1 %}s{% endif %}
+      {% if q %}for “{{ q }}”{% endif %}
+    </p>
+    {% for item in items %}
+    <article class="resource-card">
+      <div class="resource-card-top">
+        <div>
+          <div class="resource-korean" lang="ko">{{ item.korean }}</div>
+          <div class="resource-english" lang="en">{{ item.english }}</div>
+          {% if item.romanization %}
+          <div class="resource-romanization">{{ item.romanization }}</div>
+          {% endif %}
+        </div>
+        <div class="resource-badges">
+          <span>{{ item.item_type|capitalize }}</span>
+          <span>Level {{ item.level }}</span>
+        </div>
+      </div>
+      {% if item.notes %}
+      <p class="resource-notes">{{ item.notes }}</p>
+      {% endif %}
+      {% if item.audio_path %}
+      <audio
+        class="resource-audio"
+        src="{{ item.audio_path }}"
+        controls
+        preload="none"
+        aria-label="Play pronunciation for {{ item.korean }}"
+      ></audio>
+      {% endif %}
+    </article>
+    {% else %}
+    <div class="empty-library">
+      <p>No matches yet. Try a shorter word, or clear the filters.</p>
+      <a class="btn" href="{{ url_for('main.resources') }}">Clear search</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="resource-quick">
+    <a class="resource-quick-card" href="{{ url_for('learn.hangul') }}">
+      <strong>Hangul bootcamp</strong>
+      <span>Letters, batchim, liaison, and 88 reading drills</span>
+    </a>
+    <a class="resource-quick-card" href="{{ url_for('learn.scenes') }}">
+      <strong>Mission scenes</strong>
+      <span>Café, directions, pharmacy, workplace roleplays</span>
+    </a>
+    <a class="resource-quick-card" href="{{ url_for('learn.sound_gym') }}">
+      <strong>Sound Gym</strong>
+      <span>Minimal pairs and voice checks</span>
+    </a>
+    <a class="resource-quick-card" href="{{ url_for('main.library') }}">
+      <strong>Phrase library</strong>
+      <span>{{ counts.total }} saved items and generated phrases</span>
+    </a>
+    <a class="resource-quick-card" href="{{ url_for('main.conversations') }}">
+      <strong>Conversation scenarios</strong>
+      <span>Generated dialogues with full audio</span>
+    </a>
+    <a class="resource-quick-card" href="{{ url_for('main.index') }}">
+      <strong>Translate a phrase</strong>
+      <span>English → Korean with pronunciation audio</span>
+    </a>
+  </div>
+
+  <div class="learn-how">
+    <h3>In your deck</h3>
+    <p class="learn-meta">
+      {{ counts.words }} words · {{ counts.chunks }} phrases ·
+      {{ counts.grammar }} grammar notes · {{ counts.total }} total items
+    </p>
+    <p>
+      Try searching for a particle like <a href="{{ url_for('main.resources', q='은/는') }}">은/는</a>,
+      a phrase like <a href="{{ url_for('main.resources', q='주세요') }}">주세요</a>,
+      or an English meaning like <a href="{{ url_for('main.resources', q='bathroom') }}">bathroom</a>.
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

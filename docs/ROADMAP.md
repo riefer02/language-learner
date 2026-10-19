@@ -158,7 +158,7 @@ P1-09 ─> P3 (adaptive/beta)
 | P0-09 Rate limiter | Platform | done | Thread-safe bounded limiter, per-endpoint, `Retry-After` |
 | P0-10 Errors | Platform | done | 404/415/500, request IDs, no raw exception leakage |
 | P0-11 Headers/auth | Platform | done | CSP, frame/referrer headers, optional basic auth |
-| P0-12 Tests/CI | Quality | done | 180 tests, ruff, empty-DB migration gate |
+| P0-12 Tests/CI | Quality | done | 185 tests, ruff, empty-DB migration gate |
 | P1-02/04/05/06 vertical slice | Learning/Experience | done | Local user, 30 seed items, FSRS review, 10-new/day cap, Today/Review/Progress screens |
 | P1-07 Onboarding + first word | Experience | done | Goal/time/experience/timezone, first spoken 안녕하세요, local recording |
 | P1-08 Hangul days 1–7 | Learning/Experience | done | 7 lessons, 88 drills, mobile tables, Korean font fallback |
@@ -226,3 +226,4 @@ P1-09 ─> P3 (adaptive/beta)
 | 2026-10-19 | Weekly recap: 7-day review activity, new cards, can-dos, active days, and a 30-day Good/Easy recall signal on progress and Today |
 | 2026-10-19 | Delayed-retention signal: 7+ and 30+ day recall calculated from real gaps between reviews of the same card, with sample sizes and honest copy |
 | 2026-10-19 | Time-boxed sessions: 3/10/25-minute modes, session complete screen, keep-going reset, and session counters |
+| 2026-10-19 | UX simplification: 5-item nav (Learn/Scenes/Hangul/Progress/Resources), searchable Resources page, first-run-only help block, condensed Today footer |
