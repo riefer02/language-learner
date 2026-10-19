@@ -51,6 +51,14 @@
     <p class="learn-meta">Next review {{ summary.next_due_human }}.</p>
     {% endif %}
     {% endif %}
+    {% if summary.due %}
+    <div class="session-modes">
+      <span>Choose a session:</span>
+      {% for mode in session_modes %}
+      <a href="{{ url_for('learn.review', mode=mode) }}">{{ mode }} min</a>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
 
   {% if next_mission %}

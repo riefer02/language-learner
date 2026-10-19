@@ -10,7 +10,7 @@
 - Saved phrase library with pagination and audio playback
 - Short 2–4 line conversation generation with per-line and merged audio
 - **Onboarding:** goal, daily time, experience, timezone, and a first spoken 안녕하세요 with local-only recording
-- **Learn loop:** `/learn` today view, `/learn/review` retrieval card, 1–4 grading, FSRS-6 scheduling, review log
+- **Learn loop:** `/learn` today view, `/learn/review` retrieval card, 1–4 grading, FSRS-6 scheduling, review log, and time-boxed 3/10/25-minute sessions
 - **Seed deck:** 30 hand-curated Korean items (survival phrases, core nouns, five grammar patterns), one review card per item
 - **Daily new-card cap:** 10 new cards per day; review cards are always prioritized
 - **Hangul bootcamp:** seven lessons (letters, vowels/blocks, batchim, double batchim, signs/menus/numbers, connected speech, final reading check) with 88 interactive drills
@@ -23,7 +23,7 @@
 - **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **178 automated tests**, ruff clean, CI with an empty-database migration gate
+- **180 automated tests**, ruff clean, CI with an empty-database migration gate
 
 ## What changed in Phase 0
 

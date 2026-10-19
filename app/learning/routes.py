@@ -10,6 +10,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from flask_wtf.csrf import validate_csrf
@@ -83,6 +84,22 @@ def _needs_onboarding(user):
     ) and not user.onboarding_complete
 
 
+def _session_limits():
+    return current_app.config.get(
+        "REVIEW_SESSION_LIMITS", {3: 4, 10: 20, 25: 50}
+    )
+
+
+def _start_review_session(mode):
+    limits = _session_limits()
+    if mode not in limits:
+        mode = 10 if 10 in limits else next(iter(limits))
+    session["review_mode"] = mode
+    session["review_limit"] = limits[mode]
+    session["review_count"] = 0
+    return mode, limits[mode]
+
+
 def _format_next_due(value):
     if value is None:
         return None
@@ -111,6 +128,7 @@ def today():
         user=user,
         next_mission=next_scene(user.id),
         weekly=weekly_recap(user.id),
+        session_modes=sorted(_session_limits()),
     )
 
 
@@ -510,10 +528,31 @@ def review():
     user = _user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
+
+    if request.args.get("continue"):
+        session.pop("review_limit", None)
+        session.pop("review_count", None)
+        session.pop("review_mode", None)
+
+    mode = request.args.get("mode", type=int)
+    if mode in _session_limits():
+        _start_review_session(mode)
+    elif "review_limit" not in session:
+        default_mode = user.daily_minutes if user.daily_minutes in _session_limits() else 10
+        _start_review_session(default_mode)
+
+    limit = session.get("review_limit", 20)
+    count = session.get("review_count", 0)
+    if count >= limit:
+        return redirect(url_for("learn.review_complete"))
+
     card = next_due_card(user.id)
     if card is None:
         summary = stats(user.id)
         summary["next_due_human"] = _format_next_due(summary["next_due"])
+        session.pop("review_limit", None)
+        session.pop("review_count", None)
+        session.pop("review_mode", None)
         return render_template("learn_done.html", summary=summary, user=user)
 
     item = card.item
@@ -539,6 +578,9 @@ def review():
         prompt_side=prompt_side,
         answer_side=answer_side,
         due_count=due_count,
+        session_remaining=max(0, limit - count),
+        session_limit=limit,
+        session_mode=session.get("review_mode", user.daily_minutes),
         interval=upcoming_interval(card),
         skill_label=skill_labels.get(card.skill, card.skill.title()),
         type_label=type_labels.get(item.item_type, item.item_type.title()),
@@ -611,4 +653,25 @@ def submit_review(card_id):
         was_new=was_new,
         elapsed_ms=elapsed_ms,
     )
+
+    session["review_count"] = session.get("review_count", 0) + 1
+    if session["review_count"] >= session.get("review_limit", 20):
+        return redirect(url_for("learn.review_complete"))
     return redirect(url_for("learn.review"))
+
+
+@learn.route("/review/complete")
+def review_complete():
+    user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
+    summary = stats(user.id)
+    summary["next_due_human"] = _format_next_due(summary["next_due"])
+    return render_template(
+        "review_session_complete.html",
+        summary=summary,
+        user=user,
+        mode=session.get("review_mode", user.daily_minutes),
+        limit=session.get("review_limit", 20),
+        count=session.get("review_count", 0),
+    )

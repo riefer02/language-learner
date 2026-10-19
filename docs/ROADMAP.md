@@ -72,8 +72,8 @@
 | P1-02 | User/profile/enrollment models + auth | Platform | User-scoped data; local demo user for dev; session auth | [~] local user + user-scoped cards done; auth pending |
 | P1-03 | Content schema: items, senses, grammar, audio, scenes | Learning | Seed 300 items, 20 scenes; content hash + status | [~] 30 items seeded; scenes pending |
 | P1-04 | FSRS review engine | Learning | One card per (item, skill); due queue; grade route; tests | [~] FSRS-6 engine + server grade route done; JSON API and round-trip persistence tests pending |
-| P1-05 | Daily planner | Learning | 2/10/25-minute plans; review-first; 5–10 new cap | [~] 10-new/day cap + review-first queue done; duration modes pending |
-| P1-06 | Today / Review / You screens | Experience | Mobile-first; keyboard/IME; Korean `lang`; can-do artifact | [~] Today + Review done; You/can-do pending |
+| P1-05 | Daily planner | Learning | 2/10/25-minute plans; review-first; 5–10 new cap | [x] 3/10/25-minute sessions, review-first ordering, 10-new/day cap |
+| P1-06 | Today / Review / You screens | Experience | Mobile-first; keyboard/IME; Korean `lang`; can-do artifact | [x] Today, Review, Progress, session complete, can-do artifacts |
 | P1-07 | Onboarding + first spoken sentence | Experience | Goal/time/experience; local record/playback; account after win | [x] local onboarding + recording; real accounts pending |
 | P1-08 | Hangul bootcamp days 1–7 | Learning/Experience | Read-aloud checks; typing; batchim/liaison drills | [x] 7 lessons, 88 interactive drills; timed typing/fluency coaching next |
 | P1-09 | Can-do + progress model | Learning | Skill map, retention, artifacts; no XP hero metric | [x] skill map, 7-day activity, 7+/30+ delayed-retention signal, dated can-do artifacts; cohort dashboard later |
@@ -158,7 +158,7 @@ P1-09 ─> P3 (adaptive/beta)
 | P0-09 Rate limiter | Platform | done | Thread-safe bounded limiter, per-endpoint, `Retry-After` |
 | P0-10 Errors | Platform | done | 404/415/500, request IDs, no raw exception leakage |
 | P0-11 Headers/auth | Platform | done | CSP, frame/referrer headers, optional basic auth |
-| P0-12 Tests/CI | Quality | done | 178 tests, ruff, empty-DB migration gate |
+| P0-12 Tests/CI | Quality | done | 180 tests, ruff, empty-DB migration gate |
 | P1-02/04/05/06 vertical slice | Learning/Experience | done | Local user, 30 seed items, FSRS review, 10-new/day cap, Today/Review/Progress screens |
 | P1-07 Onboarding + first word | Experience | done | Goal/time/experience/timezone, first spoken 안녕하세요, local recording |
 | P1-08 Hangul days 1–7 | Learning/Experience | done | 7 lessons, 88 drills, mobile tables, Korean font fallback |
@@ -225,3 +225,4 @@ P1-09 ─> P3 (adaptive/beta)
 | 2026-10-19 | Can-do proof: scene completion writes one dated artifact per scene, shown on progress and Today; replay updates rather than duplicates |
 | 2026-10-19 | Weekly recap: 7-day review activity, new cards, can-dos, active days, and a 30-day Good/Easy recall signal on progress and Today |
 | 2026-10-19 | Delayed-retention signal: 7+ and 30+ day recall calculated from real gaps between reviews of the same card, with sample sizes and honest copy |
+| 2026-10-19 | Time-boxed sessions: 3/10/25-minute modes, session complete screen, keep-going reset, and session counters |

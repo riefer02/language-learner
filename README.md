@@ -17,7 +17,7 @@ An application for learning Korean that includes both a command-line interface a
 
 - **Onboarding:** `/welcome` captures goal, daily time, experience, and timezone, then teaches a first spoken 안녕하세요 with local-only recording
 - **Hangul bootcamp:** `/learn/hangul` has seven lessons (letters, vowels/blocks, batchim, double batchim, real-world text, connected speech, and a final reading check) with 88 interactive drills
-- **Learn loop:** `/learn` shows what is due, `/learn/review` presents a retrieval card and grades it with FSRS-6, and `/learn/progress` shows practiced cards and recent reviews
+- **Learn loop:** `/learn` shows what is due, `/learn/review` presents a retrieval card and grades it with FSRS-6 in a 3/10/25-minute session, and `/learn/progress` shows practiced cards and recent reviews
 - **Mission scenes:** `/learn/scenes` has four scripted Korean roleplays (café, directions, pharmacy, workplace intro) with tolerant answer matching, hints, resumable progress, voice or typed answers, and a debrief that adds three chunks to the review deck
 - **Can-do proof:** completing a scene creates a dated “I can…” artifact on `/learn/progress` and surfaces the next mission on Today
 - **Weekly recap:** `/learn/progress` shows 7-day review activity, new cards, can-dos, active days, a 30-day Good/Easy recall signal, and 7+/30+ day delayed-retention rates

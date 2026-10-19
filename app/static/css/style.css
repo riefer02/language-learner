@@ -906,6 +906,34 @@ progress {
   color: #1e40af;
 }
 
+.session-modes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 0.82rem;
+  color: #5b6472;
+}
+
+.session-modes a {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--grey);
+  background: white;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.session-modes a:hover,
+.session-modes a:focus-visible {
+  border-color: var(--primary);
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
 .learn-done {
   text-align: center;
 }

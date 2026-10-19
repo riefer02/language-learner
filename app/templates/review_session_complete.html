@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %} - Session complete{% endblock %}
+{% block content %}
+<div class="learn learn-done">
+  <p class="learn-eyebrow">Session complete</p>
+  <h2>That's a real session.</h2>
+  <p class="learn-sub">
+    You finished {{ count }} card{% if count != 1 %}s{% endif %} in your
+    {{ mode }}-minute block. Stopping on time is part of the method.
+  </p>
+
+  <div class="learn-stats" aria-label="Learning summary">
+    <div class="learn-stat">
+      <b>{{ summary.reviews_today }}</b>
+      <span>reviews today</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.due }}</b>
+      <span>cards still due</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.streak }}</b>
+      <span>day streak</span>
+    </div>
+  </div>
+
+  <div class="learn-primary">
+    {% if summary.next_due_human %}
+    <p class="learn-meta">Next review {{ summary.next_due_human }}.</p>
+    {% endif %}
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.today') }}">
+      Back to Today
+    </a>
+  </div>
+
+  <p class="learn-library-link">
+    {% if summary.due %}
+    <a href="{{ url_for('learn.review', continue=1) }}">Keep going</a>
+    <span aria-hidden="true">·</span>
+    {% endif %}
+    <a href="{{ url_for('learn.progress') }}">View progress</a>
+  </p>
+</div>
+{% endblock %}

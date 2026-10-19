@@ -4,7 +4,9 @@
 <div class="review-shell" data-card-id="{{ card.id }}">
   <div class="review-top">
     <a href="{{ url_for('learn.today') }}">← Today</a>
-    <span class="review-count">{{ due_count }} due</span>
+    <span class="review-count">
+      {{ session_remaining }} left · {{ due_count }} due
+    </span>
   </div>
 
   <div class="review-progress">

@@ -60,6 +60,7 @@ class Config:
     # Learning-science guardrail: new material is a budget, not a binge.
     NEW_CARDS_PER_DAY = _env_int("NEW_CARDS_PER_DAY", 10)
     ONBOARDING_ENABLED = _env_bool("ONBOARDING_ENABLED", True)
+    REVIEW_SESSION_LIMITS: ClassVar[dict] = {3: 4, 10: 20, 25: 50}
 
     # Speech checks are transcript-based evidence, not a pronunciation grade.
     SPEECH_SCORING_ENABLED = _env_bool("SPEECH_SCORING_ENABLED", True)
@@ -150,6 +151,8 @@ class TestingConfig(Config):
     RATE_LIMIT_ENABLED = False
     REQUIRE_AUTH = False
     ONBOARDING_ENABLED = False
+    # Keep the legacy end-to-end tests able to drain the full seed deck.
+    REVIEW_SESSION_LIMITS: ClassVar[dict] = {3: 100, 10: 100, 25: 100}
     # A file-backed SQLite database keeps every connection pointed at the same
     # schema. Tests override this with a per-test temp file via create_app().
     SQLALCHEMY_DATABASE_URI = os.environ.get(
