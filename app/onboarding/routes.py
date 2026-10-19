@@ -14,6 +14,7 @@ from flask_wtf.csrf import validate_csrf
 from werkzeug.exceptions import BadRequest
 
 from app import db
+from app.learning.analytics import record_event
 from app.learning.service import get_or_create_local_user
 
 onboarding = Blueprint(
@@ -133,6 +134,13 @@ def welcome():
             user.experience = experience
             user.timezone = timezone
             db.session.commit()
+            record_event(
+                user.id,
+                "onboarding_profile_saved",
+                goal=goal,
+                daily_minutes=daily_minutes,
+                experience=experience,
+            )
             return redirect(url_for("onboarding.first_word"))
 
     return render_template(
@@ -159,4 +167,5 @@ def complete():
     user = _user()
     user.onboarding_complete = True
     db.session.commit()
+    record_event(user.id, "onboarding_complete")
     return redirect(url_for("learn.today"))

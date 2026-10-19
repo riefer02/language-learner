@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %} - Sound Gym{% endblock %}
+{% block content %}
+<div class="sound-gym" data-csrf="{{ csrf_token() }}">
+  <p class="learn-eyebrow">Sound Gym</p>
+  <h2>Train your ear. Then use your voice.</h2>
+  <p class="learn-sub">
+    Perception first, production second. These are training aids, not a
+    pronunciation grade.
+  </p>
+
+  <div class="hangul-notes" role="note">
+    <strong>Read this first</strong>
+    <p>{{ disclaimer }}</p>
+  </div>
+
+  <section class="hangul-section" aria-labelledby="perception-heading">
+    <h3 id="perception-heading">1 · Perception</h3>
+    <p>Play a random word, then choose what you heard.</p>
+
+    {% for pair in pairs %}
+    <div class="pair-card" data-pair-id="{{ pair.id }}">
+      <div class="pair-header">
+        <strong>{{ pair.contrast }}</strong>
+        <span>Level {{ pair.level }}</span>
+      </div>
+      <div class="pair-words">
+        {% for word in pair.words %}
+        <button
+          type="button"
+          class="pair-option"
+          data-korean="{{ word.korean }}"
+          data-romanization="{{ word.romanization }}"
+        >
+          <span lang="ko">{{ word.korean }}</span>
+          <small>{{ word.romanization }} · {{ word.english }}</small>
+        </button>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn pair-play">Play a random word</button>
+      <p class="pair-feedback" hidden aria-live="polite"></p>
+      <p class="pair-tip">{{ pair.tip }}</p>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="hangul-section" aria-labelledby="production-heading">
+    <h3 id="production-heading">2 · Production</h3>
+    <p>
+      Record a prompt, then check what the speech model heard. It compares the
+      transcript to the target; it does not grade your accent.
+    </p>
+
+    {% for prompt in prompts %}
+    <div class="production-card" data-target="{{ prompt.korean }}">
+      <div class="production-head">
+        <div>
+          <div class="production-korean" lang="ko">{{ prompt.korean }}</div>
+          <div class="production-romanization">{{ prompt.romanization }}</div>
+          <div class="production-english">{{ prompt.english }}</div>
+        </div>
+        <button
+          type="button"
+          class="btn speak-btn"
+          data-speak="{{ prompt.korean }}"
+          aria-label="Hear {{ prompt.korean }} in Korean"
+        >
+          Hear it
+        </button>
+      </div>
+      <p class="production-focus">
+        <strong>Focus:</strong> {{ prompt.focus }}
+      </p>
+      <div class="record-actions">
+        <button type="button" class="btn record-btn">Record</button>
+        <button type="button" class="btn stop-btn" hidden>Stop</button>
+      </div>
+      <audio class="playback" controls hidden></audio>
+      <button type="button" class="btn check-btn" disabled>
+        Check my speech
+      </button>
+      <p class="production-feedback" role="status" aria-live="polite"></p>
+    </div>
+    {% endfor %}
+  </section>
+
+  <div class="learn-primary">
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.today') }}">
+      Back to Today
+    </a>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sound_gym.js') }}"></script>
+{% endblock %}

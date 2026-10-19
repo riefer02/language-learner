@@ -14,11 +14,14 @@
 - **Seed deck:** 30 hand-curated Korean items (survival phrases, core nouns, five grammar patterns), one review card per item
 - **Daily new-card cap:** 10 new cards per day; review cards are always prioritized
 - **Hangul bootcamp:** seven lessons (letters, vowels/blocks, batchim, double batchim, signs/menus/numbers, connected speech, final reading check) with 88 interactive drills
+- **Sound Gym:** 11 minimal-pair perception drills, 8 production prompts, local-only recording, and transcript-based speech checks
+- **Speech evidence:** `SpeechAttempt` records what the model heard and a transcript-match score — explicitly not a pronunciation grade; raw audio is never stored
+- **Alpha instrumentation:** append-only `Event` table and `flask metrics` for activation, review users, speech attempts, D1/D7
 - **Progress view:** skill breakdown, recent reviews, practiced-card count
 - **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **132 automated tests**, ruff clean, CI with an empty-database migration gate
+- **148 automated tests**, ruff clean, CI with an empty-database migration gate
 
 ## What changed in Phase 0
 
@@ -52,13 +55,18 @@
 |---|---|
 | ![Hangul index](screenshots/hangul-index.png) | ![Hangul lesson](screenshots/hangul-lesson.png) |
 
+| Sound Gym |
+|---|
+| ![Sound Gym](screenshots/sound-gym.png) |
+
 ## What still does not exist
 
 - Real user accounts, sessions, OAuth, and per-user data isolation (local single-user only)
 - Postgres deployment; SQLite is still the default
 - Placement test and an adaptive starting point (onboarding captures self-report only)
 - Hangul typing drills and timed fluency coaching (the 7-lesson decoding curriculum is complete)
-- Microphone capture beyond the first-word keepsake, ASR, pronunciation scoring, Sound Gym
+- Phoneme-level pronunciation scoring, prosody feedback, and calibrated L2 ASR (current checks are transcript-based)
+- Native-reviewed audio for the seed deck and Sound Gym (browser TTS is a stopgap)
 - Scene/roleplay engine and conversation debrief
 - Grammar explanation UI beyond short notes on seed items
 - Can-do artifacts, full skill map, retention dashboard, weekly recap
@@ -87,4 +95,4 @@
 - **Competitive teardown:** [`research/04-competitive-teardown.md`](research/04-competitive-teardown.md)
 - **Architecture and AI:** [`research/05-tech-and-ai.md`](research/05-tech-and-ai.md)
 
-**Immediate next sprint:** run `flask generate-item-audio` after rotating the key to pre-generate the 30 seed MP3s → 20 alpha users and activation/D1/D7 instrumentation → then Phase 2 speech capture and scoring.
+**Immediate next sprint:** run `flask generate-item-audio` after rotating the key to pre-generate the 30 seed MP3s → 20 alpha users and `flask metrics` review → add phoneme evidence (Azure/SpeechSuper) behind the existing speech interface → scene roleplay and debrief.

@@ -18,6 +18,8 @@ An application for learning Korean that includes both a command-line interface a
 - **Onboarding:** `/welcome` captures goal, daily time, experience, and timezone, then teaches a first spoken 안녕하세요 with local-only recording
 - **Hangul bootcamp:** `/learn/hangul` has seven lessons (letters, vowels/blocks, batchim, double batchim, real-world text, connected speech, and a final reading check) with 88 interactive drills
 - **Learn loop:** `/learn` shows what is due, `/learn/review` presents a retrieval card and grades it with FSRS-6, and `/learn/progress` shows practiced cards and recent reviews
+- **Sound Gym:** `/learn/sound-gym` has minimal-pair perception drills and production prompts with local recording and transcript-based speech checks (not an accent grade; raw audio is not stored)
+- **Alpha metrics:** `flask metrics` prints activation, users with reviews, speech attempts, and D1/D7
 - **Starter deck:** `flask seed-content` adds 30 Korean items and creates review cards for the local learner
 - **Daily guardrail:** 10 new cards per day by default; review cards come first
 - User-friendly interface for English-to-Korean translation
@@ -26,7 +28,7 @@ An application for learning Korean that includes both a command-line interface a
 - Generated conversation scenarios with per-line and merged audio
 - SQLite storage for phrases, conversations, lines, items, and review state
 
-**Still planned:** real per-user accounts, onboarding and placement, Hangul bootcamp, microphone capture and pronunciation feedback, scene/roleplay debriefs, can-do progress, and PWA/offline. See [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) and [`docs/ROADMAP.md`](docs/ROADMAP.md).
+**Still planned:** real per-user accounts, placement testing, phoneme-level pronunciation feedback, native-reviewed seed audio, scene/roleplay debriefs, can-do progress, and PWA/offline. See [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) and [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ### Conversational Scenarios
 
@@ -164,6 +166,7 @@ To run the web application:
 make install-dev   # runtime + test/lint dependencies
 make test          # pytest
 make lint          # ruff
+flask metrics      # alpha activation/retention summary
 ```
 
 The test suite does not call OpenAI and does not need a real API key. It uses a

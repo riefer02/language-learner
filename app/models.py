@@ -199,6 +199,79 @@ class ReviewLog(db.Model):
     card = db.relationship("ReviewCard")
 
 
+class SpeechAttempt(db.Model):
+    """One transcript-based speech check. Raw audio is never stored."""
+
+    __table_args__ = (
+        db.Index("ix_speech_attempt_user_date", "user_id", "created_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("item.id", ondelete="SET NULL"), nullable=True
+    )
+    target_text = db.Column(db.String(300), nullable=False)
+    transcript = db.Column(db.String(500), nullable=False)
+    match_score = db.Column(db.Float, nullable=False)
+    acceptable = db.Column(db.Boolean, nullable=False, default=False)
+    provider = db.Column(db.String(30), nullable=False)
+    model = db.Column(db.String(60), nullable=False)
+    duration_ms = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        index=True,
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "target_text": self.target_text,
+            "transcript": self.transcript,
+            "match_score": round(self.match_score, 3),
+            "acceptable": self.acceptable,
+            "provider": self.provider,
+            "created_at": self.created_at.isoformat()
+            if self.created_at
+            else None,
+        }
+
+
+class Event(db.Model):
+    """Append-only product event for activation and retention analysis."""
+
+    __table_args__ = (
+        db.Index("ix_event_user_name_date", "user_id", "name", "created_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    name = db.Column(db.String(60), nullable=False, index=True)
+    props = db.Column(db.Text, nullable=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        index=True,
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "props": self.props,
+            "created_at": self.created_at.isoformat()
+            if self.created_at
+            else None,
+        }
+
+
 class ConversationLine(db.Model):
     __table_args__ = (
         db.UniqueConstraint(

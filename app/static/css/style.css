@@ -1197,6 +1197,177 @@ progress {
   }
 }
 
+/* Sound Gym */
+.sound-gym {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.sound-gym h2 {
+  margin: 0 0 8px;
+  font-size: 1.9rem;
+}
+
+.pair-card,
+.production-card {
+  margin: 12px 0;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 10px;
+}
+
+.pair-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: #5b6472;
+}
+
+.pair-header strong {
+  color: var(--dark);
+}
+
+.pair-words {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pair-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 10px;
+  border: 1px solid var(--grey);
+  border-radius: 8px;
+  background: #f9fafb;
+  color: var(--dark);
+}
+
+.pair-option span {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.pair-option small {
+  font-size: 0.72rem;
+  color: #5b6472;
+}
+
+.pair-option:hover,
+.pair-option:focus-visible {
+  border-color: var(--primary);
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.pair-option.correct {
+  border-color: #166534;
+  background: #dcfce7;
+}
+
+.pair-option.incorrect {
+  border-color: #991b1b;
+  background: #fde8e8;
+}
+
+.pair-tip {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: #5b6472;
+}
+
+.pair-feedback,
+.production-feedback {
+  margin: 10px 0 0;
+  font-size: 0.88rem;
+  color: #4b5563;
+}
+
+.production-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.production-korean {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.production-romanization {
+  color: #5b6472;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.production-english {
+  font-size: 0.9rem;
+}
+
+.production-focus {
+  margin: 12px 0;
+  font-size: 0.86rem;
+  color: #4b5563;
+}
+
+.production-card .record-actions {
+  margin-bottom: 10px;
+}
+
+.production-card .playback {
+  width: 100%;
+  margin: 10px 0;
+}
+
+.production-card .check-btn {
+  background: var(--primary);
+}
+
+.check-btn:disabled,
+.record-btn:disabled {
+  background: #b8c7dc;
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.band-clear {
+  color: #166534;
+  font-weight: 600;
+}
+
+.band-close {
+  color: #92400e;
+  font-weight: 600;
+}
+
+.band-try_again {
+  color: #991b1b;
+  font-weight: 600;
+}
+
+@media (max-width: 620px) {
+  .pair-words {
+    grid-template-columns: 1fr;
+  }
+
+  .production-head {
+    flex-direction: column;
+  }
+
+  .sound-gym h2 {
+    font-size: 1.6rem;
+  }
+}
+
 /* Respect users who prefer reduced motion: no spinner rotation or hover lift. */
 @media (prefers-reduced-motion: reduce) {
   .spinner {

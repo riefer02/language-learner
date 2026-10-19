@@ -6,6 +6,7 @@ from flask import (
     Blueprint,
     abort,
     current_app,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -16,6 +17,7 @@ from sqlalchemy.orm.exc import StaleDataError
 from werkzeug.exceptions import BadRequest
 
 from app import db
+from app.learning.analytics import record_event
 from app.learning.hangul_data import HANGUL_LESSONS
 from app.learning.scheduler import (
     apply_rating,
@@ -33,7 +35,15 @@ from app.learning.service import (
     skill_breakdown,
     stats,
 )
-from app.models import Item, ReviewCard, ReviewLog
+from app.learning.sound_gym_data import (
+    DISCLAIMER,
+    MINIMAL_PAIRS,
+    PRODUCTION_PROMPTS,
+)
+from app.models import Item, ReviewCard, ReviewLog, SpeechAttempt
+from app.services.speech import SpeechConfigError, SpeechError, score_audio
+from app.utils.rate_limit import rate_limit
+from app.utils.schemas import contains_hangul
 
 learn = Blueprint("learn", __name__, url_prefix="/learn")
 
@@ -76,6 +86,118 @@ def today():
     summary = stats(user.id)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
     return render_template("learn_today.html", summary=summary, user=user)
+
+
+@learn.route("/sound-gym")
+def sound_gym():
+    user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
+    record_event(user.id, "sound_gym_opened")
+    return render_template(
+        "sound_gym.html",
+        pairs=MINIMAL_PAIRS,
+        prompts=PRODUCTION_PROMPTS,
+        disclaimer=DISCLAIMER,
+    )
+
+
+@learn.route("/api/speech-score", methods=["POST"])
+@rate_limit(
+    limit=lambda: current_app.config.get("RATE_LIMIT_SPEECH", 20),
+    window_seconds=lambda: current_app.config.get(
+        "RATE_LIMIT_WINDOW_SECONDS", 60
+    ),
+    scope="speech",
+)
+def api_speech_score():
+    user = _user()
+    if _needs_onboarding(user):
+        return jsonify({"error": "Finish onboarding first"}), 403
+
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        try:
+            validate_csrf(request.form.get("csrf_token"))
+        except Exception as error:
+            raise BadRequest("Invalid or missing CSRF token") from error
+
+    target_text = (request.form.get("target_text") or "").strip()
+    if (
+        not target_text
+        or len(target_text) > 300
+        or not contains_hangul(target_text)
+    ):
+        return jsonify({"error": "A short Korean target text is required"}), 400
+
+    upload = request.files.get("audio")
+    if upload is None or not upload.filename:
+        return jsonify({"error": "Audio file is required"}), 400
+
+    content_type = upload.mimetype or "application/octet-stream"
+    extension = upload.filename.rsplit(".", 1)[-1].lower()
+    if not content_type.startswith("audio/") and extension not in {
+        "webm",
+        "wav",
+        "mp3",
+        "m4a",
+        "ogg",
+    }:
+        return jsonify({"error": "Unsupported audio format"}), 415
+
+    max_bytes = current_app.config.get("SPEECH_MAX_BYTES", 5 * 1024 * 1024)
+    audio_bytes = upload.read(max_bytes + 1)
+    if len(audio_bytes) > max_bytes:
+        return jsonify({"error": "Audio file is too large"}), 413
+
+    duration_ms = request.form.get("duration_ms", type=int)
+    if duration_ms is not None:
+        duration_ms = max(0, min(duration_ms, 60_000))
+
+    try:
+        result = score_audio(
+            target_text, audio_bytes, upload.filename, content_type
+        )
+    except SpeechConfigError as error:
+        current_app.logger.warning("Speech scoring unavailable: %s", error)
+        return jsonify({"error": "Speech checking is not configured"}), 503
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except SpeechError as error:
+        current_app.logger.warning("Speech scoring failed: %s", error)
+        return jsonify({"error": "Speech service is unavailable"}), 502
+
+    attempt = SpeechAttempt(
+        user_id=user.id,
+        target_text=target_text,
+        transcript=result["transcript"][:500],
+        match_score=result["match_score"],
+        acceptable=result["acceptable"],
+        provider=result["provider"],
+        model=result["model"],
+        duration_ms=duration_ms,
+    )
+    db.session.add(attempt)
+    db.session.commit()
+    record_event(
+        user.id,
+        "speech_attempt",
+        target_text=target_text,
+        match_score=result["match_score"],
+        acceptable=result["acceptable"],
+    )
+
+    return jsonify(
+        {
+            "attempt_id": attempt.id,
+            "transcript": result["transcript"],
+            "match_score": result["match_score"],
+            "acceptable": result["acceptable"],
+            "band": result["band"],
+            "heard": result["heard"],
+            "threshold": result["threshold"],
+            "note": "Transcript match, not a pronunciation grade.",
+        }
+    )
 
 
 @learn.route("/hangul")
@@ -215,4 +337,13 @@ def submit_review(card_id):
     except StaleDataError as error:
         db.session.rollback()
         raise BadRequest("This card was graded in another tab") from error
+    record_event(
+        user.id,
+        "review_submitted",
+        card_id=card.id,
+        rating=rating,
+        skill=card.skill,
+        was_new=was_new,
+        elapsed_ms=elapsed_ms,
+    )
     return redirect(url_for("learn.review"))

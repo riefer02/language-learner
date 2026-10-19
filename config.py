@@ -61,6 +61,15 @@ class Config:
     NEW_CARDS_PER_DAY = _env_int("NEW_CARDS_PER_DAY", 10)
     ONBOARDING_ENABLED = _env_bool("ONBOARDING_ENABLED", True)
 
+    # Speech checks are transcript-based evidence, not a pronunciation grade.
+    SPEECH_SCORING_ENABLED = _env_bool("SPEECH_SCORING_ENABLED", True)
+    SPEECH_PROVIDER = os.environ.get("SPEECH_PROVIDER", "openai")
+    SPEECH_TRANSCRIBE_MODEL = os.environ.get(
+        "SPEECH_TRANSCRIBE_MODEL", "gpt-4o-transcribe"
+    )
+    SPEECH_MAX_BYTES = _env_int("SPEECH_MAX_BYTES", 5 * 1024 * 1024)
+    SPEECH_ACCEPT_THRESHOLD = 0.72
+
     # Optional stop-gap auth. Real per-user accounts arrive in Phase 1.
     REQUIRE_AUTH = _env_bool("REQUIRE_AUTH", False)
     APP_USERNAME = os.environ.get("APP_USERNAME", "kiku")

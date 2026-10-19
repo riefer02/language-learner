@@ -1,11 +1,13 @@
 """CLI commands for the learning loop."""
 
+import json
 import uuid
 
 import click
 from flask import current_app
 
 from app import db
+from app.learning.analytics import metrics_summary
 from app.learning.seed_data import seed_content
 from app.models import Item
 from app.services.audio import generate_audio
@@ -21,6 +23,11 @@ def register_learning_cli(app):
             f"User {user.id}: added {created_items} item(s), "
             f"created {created_cards} review card(s)."
         )
+
+    @app.cli.command("metrics")
+    def metrics_command():
+        """Print the alpha activation and retention summary."""
+        click.echo(json.dumps(metrics_summary(), indent=2))
 
     @app.cli.command("generate-item-audio")
     @click.option("--limit", default=0, type=int, help="Only process N items.")

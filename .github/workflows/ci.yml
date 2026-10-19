@@ -48,6 +48,8 @@ jobs:
               "item",
               "review_card",
               "review_log",
+              "speech_attempt",
+              "event",
               "alembic_version",
           }
           missing = expected - tables

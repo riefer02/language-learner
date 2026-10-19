@@ -108,9 +108,15 @@ class _FakeSpeech:
         return _FakeSpeechResponse()
 
 
+class _FakeTranscriptions:
+    def create(self, **_kwargs):
+        return type("Transcription", (), {"text": "안녕하세요"})()
+
+
 class _FakeAudio:
     def __init__(self):
         self.speech = _FakeSpeech()
+        self.transcriptions = _FakeTranscriptions()
 
 
 class FakeOpenAIClient:
