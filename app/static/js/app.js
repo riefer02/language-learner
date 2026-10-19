@@ -2,6 +2,10 @@
 
 // Safely play audio with error handling
 function playAudioWithFallback(audioElement) {
+  if (!audioElement) {
+    return;
+  }
+
   const playPromise = audioElement.play();
 
   if (playPromise !== undefined) {
@@ -39,11 +43,19 @@ function showError(message) {
 
 // Handle repeat button clicks
 document.addEventListener("click", function (e) {
-  if (e.target.classList.contains("repeat-btn")) {
-    const audio = e.target.closest(".audio-player").querySelector("audio");
-    audio.currentTime = 0;
-    playAudioWithFallback(audio);
+  const repeatBtn = e.target.closest(".repeat-btn");
+  if (!repeatBtn) {
+    return;
   }
+
+  const player = repeatBtn.closest(".audio-player");
+  const audio = player ? player.querySelector("audio") : null;
+  if (!audio) {
+    return;
+  }
+
+  audio.currentTime = 0;
+  playAudioWithFallback(audio);
 });
 
 // Handle keyboard accessibility
@@ -51,6 +63,7 @@ document.addEventListener("keydown", function (e) {
   // Space or Enter on repeat buttons
   if (
     (e.key === " " || e.key === "Enter") &&
+    document.activeElement &&
     document.activeElement.classList.contains("repeat-btn")
   ) {
     e.preventDefault();

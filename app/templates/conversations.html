@@ -1,25 +1,31 @@
-{% extends "base.html" %} {% block title %} - Conversations{% endblock %} {%
-block content %}
+{% extends "base.html" %}
+{% block title %} - Conversations{% endblock %}
+{% block content %}
 <div class="conversations">
   <h2>Conversations</h2>
   <a
     href="{{ url_for('main.new_conversation') }}"
-    class="btn"
-    style="margin-bottom: 20px"
+    class="btn btn-spaced"
     >Create New Conversation</a
   >
   {% if conversations.items %}
   <div id="conversations-container">
     {% for conv in conversations.items %}
     <div class="phrase-card" data-id="{{ conv.id }}">
-      <div class="phrase-english"><strong>{{ conv.title }}</strong></div>
-      <div class="phrase-korean">{{ conv.description }}</div>
+      <div class="phrase-english" lang="en">
+        <strong>{{ conv.title }}</strong>
+      </div>
+      <div class="phrase-korean" lang="en">{{ conv.description or "" }}</div>
       <div class="audio-player">
-        <audio src="{{ conv.audio_path }}" controls preload="none"></audio>
+        <audio
+          src="{{ conv.audio_path }}"
+          controls
+          preload="none"
+          aria-label="Play full conversation: {{ conv.title }}"
+        ></audio>
         <a
           href="{{ url_for('main.conversation_detail', conversation_id=conv.id) }}"
-          class="btn"
-          style="margin-left: 10px"
+          class="btn btn-inline"
           >View</a
         >
       </div>

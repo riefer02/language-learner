@@ -1,56 +1,69 @@
+"""OpenAI text-to-speech helpers."""
+
 import os
-import time
-from openai import OpenAI
+
 from flask import current_app
-import binascii
 
-client = OpenAI()
+from app.services.ai import get_openai_client
+from app.utils.retries import call_with_retries
 
-MAX_RETRIES = 3
-RETRY_DELAY = 2  # seconds
+
+def _remove_partial_file(filepath):
+    try:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+    except OSError as error:
+        current_app.logger.warning(
+            "generate_audio: could not remove partial file %s: %s", filepath, error
+        )
 
 
 def generate_audio(text, filepath, voice="onyx"):
-    """Converts text to speech using OpenAI TTS and saves as an MP3 file. Accepts a voice parameter."""
-    current_app.logger.info(
-        f"generate_audio: text='{text[:30]}...', filepath='{filepath}', voice='{voice}'"
-    )
-    if not text or len(text.strip()) == 0:
+    """Convert text to speech and save it as an MP3 file.
+
+    Returns the file's basename. On any failure the destination file is
+    removed so callers never see a partial or empty audio artifact.
+    """
+    if not isinstance(text, str) or not text.strip():
         raise ValueError("Empty text provided for audio generation")
 
-    for attempt in range(MAX_RETRIES):
-        try:
-            with client.audio.speech.with_streaming_response.create(
-                model="tts-1", voice=voice, input=text, response_format="mp3"
-            ) as response:
-                response.stream_to_file(filepath)
+    text = text.strip()
+    model = current_app.config.get("TTS_MODEL") or "tts-1"
+    current_app.logger.info(
+        "generate_audio: chars=%s voice=%s file=%s",
+        len(text),
+        voice,
+        filepath,
+    )
 
-            # Verify file was created and has content
-            if not os.path.exists(filepath):
-                current_app.logger.error(
-                    f"generate_audio: File not created: {filepath}"
-                )
-                raise IOError(f"Audio file was not created: {filepath}")
-            size = os.path.getsize(filepath)
-            current_app.logger.info(
-                f"generate_audio: File created: {filepath}, size={size} bytes"
-            )
-            with open(filepath, "rb") as f:
-                first_bytes = f.read(16)
-                current_app.logger.info(
-                    f"generate_audio: First 16 bytes: {binascii.hexlify(first_bytes)}"
-                )
-            if size == 0:
-                raise IOError(f"Audio file is empty: {filepath}")
+    def _stream_audio():
+        client = get_openai_client()
+        with client.audio.speech.with_streaming_response.create(
+            model=model,
+            voice=voice,
+            input=text,
+            response_format="mp3",
+        ) as response:
+            response.stream_to_file(filepath)
 
-            return os.path.basename(filepath)
+    try:
+        call_with_retries(_stream_audio)
 
-        except Exception as e:
-            current_app.logger.error(
-                f"Audio generation error (attempt {attempt + 1}/{MAX_RETRIES}): {e}"
-            )
-            if attempt == MAX_RETRIES - 1:
-                raise
-            time.sleep(RETRY_DELAY)
+        if not os.path.exists(filepath):
+            raise OSError(f"Audio file was not created: {filepath}")
 
-    raise RuntimeError("Failed to generate audio after maximum retries")
+        size = os.path.getsize(filepath)
+        if size == 0:
+            raise OSError(f"Audio file is empty: {filepath}")
+
+        current_app.logger.info(
+            "generate_audio: created %s (%s bytes)", filepath, size
+        )
+        return os.path.basename(filepath)
+
+    except Exception:
+        _remove_partial_file(filepath)
+        current_app.logger.error(
+            "generate_audio: failed to generate audio for %s", filepath
+        )
+        raise

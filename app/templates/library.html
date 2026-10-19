@@ -1,5 +1,6 @@
-{% extends "base.html" %} {% block title %} - Phrase Library{% endblock %} {%
-block content %}
+{% extends "base.html" %}
+{% block title %} - Phrase Library{% endblock %}
+{% block content %}
 <div class="library">
   <h2>Your Phrase Library</h2>
 
@@ -7,11 +8,22 @@ block content %}
   <div id="phrases-container">
     {% for phrase in phrases.items %}
     <div class="phrase-card" data-id="{{ phrase.id }}">
-      <div class="phrase-english">{{ phrase.english_text }}</div>
-      <div class="phrase-korean">{{ phrase.korean_text }}</div>
+      <div class="phrase-english" lang="en">{{ phrase.english_text }}</div>
+      <div class="phrase-korean" lang="ko">{{ phrase.korean_text }}</div>
       <div class="audio-player">
-        <audio src="{{ phrase.audio_path }}" controls preload="none"></audio>
-        <button class="repeat-btn" aria-label="Repeat audio">Repeat</button>
+        <audio
+          src="{{ phrase.audio_path }}"
+          controls
+          preload="none"
+          aria-label="Play pronunciation for {{ phrase.korean_text }}"
+        ></audio>
+        <button
+          type="button"
+          class="repeat-btn"
+          aria-label="Repeat pronunciation for {{ phrase.korean_text }}"
+        >
+          Repeat
+        </button>
       </div>
     </div>
     {% endfor %}
@@ -46,6 +58,4 @@ block content %}
   </div>
   {% endif %}
 </div>
-{% endblock %} {% block scripts %}
-<script src="{{ url_for('static', filename='js/library.js') }}"></script>
 {% endblock %}

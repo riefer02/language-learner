@@ -1,6 +1,9 @@
 :root {
   --primary: #4a6fa5;
-  --accent: #ff8c42;
+  /* Darkened from #ff8c42 (2.31:1 with white) to reach 5.18:1. */
+  --accent: #c2410c;
+  --accent-dark: #9a3412;
+  --focus: #0b2b52;
   --light: #f2f7ff;
   --dark: #333;
   --grey: #eee;
@@ -14,6 +17,38 @@ body {
   background-color: var(--light);
   color: var(--dark);
   line-height: 1.6;
+}
+
+/* Skip link: visible only when focused so keyboard users can bypass the nav. */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 10px;
+  z-index: 1000;
+  padding: 10px 16px;
+  background-color: var(--primary);
+  color: white;
+  border-radius: 0 0 4px 4px;
+  text-decoration: none;
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 0;
+  outline: 3px solid white;
+  outline-offset: 2px;
+}
+
+/* Visible focus indicator for every interactive element. */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+nav a:focus-visible {
+  outline: 3px solid white;
+  outline-offset: 2px;
 }
 
 .container {
@@ -79,14 +114,43 @@ nav a {
 }
 
 nav a:hover,
-nav a:focus {
+nav a:focus-visible {
   background-color: rgba(255, 255, 255, 0.2);
-  outline: none;
 }
 
 nav a[aria-current="page"] {
   font-weight: bold;
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 700px) {
+  .nav-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 15px;
+  }
+
+  nav h1 {
+    font-size: 1.25rem;
+  }
+
+  nav ul {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  nav li {
+    margin-left: 0;
+  }
+
+  nav a {
+    display: inline-block;
+    padding: 6px 8px;
+    font-size: 0.9rem;
+  }
 }
 
 /* Cards and content */
@@ -137,8 +201,12 @@ input[type="text"] {
 
 input[type="text"]:focus {
   border-color: var(--primary);
-  outline: none;
   box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+}
+
+input[type="text"]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 
 small {
@@ -158,10 +226,8 @@ button {
   transition: background-color 0.2s;
 }
 
-button:hover,
-button:focus {
+button:hover {
   background-color: #3a5a8c;
-  outline: none;
 }
 
 button:disabled {
@@ -175,13 +241,32 @@ button:disabled {
 }
 
 .repeat-btn:hover,
-.repeat-btn:focus {
-  background-color: #e67e3b;
+.repeat-btn:focus-visible {
+  background-color: var(--accent-dark);
 }
 
 /* Utility classes */
 .hidden {
   display: none;
+}
+
+.btn-spaced {
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.btn-inline {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.audio-player-spaced {
+  margin-bottom: 20px;
+}
+
+.conversation-label {
+  margin-left: 10px;
+  font-weight: bold;
 }
 
 /* Audio player */
@@ -232,6 +317,11 @@ audio {
   border-left: 4px solid var(--error);
 }
 
+.error-message:focus {
+  outline: 3px solid var(--error);
+  outline-offset: 2px;
+}
+
 /* Pagination */
 .pagination {
   display: flex;
@@ -278,4 +368,463 @@ audio {
   display: inline-block;
   margin-top: 20px;
   text-decoration: none;
+}
+
+/* Buttons used by links as well as form controls */
+.btn {
+  display: inline-block;
+  background-color: var(--primary);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  background-color: #3a5a8c;
+  color: white;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background-color: #9a3412;
+}
+
+.btn-large {
+  display: block;
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 1.1rem;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* Learn / review loop */
+.learn {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.learn-header {
+  margin-bottom: 22px;
+}
+
+.learn-eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.learn-header h2,
+.learn-done h2 {
+  margin: 0 0 8px;
+  font-size: 1.9rem;
+  line-height: 1.2;
+}
+
+.learn-sub {
+  color: #5b6472;
+  margin: 0;
+}
+
+.learn-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.learn-stat {
+  padding: 14px 12px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid var(--grey);
+  text-align: center;
+}
+
+.learn-stat b {
+  display: block;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  color: var(--primary);
+}
+
+.learn-stat span {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #5b6472;
+}
+
+.learn-primary {
+  padding: 20px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  margin-bottom: 24px;
+}
+
+.learn-meta {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  color: #5b6472;
+}
+
+.learn-done-line {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.learn-how {
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.learn-how h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.learn-how ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #4b5563;
+}
+
+.learn-how li {
+  margin-bottom: 8px;
+}
+
+.learn-library-link {
+  margin-top: 18px;
+  font-size: 0.9rem;
+  color: #5b6472;
+}
+
+.learn-library-link a {
+  color: var(--primary);
+}
+
+.review-shell {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.review-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.review-top a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.review-count {
+  color: #5b6472;
+}
+
+.review-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #5b6472;
+  margin-bottom: 10px;
+}
+
+.review-card {
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 14px;
+  padding: 28px 24px;
+  margin-bottom: 14px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.review-label {
+  margin: 0 0 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5b6472;
+}
+
+.review-prompt {
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.review-hint {
+  margin: 16px 0 0;
+  color: #5b6472;
+  font-size: 0.92rem;
+}
+
+.review-audio {
+  margin-top: 18px;
+  width: 100%;
+}
+
+.speak-btn {
+  margin-top: 16px;
+  background: var(--primary);
+  color: white;
+}
+
+.speak-btn:hover,
+.speak-btn:focus-visible {
+  background: #3a5a8c;
+}
+
+.review-answer {
+  margin-top: 22px;
+  text-align: left;
+  border-top: 1px solid var(--grey);
+  padding-top: 18px;
+}
+
+.review-answer summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--primary);
+  padding: 8px 0;
+}
+
+.review-answer summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.review-answer-body {
+  padding-top: 8px;
+}
+
+.review-answer-korean {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.review-answer-english {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.review-romanization {
+  margin-top: 6px;
+  color: #5b6472;
+  font-style: italic;
+}
+
+.review-notes {
+  margin: 12px 0 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.grade-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.grade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-weight: 650;
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.grade small {
+  margin: 0;
+  font-size: 0.68rem;
+  opacity: 0.75;
+}
+
+.grade-again {
+  background: #fde8e8;
+  color: #991b1b;
+}
+
+.grade-hard {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.grade-good {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.grade-easy {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.grade:hover,
+.grade:focus-visible {
+  filter: brightness(0.96);
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.grade:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.25);
+}
+
+.review-help {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: #5b6472;
+}
+
+.skill-row {
+  margin: 12px 0;
+}
+
+.skill-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.skill-label span:last-child {
+  color: #5b6472;
+  font-variant-numeric: tabular-nums;
+}
+
+progress {
+  width: 100%;
+  height: 10px;
+  accent-color: var(--accent);
+}
+
+.review-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.review-history li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--grey);
+  font-size: 0.9rem;
+}
+
+.review-history li:last-child {
+  border-bottom: 0;
+}
+
+.review-history-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #5b6472;
+  white-space: nowrap;
+}
+
+.rating-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.rating-1 {
+  background: #fde8e8;
+  color: #991b1b;
+}
+
+.rating-2 {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.rating-3 {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.rating-4 {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.learn-done {
+  text-align: center;
+}
+
+.learn-done .learn-stats {
+  text-align: left;
+}
+
+@media (max-width: 560px) {
+  .learn-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grade-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .review-card {
+    padding: 22px 16px;
+  }
+}
+
+/* Respect users who prefer reduced motion: no spinner rotation or hover lift. */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+
+  .phrase-card,
+  button,
+  .skip-link {
+    transition: none;
+  }
+
+  .phrase-card:hover {
+    transform: none;
+  }
 }

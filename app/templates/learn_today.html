@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %} - Learn{% endblock %}
+{% block content %}
+<div class="learn">
+  <div class="learn-header">
+    <p class="learn-eyebrow">Today's Korean</p>
+    <h2>One small session. One real win.</h2>
+    <p class="learn-sub">
+      Review what is due, then use it. Ten minutes is enough.
+    </p>
+  </div>
+
+  <div class="learn-stats" aria-label="Learning summary">
+    <div class="learn-stat">
+      <b>{{ summary.due }}</b>
+      <span>cards due</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.learned }}</b>
+      <span>cards practiced</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.streak }}</b>
+      <span>day streak</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.reviews_today }}</b>
+      <span>reviews today</span>
+    </div>
+  </div>
+
+  <div class="learn-primary">
+    {% if summary.due %}
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.review') }}">
+      Start review · {{ summary.due }} card{% if summary.due != 1 %}s{% endif %}
+    </a>
+    <p class="learn-meta">About {{ ((summary.due * 20) / 60) | round(0, 'ceil') | int }} minutes</p>
+    {% else %}
+    <p class="learn-done-line">You are caught up for now.</p>
+    {% if summary.next_due_human %}
+    <p class="learn-meta">Next review {{ summary.next_due_human }}.</p>
+    {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="learn-how">
+    <h3>How this works</h3>
+    <ol>
+      <li><strong>Retrieve first.</strong> Try to remember before you reveal.</li>
+      <li><strong>Grade honestly.</strong> Kiku schedules the next review from your answer.</li>
+      <li><strong>Come back tomorrow.</strong> A short daily loop beats a long weekend cram.</li>
+    </ol>
+  </div>
+
+  <div class="learn-library-link">
+    <a href="{{ url_for('learn.progress') }}">View progress</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ url_for('main.library') }}">Browse the phrase library</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ url_for('main.conversations') }}">Conversation scenarios</a>
+  </div>
+</div>
+{% endblock %}

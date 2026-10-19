@@ -1,6 +1,7 @@
-from pydub import AudioSegment
 import os
+
 from flask import current_app
+from pydub import AudioSegment
 
 
 def merge_audio_files(audio_paths, output_path, pause_seconds=1.5):

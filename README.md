@@ -1,23 +1,30 @@
 # Korean Language Learner
 
-An application for learning Korean that includes both a command-line interface and a web application. Translate English phrases to Korean, generate pronunciation audio, and practice your skills through a structured learning interface.
+> **Status: functional early prototype.** This repository provides translation, text-to-speech, a phrase library, short generated conversations, and a working FSRS review loop with a 30-item starter deck and progress view. It does **not** yet include real per-user accounts, Hangul onboarding, pronunciation feedback, scene roleplay, or PWA/offline support. See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the honest current state, [`docs/ROADMAP.md`](docs/ROADMAP.md) for execution status, and [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) for the product redesign.
+
+An application for learning Korean that includes both a command-line interface and a web application. Translate English phrases to Korean, generate pronunciation audio, and browse saved phrases and conversations.
 
 ## Features
 
 ### CLI Tool
 
-- Translates English text to Korean using OpenAI's `gpt-4o` model
+- Translates English text to Korean using OpenAI's `gpt-4.1-nano` model
 - Generates natural-sounding Korean speech using OpenAI's Text-to-Speech (TTS) API
 - Saves audio output as MP3 files in the `audio_output/` directory
 - Accepts input either interactively or as a command-line argument
 
 ### Web Application
 
-- User-friendly interface for translation and learning
-- Interactive practice exercises for Korean vocabulary and phrases
+- **Learn loop:** `/learn` shows what is due, `/learn/review` presents a retrieval card and grades it with FSRS-6, and `/learn/progress` shows practiced cards and recent reviews
+- **Starter deck:** `flask seed-content` adds 30 Korean items and creates review cards for the local learner
+- **Daily guardrail:** 10 new cards per day by default; review cards come first
+- User-friendly interface for English-to-Korean translation
 - Audio playback of Korean pronunciations
-- Progress tracking for learning journey
-- SQLite database for storing user data and learning materials
+- Paginated phrase library
+- Generated conversation scenarios with per-line and merged audio
+- SQLite storage for phrases, conversations, lines, items, and review state
+
+**Still planned:** real per-user accounts, onboarding and placement, Hangul bootcamp, microphone capture and pronunciation feedback, scene/roleplay debriefs, can-do progress, and PWA/offline. See [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) and [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ### Conversational Scenarios
 
@@ -29,8 +36,9 @@ An application for learning Korean that includes both a command-line interface a
 
 ## Prerequisites
 
-- Python 3.7.1 or newer
+- Python 3.11 or newer (3.12 recommended)
 - An OpenAI API key
+- `ffmpeg` for conversation audio merging
 - Flask and related packages (see `requirements.txt`)
 
 ## Setup
@@ -81,6 +89,10 @@ An application for learning Korean that includes both a command-line interface a
    make init-db
    ```
 
+   `flask init-db` applies Alembic migrations. The app no longer creates tables
+   automatically at startup, so a fresh checkout needs this step (or
+   `flask db upgrade`) before the first request.
+
 ## Usage
 
 ### CLI Tool
@@ -118,8 +130,12 @@ To run the web application:
    ```bash
    python run.py
    ```
-3. Open your web browser and navigate to `http://localhost:5000`
-4. Use the **Conversations** link in the navigation bar to create and study conversational scenarios
+3. Seed the starter review deck (idempotent):
+   ```bash
+   flask seed-content
+   ```
+4. Open your web browser and navigate to `http://localhost:5000`
+5. Start at **Learn** for the daily review loop, or use **Conversations** to create and study conversational scenarios
 
 ## Project Structure
 
@@ -133,6 +149,31 @@ To run the web application:
 - `run.py` - Web application entry point
 - `config.py` - Configuration settings
 - `korean_learner.db` - SQLite database
+
+## Development Checks
+
+```bash
+make install-dev   # runtime + test/lint dependencies
+make test          # pytest
+make lint          # ruff
+```
+
+The test suite does not call OpenAI and does not need a real API key. It uses a
+temporary SQLite database and a fake OpenAI client.
+
+## Security Notes
+
+- The app binds to `127.0.0.1` by default. Do not expose it publicly without
+  authentication and HTTPS.
+- For a non-local deployment, set `REQUIRE_AUTH=true`, `APP_PASSWORD`, and
+  `SECRET_KEY`, and put the app behind a TLS-terminating proxy.
+- Set `TRUST_PROXY=true` only behind a trusted proxy so client IPs and rate
+  limits are correct.
+- Rotate any API key that has ever been committed or shared. Keys belong in
+  `.env` (ignored by git) or the deployment secret manager.
+- Audio is stored under `app/static/audio` for local development. The
+  `flask media-audit` command reports orphans and missing files;
+  `flask media-gc --delete` removes orphans older than a day.
 
 ## Cleaning Up
 

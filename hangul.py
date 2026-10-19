@@ -11,16 +11,25 @@ OUTPUT_DIR = "audio_output"
 # Load environment variables (especially OPENAI_API_KEY)
 load_dotenv()
 
-# Initialize OpenAI client
-# It will automatically look for the OPENAI_API_KEY environment variable
-client = OpenAI()
+def _client():
+    """Create the OpenAI client lazily so --help works without a key."""
+    if not os.environ.get("OPENAI_API_KEY"):
+        print(
+            "Error: OPENAI_API_KEY is not set. Add it to .env or the environment.",
+            file=sys.stderr,
+        )
+        return None
+    return OpenAI()
 
 
 def translate_to_korean(text):
     """Translates English text to Korean using OpenAI with structured output."""
+    client = _client()
+    if client is None:
+        return None
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1-nano",
+            model=os.environ.get("TRANSLATION_MODEL", "gpt-4.1-nano"),
             response_format={"type": "json_object"},  # Request JSON output
             messages=[
                 {
@@ -58,6 +67,9 @@ def translate_to_korean(text):
 
 def text_to_speech(text, filename):
     """Converts text to speech using OpenAI TTS and saves as an MP3 file in the output directory using streaming."""
+    client = _client()
+    if client is None:
+        return
     try:
         # Ensure the output directory exists
         os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -67,7 +79,10 @@ def text_to_speech(text, filename):
 
         # Use OpenAI's TTS API with streaming response within a with block
         with client.audio.speech.with_streaming_response.create(
-            model="tts-1", voice="onyx", input=text, response_format="mp3"
+            model=os.environ.get("TTS_MODEL", "tts-1"),
+            voice="onyx",
+            input=text,
+            response_format="mp3",
         ) as response:
             # Stream the audio data to the file using the method on the yielded response object
             response.stream_to_file(filepath)

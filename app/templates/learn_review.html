@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %} - Review{% endblock %}
+{% block content %}
+<div class="review-shell" data-card-id="{{ card.id }}">
+  <div class="review-top">
+    <a href="{{ url_for('learn.today') }}">← Today</a>
+    <span class="review-count">{{ due_count }} due</span>
+  </div>
+
+  <div class="review-progress">
+    <span>{{ skill_label }} · {{ type_label }}</span>
+    <span>{% if is_new %}New card{% elif interval == "now" %}Due now{% else %}Next review: {{ interval }}{% endif %}</span>
+  </div>
+
+  <div class="review-card">
+    <p class="review-label">
+      {% if prompt_side == "korean" %}Korean → English{% else %}English → Korean{% endif %}
+    </p>
+
+    {% if prompt_side == "korean" %}
+    <div class="review-prompt" lang="ko">{{ item.korean }}</div>
+      {% if item.audio_path %}
+      <audio
+        class="review-audio"
+        src="{{ item.audio_path }}"
+        controls
+        preload="none"
+        aria-label="Play pronunciation for {{ item.korean }}"
+      ></audio>
+      {% else %}
+      <button
+        type="button"
+        class="speak-btn"
+        data-speak="{{ item.korean }}"
+        aria-label="Hear {{ item.korean }} in Korean"
+      >
+        Hear it
+      </button>
+      {% endif %}
+    {% else %}
+    <div class="review-prompt" lang="en">{{ item.english }}</div>
+    <p class="review-hint">Say it in Korean, then reveal the answer.</p>
+    {% endif %}
+
+    <details class="review-answer">
+      <summary>Show answer</summary>
+      <div class="review-answer-body">
+        {% if answer_side == "korean" %}
+        <div class="review-answer-korean" lang="ko">{{ item.korean }}</div>
+          {% if item.audio_path %}
+          <audio
+            class="review-audio"
+            src="{{ item.audio_path }}"
+            controls
+            preload="none"
+            aria-label="Play answer for {{ item.korean }}"
+          ></audio>
+          {% else %}
+          <button
+            type="button"
+            class="speak-btn"
+            data-speak="{{ item.korean }}"
+            aria-label="Hear {{ item.korean }} in Korean"
+          >
+            Hear the answer
+          </button>
+          {% endif %}
+        {% else %}
+        <div class="review-answer-english" lang="en">{{ item.english }}</div>
+        {% endif %}
+
+        {% if item.romanization %}
+        <div class="review-romanization">{{ item.romanization }}</div>
+        {% endif %}
+        {% if item.notes %}
+        <p class="review-notes">{{ item.notes }}</p>
+        {% endif %}
+      </div>
+    </details>
+  </div>
+
+  <form
+    class="grade-form"
+    method="post"
+    action="{{ url_for('learn.submit_review', card_id=card.id) }}"
+  >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <input type="hidden" name="expected_reps" value="{{ card.reps }}" />
+    <input type="hidden" name="elapsed_ms" id="elapsed-ms" value="" />
+    <button type="submit" name="rating" value="1" class="grade grade-again">
+      <span>Again</span><small>1</small>
+    </button>
+    <button type="submit" name="rating" value="2" class="grade grade-hard">
+      <span>Hard</span><small>2</small>
+    </button>
+    <button type="submit" name="rating" value="3" class="grade grade-good">
+      <span>Good</span><small>3</small>
+    </button>
+    <button type="submit" name="rating" value="4" class="grade grade-easy">
+      <span>Easy</span><small>4</small>
+    </button>
+  </form>
+
+  <p class="review-help">Press 1–4 to grade · Space to reveal the answer</p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/review.js') }}"></script>
+{% endblock %}

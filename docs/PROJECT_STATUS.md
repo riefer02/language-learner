@@ -1,0 +1,79 @@
+# Project Status — 19 October 2026
+
+**Repository:** Korean Language Learner (working product name: **Kiku**)
+**Verdict:** Phase 0 (stabilize) is complete except user key rotation. The first Phase 1 vertical slice — a real FSRS review loop — is working.
+
+## What works today
+
+- English → Korean translation via `gpt-4.1-nano`, with validated structured output
+- Korean TTS via OpenAI `tts-1` (single voice, or two voices in conversations)
+- Saved phrase library with pagination and audio playback
+- Short 2–4 line conversation generation with per-line and merged audio
+- **Learn loop:** `/learn` today view, `/learn/review` retrieval card, 1–4 grading, FSRS-6 scheduling, review log
+- **Seed deck:** 30 hand-curated Korean items (survival phrases, core nouns, five grammar patterns), one review card per item
+- **Daily new-card cap:** 10 new cards per day; review cards are always prioritized
+- **Local single-user mode:** a local `User` row scopes review cards and logs; real accounts are next
+- CLI translation/TTS tool (`hangul.py`)
+- `flask seed-content`, `flask media-audit`, `flask media-gc`
+- **75 automated tests**, ruff clean, CI with an empty-database migration gate
+
+## What changed in Phase 0
+
+- OpenAI clients are lazy; the app, migrations, and tests boot without a key.
+- Explicit connect/read timeouts and `max_retries=0`; only transient errors are retried, with backoff.
+- Pydantic schemas validate requests and model output (line count, speakers, lengths, Hangul).
+- Conversation rendering uses `createElement`/`textContent`; no model-controlled `innerHTML`.
+- SQLite uses WAL, `busy_timeout=5000`, `foreign_keys=ON`.
+- Audio is generated in a private staging directory and moved only after success; failed jobs leave zero rows and zero files.
+- Alembic builds a fresh database from empty; the missing `phrase` baseline is repaired.
+- Rate limiting is thread-safe, bounded, per-endpoint, proxy-aware, and returns `Retry-After`.
+- API 404/415/500 responses are correct, include request IDs, and do not leak internals.
+- Security headers (CSP, frame/referrer policies), optional basic-auth gate, localhost warning.
+- README, `.env.example`, Makefile, and CI reflect reality.
+
+## Current screens
+
+| Today | Review |
+|---|---|
+| ![Today screen](screenshots/learn-today.png) | ![Review screen](screenshots/learn-review.png) |
+
+| Answer revealed | Mobile |
+|---|---|
+| ![Answer revealed](screenshots/learn-review-answer.png) | ![Mobile](screenshots/learn-mobile.png) |
+
+## What still does not exist
+
+- Real user accounts, sessions, OAuth, and per-user data isolation (local single-user only)
+- Postgres deployment; SQLite is still the default
+- Onboarding: goal/time/experience flow, placement, first spoken sentence
+- Hangul bootcamp (letters, batchim, liaison, typing)
+- Microphone capture, ASR, pronunciation scoring, Sound Gym
+- Scene/roleplay engine and conversation debrief
+- Grammar explanation UI beyond short notes on seed items
+- Can-do artifacts, skill map, retention dashboard, weekly recap
+- Streak repair, reminders, notifications, vacation mode, and a flexible habit system (a basic day streak exists)
+- PWA/offline support
+- Content pipeline: 30 items only; no 20-scene library, no native review queue, no audio for seed items
+- Speech/TTS cost controls beyond caching (no per-user budget)
+- Postgres/Redis/multi-worker production setup
+
+## Top risks
+
+1. Content quality and breadth: 30 items is a demo, not a curriculum.
+2. No onboarding or first-spoken-sentence experience yet.
+3. No audio on seed items; browser speech synthesis is a temporary fallback.
+4. Single-user local mode; auth and data isolation are required before any public deployment.
+5. No speech/pronunciation loop yet; this is the main differentiator and the hardest build.
+6. No retention instrumentation; the next step is 20 alpha users and real D1/D7 data.
+
+## Where to go next
+
+- **Execution plan and status:** [`ROADMAP.md`](ROADMAP.md)
+- **Product and learning design:** [`KIKU_BLUEPRINT.md`](KIKU_BLUEPRINT.md)
+- **Full audit with file:line evidence:** [`research/01-codebase-audit.md`](research/01-codebase-audit.md)
+- **Learning science:** [`research/02-learning-science.md`](research/02-learning-science.md)
+- **Korean pedagogy:** [`research/03-korean-pedagogy.md`](research/03-korean-pedagogy.md)
+- **Competitive teardown:** [`research/04-competitive-teardown.md`](research/04-competitive-teardown.md)
+- **Architecture and AI:** [`research/05-tech-and-ai.md`](research/05-tech-and-ai.md)
+
+**Immediate next sprint:** onboarding + first spoken sentence → audio for seed items (pre-generated, cached) → Hangul bootcamp days 1–3 → 20 alpha users and activation instrumentation → then Phase 2 speech capture and scoring.

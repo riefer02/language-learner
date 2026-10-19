@@ -1,22 +1,39 @@
-{% extends "base.html" %} {% block title %} - Conversation{% endblock %} {%
-block content %}
+{% extends "base.html" %}
+{% block title %} - Conversation{% endblock %}
+{% block content %}
 <div class="conversation-detail">
   <h2>{{ conversation.title }}</h2>
-  <p>{{ conversation.description }}</p>
-  <div class="audio-player" style="margin-bottom: 20px">
-    <audio src="{{ conversation.audio_path }}" controls preload="none"></audio>
-    <span style="margin-left: 10px; font-weight: bold">Full Conversation</span>
+  <p lang="en">{{ conversation.description or "" }}</p>
+  <div class="audio-player audio-player-spaced">
+    <audio
+      src="{{ conversation.audio_path }}"
+      controls
+      preload="none"
+      aria-label="Play full conversation: {{ conversation.title }}"
+    ></audio>
+    <span class="conversation-label">Full Conversation</span>
   </div>
   <h3>Lines</h3>
   {% for line in conversation.lines %}
   <div class="phrase-card" data-id="{{ line.id }}">
-    <div class="phrase-english">
+    <div class="phrase-english" lang="en">
       <strong>{{ line.speaker }}</strong>: {{ line.phrase.english_text }}
     </div>
-    <div class="phrase-korean">{{ line.phrase.korean_text }}</div>
+    <div class="phrase-korean" lang="ko">{{ line.phrase.korean_text }}</div>
     <div class="audio-player">
-      <audio src="{{ line.phrase.audio_path }}" controls preload="none"></audio>
-      <button class="repeat-btn" aria-label="Repeat audio">Repeat</button>
+      <audio
+        src="{{ line.phrase.audio_path }}"
+        controls
+        preload="none"
+        aria-label="Play line from {{ line.speaker }}: {{ line.phrase.korean_text }}"
+      ></audio>
+      <button
+        type="button"
+        class="repeat-btn"
+        aria-label="Repeat line from {{ line.speaker }}: {{ line.phrase.korean_text }}"
+      >
+        Repeat
+      </button>
     </div>
   </div>
   {% endfor %}

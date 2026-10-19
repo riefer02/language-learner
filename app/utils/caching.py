@@ -1,8 +1,9 @@
 import functools
 import hashlib
 import json
-from flask import current_app
 import time
+
+from flask import current_app
 
 # Simple in-memory cache
 _cache = {}

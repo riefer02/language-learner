@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check app config.py run.py tests
+
+      - name: Migrate an empty database
+        env:
+          DATABASE_URL: sqlite:///${{ runner.temp }}/ci.db
+        run: |
+          rm -f "$RUNNER_TEMP/ci.db"
+          FLASK_APP=run.py python -m flask db upgrade
+          python - <<'PY'
+          import sqlite3
+          import os
+          path = os.path.join(os.environ["RUNNER_TEMP"], "ci.db")
+          tables = {row[0] for row in sqlite3.connect(path).execute(
+              "select name from sqlite_master where type='table'"
+          )}
+          expected = {
+              "phrase",
+              "conversation",
+              "conversation_line",
+              "user",
+              "item",
+              "review_card",
+              "review_log",
+              "alembic_version",
+          }
+          missing = expected - tables
+          if missing:
+              raise SystemExit(f"missing tables after migration: {sorted(missing)}")
+          columns = {
+              row[1]
+              for row in sqlite3.connect(path).execute("pragma table_info(review_log)")
+          }
+          if "was_new" not in columns:
+              raise SystemExit("review_log.was_new is missing after migration")
+          print("migration schema ok:", sorted(tables))
+          PY
+
+      - name: Test
+        # No OPENAI_API_KEY is configured. The suite injects a fake client via
+        # app.extensions and never calls the network; conftest.py also sets a
+        # dummy key defensively for any remaining import-time client.
+        run: python -m pytest -q

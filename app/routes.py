@@ -1,50 +1,72 @@
-import os
 import uuid
-from flask import Blueprint, render_template, request, jsonify, current_app, abort
+
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    g,
+    jsonify,
+    render_template,
+    request,
+)
+from pydantic import ValidationError
+from sqlalchemy import text
+from sqlalchemy.orm import selectinload
+
 from app import db
-from app.models import Phrase, Conversation, ConversationLine
-from app.services.translation import translate_to_korean, generate_conversation_scenario
+from app.models import Conversation, ConversationLine, Phrase
+from app.services.ai import OpenAIConfigError
 from app.services.audio import generate_audio
-from app.utils.validators import validate_phrase
-from functools import wraps
-import time
+from app.services.translation import (
+    generate_conversation_scenario,
+    translate_to_korean,
+)
 from app.utils.audio_merge import merge_audio_files
-import traceback
+from app.utils.media import (
+    AudioBatch,
+    remove_files,
+    safe_audio_filename,
+)
+from app.utils.rate_limit import rate_limit
+from app.utils.schemas import (
+    ConversationRequest,
+    ConversationScenario,
+    TranslationRequest,
+)
 
 main = Blueprint("main", __name__)
 
-# Simple rate limiter
-request_history = {}
+
+def _request_id():
+    return getattr(g, "request_id", "")
 
 
-def rate_limit(limit_per_minute=10):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            # Get client IP
-            ip = request.remote_addr
-            current_time = time.time()
+def _error(message, status):
+    return jsonify({"error": message, "request_id": _request_id()}), status
 
-            # Initialize or clean up old requests
-            if ip not in request_history:
-                request_history[ip] = []
-            request_history[ip] = [
-                t for t in request_history[ip] if current_time - t < 60
-            ]
 
-            # Check if rate limit exceeded
-            if len(request_history[ip]) >= limit_per_minute:
-                current_app.logger.warning(f"Rate limit exceeded for IP: {ip}")
-                abort(429)
+def _parse_json(schema):
+    """Return ``(model, None)`` or ``(None, error_response)``."""
+    if not request.is_json:
+        return None, _error("Request body must be JSON", 415)
 
-            # Add current request
-            request_history[ip].append(current_time)
+    payload = request.get_json(silent=True)
+    if payload is None:
+        return None, _error("Request body must be valid JSON", 400)
 
-            return f(*args, **kwargs)
-
-        return decorated_function
-
-    return decorator
+    try:
+        return schema.model_validate(payload), None
+    except ValidationError as error:
+        details = error.errors()
+        message = "Invalid request"
+        if details:
+            location = ".".join(str(part) for part in details[0].get("loc", ()))
+            message = (
+                f"{location}: {details[0].get('msg')}"
+                if location
+                else details[0].get("msg", message)
+            )
+        return None, _error(message, 400)
 
 
 @main.route("/")
@@ -56,230 +78,283 @@ def index():
 def library():
     page = request.args.get("page", 1, type=int)
     per_page = 10
-    phrases = Phrase.query.order_by(Phrase.created_at.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
+    phrases = Phrase.query.order_by(
+        Phrase.created_at.desc(), Phrase.id.desc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
     return render_template("library.html", phrases=phrases)
 
 
-@main.route("/api/translate", methods=["POST"])
-@rate_limit(limit_per_minute=10)
-def api_translate():
+@main.route("/healthz")
+def healthz():
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No JSON data provided"}), 400
+        db.session.execute(text("SELECT 1"))
+    except Exception:
+        current_app.logger.exception("Health check database probe failed")
+        return jsonify({"status": "degraded", "database": "unavailable"}), 503
+    return jsonify({"status": "ok"}), 200
 
-        english_text = data.get("text", "").strip()
 
-        # Validate input
-        is_valid, error_msg = validate_phrase(english_text)
-        if not is_valid:
-            return jsonify({"error": error_msg}), 400
+@main.route("/api/translate", methods=["POST"])
+@rate_limit(
+    limit=lambda: current_app.config.get("RATE_LIMIT_TRANSLATE", 10),
+    window_seconds=lambda: current_app.config.get(
+        "RATE_LIMIT_WINDOW_SECONDS", 60
+    ),
+    scope="translate",
+)
+def api_translate():
+    payload, error = _parse_json(TranslationRequest)
+    if error:
+        return error
 
-        # Translate to Korean
-        current_app.logger.info(f"Translating: {english_text}")
-        korean_text = translate_to_korean(english_text)
+    try:
+        korean_text = translate_to_korean(payload.text)
+    except ValueError as exc:
+        return _error(str(exc), 400)
+    except OpenAIConfigError as exc:
+        current_app.logger.error("AI configuration error: %s", exc)
+        return _error("Translation service is not configured", 503)
 
-        # Create unique filename with UUID to avoid collisions
-        unique_id = str(uuid.uuid4())[:8]
-        safe_text = "".join(
-            c for c in english_text.lower().replace(" ", "_") if c.isalnum() or c == "_"
+    unique_id = uuid.uuid4().hex[:8]
+    filename = (
+        f"{safe_audio_filename(payload.text, max_length=30)}_{unique_id}.mp3"
+    )
+    batch = AudioBatch(current_app.config["MEDIA_TMP_DIR"])
+    moved = []
+    try:
+        staged = batch.path(filename)
+        generate_audio(korean_text, staged)
+        moved = batch.commit_to(
+            current_app.config["AUDIO_DIR"], [(staged, filename)]
         )
-        filename = f"{safe_text[:30]}_{unique_id}.mp3"
-        filepath = os.path.join(current_app.config["AUDIO_DIR"], filename)
 
-        # Generate audio
-        current_app.logger.info(f"Generating audio for: {korean_text}")
-        generate_audio(korean_text, filepath)
-        if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
-            current_app.logger.error(f"Audio file not created or empty: {filepath}")
-            raise RuntimeError(f"Audio file not created or empty: {filepath}")
-
-        # Save to database
         phrase = Phrase(
-            english_text=english_text,
+            english_text=payload.text,
             korean_text=korean_text,
             audio_path=f"/static/audio/{filename}",
         )
         db.session.add(phrase)
         db.session.commit()
+    except OpenAIConfigError as exc:
+        db.session.rollback()
+        remove_files(moved)
+        current_app.logger.error("AI configuration error: %s", exc)
+        return _error("Audio service is not configured", 503)
+    except Exception:
+        db.session.rollback()
+        remove_files(moved)
+        current_app.logger.exception("Translation request failed")
+        return _error("An error occurred during translation or audio generation", 500)
+    finally:
+        batch.cleanup()
 
-        return jsonify(phrase.to_dict())
-
-    except ValueError as e:
-        current_app.logger.error(f"Validation error: {str(e)}")
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:
-        current_app.logger.error(f"Translation API error: {str(e)}")
-        return jsonify(
-            {"error": "An error occurred during translation or audio generation"}
-        ), 500
+    # Serialize after the commit so a response-formatting error cannot trigger
+    # the media cleanup and leave committed rows pointing at deleted files.
+    return jsonify(phrase.to_dict())
 
 
 @main.route("/api/phrases", methods=["GET"])
 def api_phrases():
-    try:
-        page = request.args.get("page", 1, type=int)
-        per_page = 20
+    page = request.args.get("page", 1, type=int)
+    per_page = min(max(request.args.get("per_page", 20, type=int), 1), 100)
+    pagination = Phrase.query.order_by(
+        Phrase.created_at.desc(), Phrase.id.desc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
 
-        phrases = Phrase.query.order_by(Phrase.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+    return jsonify(
+        {
+            "phrases": [phrase.to_dict() for phrase in pagination.items],
+            "total": pagination.total,
+            "pages": pagination.pages,
+            "current_page": pagination.page,
+            "per_page": per_page,
+        }
+    )
 
-        return jsonify(
-            {
-                "phrases": [p.to_dict() for p in phrases.items],
-                "total": phrases.total,
-                "pages": phrases.pages,
-                "current_page": page,
-            }
-        )
-    except Exception as e:
-        current_app.logger.error(f"Error fetching phrases: {str(e)}")
-        return jsonify({"error": "Failed to retrieve phrases"}), 500
+
+def _conversation_voices():
+    return {
+        1: current_app.config.get("TTS_VOICE_1", "onyx"),
+        2: current_app.config.get("TTS_VOICE_2", "nova"),
+    }
 
 
 @main.route("/api/conversation", methods=["POST"])
-@rate_limit(limit_per_minute=5)
+@rate_limit(
+    limit=lambda: current_app.config.get("RATE_LIMIT_CONVERSATION", 5),
+    window_seconds=lambda: current_app.config.get(
+        "RATE_LIMIT_WINDOW_SECONDS", 60
+    ),
+    scope="conversation",
+)
 def api_conversation():
+    payload, error = _parse_json(ConversationRequest)
+    if error:
+        return error
+
     try:
-        data = request.get_json()
-        if not data or not data.get("prompt"):
-            return jsonify({"error": "No scenario prompt provided"}), 400
-        prompt = data["prompt"].strip()
-        if not prompt:
-            return jsonify({"error": "Prompt cannot be empty"}), 400
+        scenario = generate_conversation_scenario(payload.prompt)
+        scenario = ConversationScenario.model_validate(scenario)
+    except ValueError as exc:
+        return _error(str(exc), 400)
+    except OpenAIConfigError as exc:
+        current_app.logger.error("AI configuration error: %s", exc)
+        return _error("Conversation service is not configured", 503)
 
-        # Generate conversation scenario
-        scenario = generate_conversation_scenario(prompt)
-        title = scenario.get("title", "Conversation")
-        description = scenario.get("description", "")
-        lines = scenario["lines"]
+    audio_dir = current_app.config["AUDIO_DIR"]
+    voices = _conversation_voices()
+    batch = AudioBatch(current_app.config["MEDIA_TMP_DIR"])
+    moved = []
 
-        # Speaker to OpenAI voice mapping
-        speaker_voices = {1: "onyx", 2: "nova"}
-        audio_dir = current_app.config["AUDIO_DIR"]
-        audio_paths = []
-        phrase_objs = []
-        conversation_lines = []
-
-        for idx, line in enumerate(lines):
-            speaker = line.get("speaker", 1)
-            english_text = line.get("english_text", "").strip()
-            korean_text = line.get("korean_text", "").strip()
-            if not english_text or not korean_text:
-                continue
-            # Generate unique filename
-            unique_id = str(uuid.uuid4())[:8]
-            safe_text = "".join(
-                c
-                for c in english_text.lower().replace(" ", "_")
-                if c.isalnum() or c == "_"
+    try:
+        # Generate every line into the private staging directory first. No
+        # database write transaction is open during these network calls.
+        staging = []
+        merged_filename = f"conversation_{uuid.uuid4().hex[:8]}.mp3"
+        for index, line in enumerate(scenario.lines):
+            unique_id = uuid.uuid4().hex[:8]
+            filename = (
+                f"conv_{safe_audio_filename(line.english_text, max_length=20)}"
+                f"_{unique_id}.mp3"
             )
-            filename = f"conv_{safe_text[:20]}_{unique_id}.mp3"
-            filepath = os.path.join(audio_dir, filename)
-            # Generate audio for this line
+            staged = batch.path(filename)
             generate_audio(
-                korean_text, filepath, voice=speaker_voices.get(speaker, "onyx")
+                line.korean_text,
+                staged,
+                voice=voices.get(line.speaker, voices[1]),
             )
-            if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
-                current_app.logger.error(f"Audio file not created or empty: {filepath}")
-                raise RuntimeError(f"Audio file not created or empty: {filepath}")
-            audio_rel_path = f"/static/audio/{filename}"
-            audio_paths.append(filepath)
-            # Save phrase
-            phrase = Phrase(
-                english_text=english_text,
-                korean_text=korean_text,
-                audio_path=audio_rel_path,
-            )
-            db.session.add(phrase)
-            db.session.flush()  # Get phrase.id
-            phrase_objs.append(phrase)
-            # Save conversation line
-            conv_line = ConversationLine(
-                speaker=f"Speaker {speaker}",
-                order=idx,
-                phrase_id=phrase.id,
-            )
-            conversation_lines.append(conv_line)
+            staging.append((staged, filename, line, index))
 
-        # Merge audio files
-        merged_filename = f"conversation_{str(uuid.uuid4())[:8]}.mp3"
-        merged_filepath = os.path.join(audio_dir, merged_filename)
-        merge_audio_files(audio_paths, merged_filepath, pause_seconds=1.5)
-        merged_audio_rel_path = f"/static/audio/{merged_filename}"
+        merged_staged = batch.path(merged_filename)
+        merge_audio_files(
+            [item[0] for item in staging],
+            merged_staged,
+            pause_seconds=1.5,
+        )
 
-        # Save conversation
+        mapping = [(item[0], item[1]) for item in staging]
+        mapping.append((merged_staged, merged_filename))
+        moved = batch.commit_to(audio_dir, mapping)
+
+        phrases = [
+            Phrase(
+                english_text=line.english_text,
+                korean_text=line.korean_text,
+                audio_path=f"/static/audio/{filename}",
+            )
+            for _, filename, line, _ in staging
+        ]
+        db.session.add_all(phrases)
+        db.session.flush()
+
         conversation = Conversation(
-            title=title,
-            description=description,
-            audio_path=merged_audio_rel_path,
+            title=scenario.title,
+            description=scenario.description or "",
+            audio_path=f"/static/audio/{merged_filename}",
         )
         db.session.add(conversation)
-        db.session.flush()  # Get conversation.id
-        # Link lines to conversation
-        for conv_line in conversation_lines:
-            conv_line.conversation_id = conversation.id
-            db.session.add(conv_line)
-        db.session.commit()
+        db.session.flush()
 
-        return jsonify(conversation.to_dict())
-    except Exception as e:
-        current_app.logger.error(
-            f"Conversation API error: {str(e)}\n{traceback.format_exc()}"
+        for phrase, (_, _, line, index) in zip(phrases, staging):
+            db.session.add(
+                ConversationLine(
+                    conversation_id=conversation.id,
+                    phrase_id=phrase.id,
+                    speaker=f"Speaker {line.speaker}",
+                    order=index,
+                )
+            )
+
+        db.session.commit()
+    except OpenAIConfigError as exc:
+        db.session.rollback()
+        remove_files(moved)
+        current_app.logger.error("AI configuration error: %s", exc)
+        return _error("Audio service is not configured", 503)
+    except Exception:
+        db.session.rollback()
+        remove_files(moved)
+        current_app.logger.exception("Conversation request failed")
+        return _error(
+            "An error occurred during conversation generation", 500
         )
-        return jsonify(
-            {"error": f"An error occurred during conversation generation: {str(e)}"}
-        ), 500
+    finally:
+        batch.cleanup()
+
+    return jsonify(conversation.to_dict())
 
 
 @main.route("/api/conversations", methods=["GET"])
 def api_conversations():
-    try:
-        page = request.args.get("page", 1, type=int)
-        per_page = 10
-        conversations = Conversation.query.order_by(
-            Conversation.created_at.desc()
-        ).paginate(page=page, per_page=per_page, error_out=False)
-        return jsonify(
-            {
-                "conversations": [c.to_dict() for c in conversations.items],
-                "total": conversations.total,
-                "pages": conversations.pages,
-                "current_page": page,
-            }
+    page = request.args.get("page", 1, type=int)
+    per_page = min(max(request.args.get("per_page", 10, type=int), 1), 50)
+    pagination = (
+        Conversation.query.options(
+            selectinload(Conversation.lines).selectinload(
+                ConversationLine.phrase
+            )
         )
-    except Exception as e:
-        current_app.logger.error(f"Error fetching conversations: {str(e)}")
-        return jsonify({"error": "Failed to retrieve conversations"}), 500
+        .order_by(Conversation.created_at.desc(), Conversation.id.desc())
+        .paginate(page=page, per_page=per_page, error_out=False)
+    )
+
+    return jsonify(
+        {
+            "conversations": [
+                conversation.to_dict() for conversation in pagination.items
+            ],
+            "total": pagination.total,
+            "pages": pagination.pages,
+            "current_page": pagination.page,
+            "per_page": per_page,
+        }
+    )
 
 
 @main.route("/api/conversations/<int:conversation_id>", methods=["GET"])
 def api_conversation_detail(conversation_id):
-    try:
-        conversation = Conversation.query.get_or_404(conversation_id)
-        return jsonify(conversation.to_dict())
-    except Exception as e:
-        current_app.logger.error(f"Error fetching conversation detail: {str(e)}")
-        return jsonify({"error": "Failed to retrieve conversation"}), 500
+    conversation = (
+        Conversation.query.options(
+            selectinload(Conversation.lines).selectinload(
+                ConversationLine.phrase
+            )
+        )
+        .filter(Conversation.id == conversation_id)
+        .first()
+    )
+    if conversation is None:
+        return _error("Conversation not found", 404)
+    return jsonify(conversation.to_dict())
 
 
 @main.route("/conversations")
 def conversations():
     page = request.args.get("page", 1, type=int)
     per_page = 10
-    conversations = Conversation.query.order_by(
-        Conversation.created_at.desc()
+    conversations_page = Conversation.query.order_by(
+        Conversation.created_at.desc(), Conversation.id.desc()
     ).paginate(page=page, per_page=per_page, error_out=False)
-    return render_template("conversations.html", conversations=conversations)
+    return render_template(
+        "conversations.html", conversations=conversations_page
+    )
 
 
 @main.route("/conversations/<int:conversation_id>")
 def conversation_detail(conversation_id):
-    conversation = Conversation.query.get_or_404(conversation_id)
-    return render_template("conversation_detail.html", conversation=conversation)
+    conversation = (
+        Conversation.query.options(
+            selectinload(Conversation.lines).selectinload(
+                ConversationLine.phrase
+            )
+        )
+        .filter(Conversation.id == conversation_id)
+        .first()
+    )
+    if conversation is None:
+        abort(404)
+    return render_template(
+        "conversation_detail.html", conversation=conversation
+    )
 
 
 @main.route("/conversations/new")

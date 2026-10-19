@@ -41,9 +41,11 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
+coverage.xml
 .cache
 .pytest_cache/
 .hypothesis/
+.ruff_cache/
 
 # Translations
 *.mo
@@ -139,4 +141,6 @@ audio_output/
 
 # SQLite database
 *.db
+*.db-wal
+*.db-shm
 korean_learner.db

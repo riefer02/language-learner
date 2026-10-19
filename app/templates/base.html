@@ -11,10 +11,18 @@
     {% block head %}{% endblock %}
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <nav aria-label="Main navigation">
       <div class="nav-container">
-        <h1>Korean Language Learner</h1>
+        <h1 aria-label="Kiku, Korean language learner">Kiku</h1>
         <ul>
+          <li>
+            <a
+              href="{{ url_for('learn.today') }}"
+              aria-current="{{ 'page' if request.blueprint == 'learn' else 'false' }}"
+              >Learn</a
+            >
+          </li>
           <li>
             <a
               href="{{ url_for('main.index') }}"
@@ -40,7 +48,7 @@
       </div>
     </nav>
 
-    <main class="container" id="main-content">
+    <main class="container" id="main-content" tabindex="-1">
       {% block content %}{% endblock %}
     </main>
 

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %} - Review complete{% endblock %}
+{% block content %}
+<div class="learn learn-done">
+  <p class="learn-eyebrow">Session complete</p>
+  <h2>You are caught up.</h2>
+  <p class="learn-sub">
+    That is a real rep. Kiku will bring these back when you are about to forget them.
+  </p>
+
+  <div class="learn-stats" aria-label="Learning summary">
+    <div class="learn-stat">
+      <b>{{ summary.learned }}</b>
+      <span>cards practiced</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.streak }}</b>
+      <span>day streak</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.reviews_today }}</b>
+      <span>reviews today</span>
+    </div>
+  </div>
+
+  <div class="learn-primary">
+    {% if summary.new_remaining %}
+    <p class="learn-meta">
+      {{ summary.new_remaining }} new card{% if summary.new_remaining != 1 %}s{% endif %}
+      waiting for tomorrow. That is the daily new-card limit doing its job.
+    </p>
+    {% elif summary.next_due_human %}
+    <p class="learn-meta">Next review {{ summary.next_due_human }}.</p>
+    {% endif %}
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.today') }}">
+      Back to Today
+    </a>
+  </div>
+
+  <p class="learn-library-link">
+    <a href="{{ url_for('main.library') }}">Browse the phrase library</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ url_for('main.conversations') }}">Conversation scenarios</a>
+  </p>
+</div>
+{% endblock %}

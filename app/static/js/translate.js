@@ -3,6 +3,21 @@ document.addEventListener("DOMContentLoaded", function () {
   const resultDiv = document.getElementById("result");
   const loadingDiv = document.getElementById("loading");
   const translateBtn = document.getElementById("translate-btn");
+  const resultAudio = resultDiv.querySelector("audio");
+
+  // The listener is attached once, before any src is assigned, so a cached
+  // audio file cannot fire canplay before we are listening. autoplayPending is
+  // cleared before play(), so play() can never run twice for one translation.
+  let autoplayPending = false;
+  if (resultAudio) {
+    resultAudio.addEventListener("canplay", function () {
+      if (!autoplayPending) {
+        return;
+      }
+      autoplayPending = false;
+      playAudioWithFallback(resultAudio);
+    });
+  }
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -19,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function () {
     translateBtn.disabled = true;
     resultDiv.classList.add("hidden");
     loadingDiv.classList.remove("hidden");
-    loadingDiv.setAttribute("aria-hidden", "false");
 
     try {
       const response = await fetch("/api/translate", {
@@ -36,23 +50,39 @@ document.addEventListener("DOMContentLoaded", function () {
         throw new Error(data.error || "Translation failed");
       }
 
+      const koreanText = data.korean_text || "";
+      const pronunciationLabel = koreanText || "this phrase";
+
       // Update the result div
       resultDiv.querySelector(".phrase-english").textContent =
-        data.english_text;
-      resultDiv.querySelector(".phrase-korean").textContent = data.korean_text;
+        data.english_text || "";
+      resultDiv.querySelector(".phrase-korean").textContent = koreanText;
 
       const audio = resultDiv.querySelector("audio");
-      audio.src = data.audio_path;
-      audio.load();
+      const repeatBtn = resultDiv.querySelector(".repeat-btn");
+
+      if (repeatBtn) {
+        repeatBtn.setAttribute(
+          "aria-label",
+          "Repeat pronunciation for " + pronunciationLabel
+        );
+      }
+
+      if (audio) {
+        audio.setAttribute(
+          "aria-label",
+          "Play pronunciation for " + pronunciationLabel
+        );
+
+        if (data.audio_path) {
+          autoplayPending = true;
+          audio.src = data.audio_path;
+          audio.load();
+        }
+      }
 
       // Show result
       resultDiv.classList.remove("hidden");
-
-      // Automatically play audio when loaded
-      audio.addEventListener("canplaythrough", function audioLoaded() {
-        playAudioWithFallback(audio);
-        audio.removeEventListener("canplaythrough", audioLoaded);
-      });
     } catch (error) {
       console.error("Error:", error);
       showError(error.message || "Failed to translate. Please try again.");
@@ -60,7 +90,6 @@ document.addEventListener("DOMContentLoaded", function () {
       // Hide loading state
       translateBtn.disabled = false;
       loadingDiv.classList.add("hidden");
-      loadingDiv.setAttribute("aria-hidden", "true");
     }
   });
 });

@@ -7,6 +7,7 @@ PIP = venv/bin/pip
 help:
 	@echo "Available targets:"
 	@echo "  install    - Set up virtual environment and install dependencies"
+	@echo "  install-dev - Install test/lint dependencies too"
 	@echo "  run        - Run the CLI script interactively (prompts for phrase)"
 	@echo "  runp       - Run the CLI script with a phrase (e.g., make runp phrase=\"Hello world\")"
 	@echo "  web        - Run the web application"
@@ -19,14 +20,16 @@ help:
 	@echo "  db-downgrade - Downgrade the database"
 
 # Target to set up the environment
-.PHONY: install
-install: venv/bin/activate
-
-venv/bin/activate:
-	python3 -m venv venv
+.PHONY: install install-dev
+install:
+	@test -d venv || python3 -m venv venv
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
-	@echo "Virtual environment created and dependencies installed."
+	@echo "Runtime dependencies installed."
+
+install-dev: install
+	$(PIP) install -r requirements-dev.txt
+	@echo "Development dependencies installed."
 
 # Target to run the CLI script interactively
 .PHONY: run
@@ -56,8 +59,8 @@ init-db: install
 .PHONY: backup-db
 backup-db:
 	@mkdir -p backups
-	@cp korean_learner.db backups/korean_learner_$(shell date +%Y%m%d%H%M%S).db
-	@echo "Database backed up to backups/ directory"
+	@sqlite3 korean_learner.db ".backup 'backups/korean_learner_$(shell date +%Y%m%d%H%M%S).db'"
+	@echo "Database backed up to backups/ directory (WAL-safe)"
 
 # Target to clean generated files
 .PHONY: clean
@@ -71,11 +74,21 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	@echo "Cleanup complete."
 
+# Run the test suite
+.PHONY: test
+test:
+	$(PYTHON) -m pytest -q
+
+# Lint application and tests
+.PHONY: lint
+lint:
+	venv/bin/ruff check app config.py run.py tests
+
 # Database migration targets
 .PHONY: db-init db-migrate db-upgrade db-downgrade
 
 db-init: install
-	FLASK_APP=run.py venv/bin/flask db init
+	FLASK_APP=run.py venv/bin/flask db upgrade
 
 db-migrate: install
 	FLASK_APP=run.py venv/bin/flask db migrate -m "$(m)"

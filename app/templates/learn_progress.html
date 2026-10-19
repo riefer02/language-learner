@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %} - Progress{% endblock %}
+{% block content %}
+<div class="learn">
+  <div class="learn-header">
+    <p class="learn-eyebrow">Your Korean</p>
+    <h2>What you can actually retrieve.</h2>
+    <p class="learn-sub">
+      This is the honest scoreboard: practiced cards, review history, and the
+      next scheduled rep — not XP.
+    </p>
+  </div>
+
+  <div class="learn-stats" aria-label="Learning summary">
+    <div class="learn-stat">
+      <b>{{ summary.learned }}</b>
+      <span>cards practiced</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.due }}</b>
+      <span>cards due now</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.streak }}</b>
+      <span>day streak</span>
+    </div>
+    <div class="learn-stat">
+      <b>{{ summary.reviews_today }}</b>
+      <span>reviews today</span>
+    </div>
+  </div>
+
+  <section class="learn-how" aria-labelledby="skills-heading">
+    <h3 id="skills-heading">Skill breakdown</h3>
+    {% for skill in skills %}
+    <div class="skill-row">
+      <div class="skill-label">
+        <span>{{ skill.skill | capitalize }}</span>
+        <span>{{ skill.practiced }} / {{ skill.total }}</span>
+      </div>
+      <progress value="{{ skill.practiced }}" max="{{ skill.total }}">
+        {{ skill.practiced }} of {{ skill.total }}
+      </progress>
+    </div>
+    {% else %}
+    <p>No cards yet. Start a review to build your skill map.</p>
+    {% endfor %}
+  </section>
+
+  <section class="learn-how" aria-labelledby="history-heading">
+    <h3 id="history-heading">Recent reviews</h3>
+    {% if reviews %}
+    <ul class="review-history">
+      {% for log in reviews %}
+      <li>
+        <div>
+          <strong lang="ko">{{ log.card.item.korean }}</strong>
+          <span lang="en"> — {{ log.card.item.english }}</span>
+        </div>
+        <div class="review-history-meta">
+          <span class="rating-pill rating-{{ log.rating }}">
+            {% if log.rating == 1 %}Again{% elif log.rating == 2 %}Hard{% elif log.rating == 3 %}Good{% else %}Easy{% endif %}
+          </span>
+          <time datetime="{{ log.reviewed_at.strftime('%Y-%m-%dT%H:%M:%SZ') }}">
+            {{ log.reviewed_at.strftime("%d %b · %H:%M") }} UTC
+          </time>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No reviews yet. Your first card is waiting on the Today screen.</p>
+    {% endif %}
+  </section>
+
+  <div class="learn-primary">
+    {% if summary.next_due_human %}
+    <p class="learn-meta">Next review {{ summary.next_due_human }}.</p>
+    {% endif %}
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.today') }}">
+      Back to Today
+    </a>
+  </div>
+</div>
+{% endblock %}
