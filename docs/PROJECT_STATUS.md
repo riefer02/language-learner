@@ -14,7 +14,7 @@
 - **Seed deck:** 30 hand-curated Korean items (survival phrases, core nouns, five grammar patterns), one review card per item
 - **Daily new-card cap:** 10 new cards per day; review cards are always prioritized
 - **Hangul bootcamp:** seven lessons (letters, vowels/blocks, batchim, double batchim, signs/menus/numbers, connected speech, final reading check) with 88 interactive drills
-- **Mission scenes:** four scripted roleplays (café, directions, pharmacy, workplace intro) with tolerant answer matching, hints, resumable progress, and a debrief that adds three chunks to the review deck
+- **Mission scenes:** four scripted roleplays (café, directions, pharmacy, workplace intro) with tolerant answer matching, hints, resumable progress, voice answers, and a debrief that adds three chunks to the review deck
 - **Sound Gym:** 11 minimal-pair perception drills, 8 production prompts, local-only recording, and transcript-based speech checks
 - **Speech evidence:** `SpeechAttempt` records what the model heard and a transcript-match score — explicitly not a pronunciation grade; raw audio is never stored
 - **Alpha instrumentation:** append-only `Event` table and `flask metrics` for activation, review users, speech attempts, D1/D7
@@ -22,7 +22,7 @@
 - **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **169 automated tests**, ruff clean, CI with an empty-database migration gate
+- **173 automated tests**, ruff clean, CI with an empty-database migration gate
 
 ## What changed in Phase 0
 
@@ -64,6 +64,10 @@
 |---|---|
 | ![Scene play](screenshots/scene-play.png) | ![Scene complete](screenshots/scene-complete.png) |
 
+| Voice answer panel |
+|---|
+| ![Scene voice input](screenshots/scene-play-voice.png) |
+
 ## What still does not exist
 
 - Real user accounts, sessions, OAuth, and per-user data isolation (local single-user only)
@@ -72,8 +76,8 @@
 - Hangul typing drills and timed fluency coaching (the 7-lesson decoding curriculum is complete)
 - Phoneme-level pronunciation scoring, prosody feedback, and calibrated L2 ASR (current checks are transcript-based)
 - Native-reviewed audio for the seed deck, Sound Gym, and scene characters (browser TTS is a stopgap)
-- Speech answers inside scenes (scenes currently use typed Korean; speech scoring is available in the Sound Gym)
 - Branching scene state and adaptive difficulty (scenes are scripted, 3 steps each)
+- Native-reviewed character audio for scenes (browser TTS is a stopgap)
 - Grammar explanation UI beyond short notes on seed items
 - Can-do artifacts, full skill map, retention dashboard, weekly recap
 - Streak repair, reminders, notifications, vacation mode, and a flexible habit system (a basic day streak exists)

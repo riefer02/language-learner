@@ -23,6 +23,7 @@ from app.learning.scenes import (
     get_or_create_session,
     get_scene,
     list_scenes_with_status,
+    match_answer,
     reset_session,
     session_transcript,
     submit_answer,
@@ -49,7 +50,12 @@ from app.learning.sound_gym_data import (
     PRODUCTION_PROMPTS,
 )
 from app.models import Item, ReviewCard, ReviewLog, SpeechAttempt
-from app.services.speech import SpeechConfigError, SpeechError, score_audio
+from app.services.speech import (
+    SpeechConfigError,
+    SpeechError,
+    score_audio,
+    transcribe_audio,
+)
 from app.utils.rate_limit import rate_limit
 from app.utils.schemas import contains_hangul
 
@@ -193,6 +199,123 @@ def scene_answer(slug):
         error="Not quite. Use the hint, then try once more.",
         hint=result["hint"],
         last_answer=answer,
+    )
+
+
+@learn.route("/scenes/<slug>/speak", methods=["POST"])
+@rate_limit(
+    limit=lambda: current_app.config.get("RATE_LIMIT_SPEECH", 20),
+    window_seconds=lambda: current_app.config.get(
+        "RATE_LIMIT_WINDOW_SECONDS", 60
+    ),
+    scope="scene_speech",
+)
+def scene_speak(slug):
+    user = _user()
+    if _needs_onboarding(user):
+        return jsonify({"error": "Finish onboarding first"}), 403
+    scene = get_scene(slug)
+    if scene is None:
+        return jsonify({"error": "Scene not found"}), 404
+    session = get_or_create_session(user.id, slug)
+    if session.completed:
+        return jsonify({"accepted": True, "completed": True}), 200
+
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        try:
+            validate_csrf(request.form.get("csrf_token"))
+        except Exception as error:
+            raise BadRequest("Invalid or missing CSRF token") from error
+
+    upload = request.files.get("audio")
+    if upload is None or not upload.filename:
+        return jsonify({"error": "Audio file is required"}), 400
+
+    content_type = upload.mimetype or "application/octet-stream"
+    extension = upload.filename.rsplit(".", 1)[-1].lower()
+    if not content_type.startswith("audio/") and extension not in {
+        "webm",
+        "wav",
+        "mp3",
+        "m4a",
+        "ogg",
+    }:
+        return jsonify({"error": "Unsupported audio format"}), 415
+
+    max_bytes = current_app.config.get("SPEECH_MAX_BYTES", 5 * 1024 * 1024)
+    audio_bytes = upload.read(max_bytes + 1)
+    if len(audio_bytes) > max_bytes:
+        return jsonify({"error": "Audio file is too large"}), 413
+
+    try:
+        transcript = transcribe_audio(
+            audio_bytes, upload.filename, content_type
+        )
+    except SpeechConfigError as error:
+        current_app.logger.warning("Scene speech unavailable: %s", error)
+        return jsonify({"error": "Speech checking is not configured"}), 503
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except SpeechError as error:
+        current_app.logger.warning("Scene speech failed: %s", error)
+        return jsonify({"error": "Speech service is unavailable"}), 502
+
+    step = scene["steps"][session.step_index]
+    accepted, best_expected, score = match_answer(step["expected"], transcript)
+    duration_ms = request.form.get("duration_ms", type=int)
+    if duration_ms is not None:
+        duration_ms = max(0, min(duration_ms, 60_000))
+
+    attempt = SpeechAttempt(
+        user_id=user.id,
+        target_text=best_expected,
+        transcript=transcript[:500],
+        match_score=score,
+        acceptable=accepted,
+        provider=current_app.config.get("SPEECH_PROVIDER", "openai"),
+        model=current_app.config.get(
+            "SPEECH_TRANSCRIBE_MODEL", "gpt-4o-transcribe"
+        ),
+        duration_ms=duration_ms,
+    )
+    db.session.add(attempt)
+
+    if not accepted:
+        db.session.commit()
+        record_event(
+            user.id,
+            "scene_speech_attempt",
+            scene_slug=slug,
+            accepted=False,
+        )
+        return jsonify(
+            {
+                "accepted": False,
+                "transcript": transcript,
+                "hint": step["hint"],
+                "best_expected": best_expected,
+                "match_score": round(score, 3),
+            }
+        )
+
+    result = submit_answer(user, session, scene, transcript)
+    db.session.add(attempt)
+    db.session.commit()
+    record_event(
+        user.id,
+        "scene_speech_attempt",
+        scene_slug=slug,
+        accepted=True,
+        completed=result["completed"],
+    )
+    return jsonify(
+        {
+            "accepted": True,
+            "transcript": transcript,
+            "completed": result["completed"],
+            "step_index": result["step_index"],
+            "redirect_url": url_for("learn.scene_detail", slug=slug),
+        }
     )
 
 

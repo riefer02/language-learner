@@ -91,7 +91,7 @@
 | P2-02 | Word-level intelligibility (`gpt-transcribe`) | Show "what I heard"; false-negative logging | [~] transcript + transcript-match done; false-negative logging pending |
 | P2-03 | Phoneme evidence (Azure PA / SpeechSuper) | Per-phoneme scores as evidence, not a global grade | [ ] next |
 | P2-04 | Sound Gym (perception + production) | 20–30 minimal pairs; 5–8 voices; F0/duration contour | [~] 11 pairs + 8 prompts + browser TTS; native audio/contours pending |
-| P2-05 | Scene engine (goal state machine) | Persona, goal, target chunks, success criteria, fallback lines | [~] 4 scripted scenes, tolerant matching, hints, resumable progress; speech answers/branching pending |
+| P2-05 | Scene engine (goal state machine) | Persona, goal, target chunks, success criteria, fallback lines | [~] 4 scripted scenes, tolerant matching, hints, resumable progress, voice answers; branching/native audio pending |
 | P2-06 | Debrief → cards | 2 strengths, 1 fix, 3 cards; one retry | [~] debrief creates 3 FSRS cards and shows strengths/fix; retry flow pending |
 | P2-07 | 30 validated scenes | Native-reviewed; < 1% error rate on gold set | [~] 4 scenes; native review and 26 more pending |
 | P2-08 | Native eval harness | 500 items; 2–3 raters; release gate | [ ] |
@@ -158,7 +158,7 @@ P1-09 ─> P3 (adaptive/beta)
 | P0-09 Rate limiter | Platform | done | Thread-safe bounded limiter, per-endpoint, `Retry-After` |
 | P0-10 Errors | Platform | done | 404/415/500, request IDs, no raw exception leakage |
 | P0-11 Headers/auth | Platform | done | CSP, frame/referrer headers, optional basic auth |
-| P0-12 Tests/CI | Quality | done | 169 tests, ruff, empty-DB migration gate |
+| P0-12 Tests/CI | Quality | done | 173 tests, ruff, empty-DB migration gate |
 | P1-02/04/05/06 vertical slice | Learning/Experience | done | Local user, 30 seed items, FSRS review, 10-new/day cap, Today/Review/Progress screens |
 | P1-07 Onboarding + first word | Experience | done | Goal/time/experience/timezone, first spoken 안녕하세요, local recording |
 | P1-08 Hangul days 1–7 | Learning/Experience | done | 7 lessons, 88 drills, mobile tables, Korean font fallback |
@@ -221,3 +221,4 @@ P1-09 ─> P3 (adaptive/beta)
 | 2026-10-19 | Phase 2 start: Sound Gym (11 minimal pairs, 8 production prompts), local recording, transcript-based speech checks, SpeechAttempt persistence, no audio retention |
 | 2026-10-19 | Alpha instrumentation: append-only Event table recording onboarding, reviews, Sound Gym opens, and speech attempts; `flask metrics` activation/D1/D7 summary |
 | 2026-10-19 | Mission scenes v0: café, directions, pharmacy, workplace intro; tolerant matching, hints, resumable sessions, debrief → 3 FSRS cards; scene events recorded |
+| 2026-10-19 | Voice answers in scenes: MediaRecorder → transcript → tolerant scene match → advance; typed Korean remains the fallback; failed attempts stored as SpeechAttempt evidence |

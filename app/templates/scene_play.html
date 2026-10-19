@@ -77,6 +77,26 @@
     <button type="submit" class="btn btn-primary btn-large">Say it</button>
   </form>
 
+  <div
+    class="scene-speak-panel"
+    id="scene-speak-panel"
+    data-scene="{{ scene.slug }}"
+    data-csrf="{{ csrf_token() }}"
+  >
+    <p class="record-title">Or say it out loud</p>
+    <div class="record-actions">
+      <button type="button" class="btn" id="scene-record">Record</button>
+      <button type="button" class="btn" id="scene-stop" hidden>Stop</button>
+    </div>
+    <audio id="scene-playback" controls hidden></audio>
+    <button type="button" class="btn" id="scene-use" disabled>
+      Use my voice
+    </button>
+    <p class="record-status" id="scene-speech-status" role="status" aria-live="polite">
+      Speak the line, then check what the model heard. Typing always works.
+    </p>
+  </div>
+
   <form
     class="scene-reset"
     method="post"

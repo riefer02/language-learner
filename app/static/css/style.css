@@ -1400,6 +1400,23 @@ progress {
   font-weight: 650;
 }
 
+.scene-speak-panel {
+  margin: 14px 0;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 10px;
+}
+
+.scene-speak-panel .record-actions {
+  margin-bottom: 10px;
+}
+
+#scene-playback {
+  width: 100%;
+  margin: 8px 0;
+}
+
 .scene-reset {
   margin-top: 12px;
   text-align: right;
