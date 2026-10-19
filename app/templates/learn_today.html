@@ -46,6 +46,19 @@
     {% endif %}
   </div>
 
+  {% if next_mission %}
+  <div class="next-mission">
+    <div>
+      <p class="learn-eyebrow">Next can-do</p>
+      <strong>{{ next_mission.scene.can_do }}</strong>
+      <p class="learn-meta">{{ next_mission.scene.title }} · {{ next_mission.scene.persona }}</p>
+    </div>
+    <a class="btn" href="{{ url_for('learn.scene_detail', slug=next_mission.scene.slug) }}">
+      Open mission
+    </a>
+  </div>
+  {% endif %}
+
   <div class="learn-how">
     <h3>How this works</h3>
     <ol>

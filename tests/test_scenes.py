@@ -2,7 +2,13 @@
 
 from app.learning.scene_data import SCENES
 from app.learning.scenes import get_scene
-from app.models import Event, Item, ReviewCard, SceneSession
+from app.models import (
+    CanDoArtifact,
+    Event,
+    Item,
+    ReviewCard,
+    SceneSession,
+)
 
 
 def test_scene_list_renders(client):
@@ -77,6 +83,48 @@ def test_completing_scene_creates_cards_and_debrief(client, app):
         assert Item.query.count() == items_before + 3
         assert ReviewCard.query.count() == cards_before + 3
         assert Event.query.filter_by(name="scene_completed").count() == 1
+        artifacts = CanDoArtifact.query.all()
+        assert len(artifacts) == 1
+        assert "order" in artifacts[0].label.lower()
+
+
+def test_replaying_scene_updates_one_can_do_artifact(client, app):
+    scene = get_scene("cafe-order")
+    client.get("/learn/scenes/cafe-order")
+    for step in scene["steps"]:
+        client.post(
+            "/learn/scenes/cafe-order/answer",
+            data={"answer": step["expected"][0]},
+        )
+    client.post("/learn/scenes/cafe-order/reset")
+    for step in scene["steps"]:
+        client.post(
+            "/learn/scenes/cafe-order/answer",
+            data={"answer": step["expected"][0]},
+        )
+
+    with app.app_context():
+        assert CanDoArtifact.query.count() == 1
+        assert SceneSession.query.filter_by(scene_slug="cafe-order").first().completed
+
+
+def test_progress_and_today_show_can_do(client, app):
+    scene = get_scene("cafe-order")
+    client.get("/learn/scenes/cafe-order")
+    for step in scene["steps"]:
+        client.post(
+            "/learn/scenes/cafe-order/answer",
+            data={"answer": step["expected"][0]},
+        )
+
+    progress = client.get("/learn/progress")
+    assert progress.status_code == 200
+    assert b"Can-do proof" in progress.data
+    assert scene["can_do"].split(".")[0].encode() in progress.data
+
+    today = client.get("/learn")
+    assert today.status_code == 200
+    assert b"Next can-do" in today.data
 
 
 def test_reset_scene_starts_over(client, app):

@@ -497,6 +497,63 @@ audio {
   font-weight: 600;
 }
 
+.next-mission {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 10px;
+}
+
+.next-mission .learn-eyebrow {
+  margin-bottom: 2px;
+}
+
+.next-mission .learn-meta {
+  margin-top: 4px;
+}
+
+.next-mission .btn {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 560px) {
+  .next-mission {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.can-do-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.can-do-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--grey);
+  font-size: 0.9rem;
+}
+
+.can-do-list li:last-child {
+  border-bottom: 0;
+}
+
+.can-do-list time {
+  color: #5b6472;
+  white-space: nowrap;
+  font-size: 0.78rem;
+}
+
 .learn-how {
   background: white;
   border: 1px solid var(--grey);

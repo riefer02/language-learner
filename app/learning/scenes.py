@@ -10,7 +10,7 @@ from flask import current_app
 from app import db
 from app.learning.scene_data import SCENES
 from app.learning.service import ensure_review_cards
-from app.models import Item, SceneSession
+from app.models import CanDoArtifact, Item, SceneSession
 
 
 def _normalize(text):
@@ -44,6 +44,23 @@ def list_scenes_with_status(user_id):
             }
         )
     return result
+
+
+def can_do_artifacts(user_id, limit=None):
+    query = (
+        CanDoArtifact.query.filter_by(user_id=user_id)
+        .order_by(CanDoArtifact.created_at.desc(), CanDoArtifact.id.desc())
+    )
+    if limit:
+        query = query.limit(limit)
+    return query.all()
+
+
+def next_scene(user_id):
+    for row in list_scenes_with_status(user_id):
+        if row["status"] != "completed":
+            return row
+    return None
 
 
 def get_or_create_session(user_id, slug):
@@ -165,10 +182,26 @@ def submit_answer(user, session, scene, answer):
     completed = session.step_index >= len(steps)
     cards_created = 0
     items_created = 0
+    artifact_created = False
     if completed:
         session.completed = True
         session.completed_at = datetime.now(UTC)
         items_created, cards_created = _create_debrief_cards(user, scene)
+        artifact = CanDoArtifact.query.filter_by(
+            user_id=user.id, scene_slug=scene["slug"]
+        ).first()
+        if artifact is None:
+            db.session.add(
+                CanDoArtifact(
+                    user_id=user.id,
+                    scene_slug=scene["slug"],
+                    label=scene["can_do"],
+                )
+            )
+            artifact_created = True
+        else:
+            artifact.label = scene["can_do"]
+            artifact.created_at = datetime.now(UTC)
 
     db.session.commit()
     return {
@@ -179,4 +212,5 @@ def submit_answer(user, session, scene, answer):
         "success_note": step["success_note"],
         "cards_created": cards_created,
         "items_created": items_created,
+        "artifact_created": artifact_created,
     }

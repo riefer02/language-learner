@@ -47,6 +47,27 @@
     {% endfor %}
   </section>
 
+  <section class="learn-how" aria-labelledby="can-do-heading">
+    <h3 id="can-do-heading">Can-do proof</h3>
+    {% if can_dos %}
+    <ul class="can-do-list">
+      {% for artifact in can_dos %}
+      <li>
+        <span>{{ artifact.label }}</span>
+        <time datetime="{{ artifact.created_at.strftime('%Y-%m-%dT%H:%M:%SZ') }}">
+          {{ artifact.created_at.strftime("%d %b %Y") }}
+        </time>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>
+      Complete a mission scene to earn your first can-do proof.
+      <a href="{{ url_for('learn.scenes') }}">Open scenes</a>.
+    </p>
+    {% endif %}
+  </section>
+
   <section class="learn-how" aria-labelledby="history-heading">
     <h3 id="history-heading">Recent reviews</h3>
     {% if reviews %}

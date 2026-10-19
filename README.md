@@ -19,6 +19,7 @@ An application for learning Korean that includes both a command-line interface a
 - **Hangul bootcamp:** `/learn/hangul` has seven lessons (letters, vowels/blocks, batchim, double batchim, real-world text, connected speech, and a final reading check) with 88 interactive drills
 - **Learn loop:** `/learn` shows what is due, `/learn/review` presents a retrieval card and grades it with FSRS-6, and `/learn/progress` shows practiced cards and recent reviews
 - **Mission scenes:** `/learn/scenes` has four scripted Korean roleplays (café, directions, pharmacy, workplace intro) with tolerant answer matching, hints, resumable progress, voice or typed answers, and a debrief that adds three chunks to the review deck
+- **Can-do proof:** completing a scene creates a dated “I can…” artifact on `/learn/progress` and surfaces the next mission on Today
 - **Sound Gym:** `/learn/sound-gym` has minimal-pair perception drills and production prompts with local recording and transcript-based speech checks (not an accent grade; raw audio is not stored)
 - **Alpha metrics:** `flask metrics` prints activation, users with reviews, speech attempts, and D1/D7
 - **Starter deck:** `flask seed-content` adds 30 Korean items and creates review cards for the local learner

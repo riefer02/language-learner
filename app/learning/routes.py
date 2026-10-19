@@ -20,10 +20,12 @@ from app import db
 from app.learning.analytics import record_event
 from app.learning.hangul_data import HANGUL_LESSONS
 from app.learning.scenes import (
+    can_do_artifacts,
     get_or_create_session,
     get_scene,
     list_scenes_with_status,
     match_answer,
+    next_scene,
     reset_session,
     session_transcript,
     submit_answer,
@@ -99,7 +101,12 @@ def today():
         return redirect(url_for("onboarding.welcome"))
     summary = stats(user.id)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
-    return render_template("learn_today.html", summary=summary, user=user)
+    return render_template(
+        "learn_today.html",
+        summary=summary,
+        user=user,
+        next_mission=next_scene(user.id),
+    )
 
 
 @learn.route("/scenes")
@@ -487,6 +494,7 @@ def progress():
         summary=summary,
         skills=skill_breakdown(user.id),
         reviews=recent_reviews(user.id),
+        can_dos=can_do_artifacts(user.id),
     )
 
 

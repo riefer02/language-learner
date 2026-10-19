@@ -76,7 +76,7 @@
 | P1-06 | Today / Review / You screens | Experience | Mobile-first; keyboard/IME; Korean `lang`; can-do artifact | [~] Today + Review done; You/can-do pending |
 | P1-07 | Onboarding + first spoken sentence | Experience | Goal/time/experience; local record/playback; account after win | [x] local onboarding + recording; real accounts pending |
 | P1-08 | Hangul bootcamp days 1–7 | Learning/Experience | Read-aloud checks; typing; batchim/liaison drills | [x] 7 lessons, 88 interactive drills; timed typing/fluency coaching next |
-| P1-09 | Can-do + progress model | Learning | Skill map, retention, artifacts; no XP hero metric | [~] skill breakdown + recent reviews; can-do artifacts and retention pending |
+| P1-09 | Can-do + progress model | Learning | Skill map, retention, artifacts; no XP hero metric | [~] skill breakdown, recent reviews, dated can-do artifacts; retention dashboard pending |
 | P1-10 | Alpha instrumentation | Quality | Activation, D1/D7, review latency, error rate | [~] Event table + `flask metrics` done; latency/error dashboards pending |
 
 **Exit criteria:** 20 alpha users; first spoken sentence < 2 min; 10-minute session end to end; p95 review < 200 ms; no orphan files; 30-day retention instrumentation live.
@@ -158,7 +158,7 @@ P1-09 ─> P3 (adaptive/beta)
 | P0-09 Rate limiter | Platform | done | Thread-safe bounded limiter, per-endpoint, `Retry-After` |
 | P0-10 Errors | Platform | done | 404/415/500, request IDs, no raw exception leakage |
 | P0-11 Headers/auth | Platform | done | CSP, frame/referrer headers, optional basic auth |
-| P0-12 Tests/CI | Quality | done | 173 tests, ruff, empty-DB migration gate |
+| P0-12 Tests/CI | Quality | done | 175 tests, ruff, empty-DB migration gate |
 | P1-02/04/05/06 vertical slice | Learning/Experience | done | Local user, 30 seed items, FSRS review, 10-new/day cap, Today/Review/Progress screens |
 | P1-07 Onboarding + first word | Experience | done | Goal/time/experience/timezone, first spoken 안녕하세요, local recording |
 | P1-08 Hangul days 1–7 | Learning/Experience | done | 7 lessons, 88 drills, mobile tables, Korean font fallback |
@@ -222,3 +222,4 @@ P1-09 ─> P3 (adaptive/beta)
 | 2026-10-19 | Alpha instrumentation: append-only Event table recording onboarding, reviews, Sound Gym opens, and speech attempts; `flask metrics` activation/D1/D7 summary |
 | 2026-10-19 | Mission scenes v0: café, directions, pharmacy, workplace intro; tolerant matching, hints, resumable sessions, debrief → 3 FSRS cards; scene events recorded |
 | 2026-10-19 | Voice answers in scenes: MediaRecorder → transcript → tolerant scene match → advance; typed Korean remains the fallback; failed attempts stored as SpeechAttempt evidence |
+| 2026-10-19 | Can-do proof: scene completion writes one dated artifact per scene, shown on progress and Today; replay updates rather than duplicates |

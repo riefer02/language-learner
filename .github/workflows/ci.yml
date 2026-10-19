@@ -50,6 +50,7 @@ jobs:
               "review_log",
               "speech_attempt",
               "scene_session",
+              "can_do_artifact",
               "event",
               "alembic_version",
           }

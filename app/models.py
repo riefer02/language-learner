@@ -199,6 +199,42 @@ class ReviewLog(db.Model):
     card = db.relationship("ReviewCard")
 
 
+class CanDoArtifact(db.Model):
+    """A dated proof that the learner completed a real-world task."""
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id", "scene_slug", name="uq_can_do_user_scene"
+        ),
+        db.Index("ix_can_do_user_date", "user_id", "created_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    scene_slug = db.Column(db.String(60), nullable=False)
+    label = db.Column(db.String(300), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        index=True,
+    )
+
+    user = db.relationship("User")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "scene_slug": self.scene_slug,
+            "label": self.label,
+            "created_at": self.created_at.isoformat()
+            if self.created_at
+            else None,
+        }
+
+
 class SceneSession(db.Model):
     """Progress through one scripted mission scene for one learner."""
 
