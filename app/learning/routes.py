@@ -16,6 +16,7 @@ from sqlalchemy.orm.exc import StaleDataError
 from werkzeug.exceptions import BadRequest
 
 from app import db
+from app.learning.hangul_data import HANGUL_LESSONS
 from app.learning.scheduler import (
     apply_rating,
     ensure_utc,
@@ -46,6 +47,12 @@ def _user():
     return user
 
 
+def _needs_onboarding(user):
+    return current_app.config.get(
+        "ONBOARDING_ENABLED", True
+    ) and not user.onboarding_complete
+
+
 def _format_next_due(value):
     if value is None:
         return None
@@ -64,14 +71,43 @@ def _format_next_due(value):
 @learn.route("/", strict_slashes=False)
 def today():
     user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
     summary = stats(user.id)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
     return render_template("learn_today.html", summary=summary, user=user)
 
 
+@learn.route("/hangul")
+def hangul():
+    return render_template("hangul_index.html", lessons=HANGUL_LESSONS)
+
+
+@learn.route("/hangul/<slug>")
+def hangul_lesson(slug):
+    lesson = next(
+        (item for item in HANGUL_LESSONS if item["slug"] == slug), None
+    )
+    if lesson is None:
+        abort(404)
+    index = HANGUL_LESSONS.index(lesson)
+    next_lesson = (
+        HANGUL_LESSONS[index + 1] if index + 1 < len(HANGUL_LESSONS) else None
+    )
+    return render_template(
+        "hangul_lesson.html",
+        lesson=lesson,
+        next_lesson=next_lesson,
+        lesson_number=index + 1,
+        lesson_total=len(HANGUL_LESSONS),
+    )
+
+
 @learn.route("/progress")
 def progress():
     user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
     summary = stats(user.id)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
     return render_template(
@@ -85,6 +121,8 @@ def progress():
 @learn.route("/review")
 def review():
     user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
     card = next_due_card(user.id)
     if card is None:
         summary = stats(user.id)
@@ -124,6 +162,8 @@ def review():
 @learn.route("/review/<int:card_id>", methods=["POST"])
 def submit_review(card_id):
     user = _user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
     card = db.session.get(ReviewCard, card_id)
     if card is None or card.user_id != user.id:
         abort(404)

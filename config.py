@@ -59,6 +59,7 @@ class Config:
 
     # Learning-science guardrail: new material is a budget, not a binge.
     NEW_CARDS_PER_DAY = _env_int("NEW_CARDS_PER_DAY", 10)
+    ONBOARDING_ENABLED = _env_bool("ONBOARDING_ENABLED", True)
 
     # Optional stop-gap auth. Real per-user accounts arrive in Phase 1.
     REQUIRE_AUTH = _env_bool("REQUIRE_AUTH", False)
@@ -138,6 +139,7 @@ class TestingConfig(Config):
     WTF_CSRF_ENABLED = False
     RATE_LIMIT_ENABLED = False
     REQUIRE_AUTH = False
+    ONBOARDING_ENABLED = False
     # A file-backed SQLite database keeps every connection pointed at the same
     # schema. Tests override this with a per-test temp file via create_app().
     SQLALCHEMY_DATABASE_URI = os.environ.get(

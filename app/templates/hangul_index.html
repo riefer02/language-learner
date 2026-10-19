@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %} - Hangul{% endblock %}
+{% block content %}
+<div class="hangul">
+  <p class="learn-eyebrow">Hangul bootcamp</p>
+  <h2>Read Korean by Sunday.</h2>
+  <p class="learn-sub">
+    Three short lessons. Recognition is fast; decoding real text takes practice.
+    Do one lesson, then read ten blocks out loud.
+  </p>
+
+  <div class="hangul-grid">
+    {% for lesson in lessons %}
+    <a
+      class="hangul-card"
+      href="{{ url_for('learn.hangul_lesson', slug=lesson.slug) }}"
+    >
+      <span class="day">Day {{ lesson.day }}</span>
+      <h3>{{ lesson.title }}</h3>
+      <p>{{ lesson.subtitle }}</p>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="hangul-notes">
+    <strong>How to practice</strong>
+    <ul>
+      <li>Say each block out loud before you check the romanization.</li>
+      <li>Read the Korean column first; cover the English cue with your hand.</li>
+      <li>Ten accurate reps beat a hundred silent glances.</li>
+      <li>Come back tomorrow. Decoding becomes automatic through spaced exposure.</li>
+    </ul>
+  </div>
+
+  <p class="onboarding-link">
+    <a href="{{ url_for('learn.today') }}">Back to Today</a>
+  </p>
+</div>
+{% endblock %}

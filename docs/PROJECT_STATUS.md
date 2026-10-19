@@ -9,13 +9,16 @@
 - Korean TTS via OpenAI `tts-1` (single voice, or two voices in conversations)
 - Saved phrase library with pagination and audio playback
 - Short 2–4 line conversation generation with per-line and merged audio
+- **Onboarding:** goal, daily time, experience, timezone, and a first spoken 안녕하세요 with local-only recording
 - **Learn loop:** `/learn` today view, `/learn/review` retrieval card, 1–4 grading, FSRS-6 scheduling, review log
 - **Seed deck:** 30 hand-curated Korean items (survival phrases, core nouns, five grammar patterns), one review card per item
 - **Daily new-card cap:** 10 new cards per day; review cards are always prioritized
-- **Local single-user mode:** a local `User` row scopes review cards and logs; real accounts are next
+- **Hangul bootcamp:** three lessons (letters, vowels/blocks, batchim and sound changes) with interactive reading drills
+- **Progress view:** skill breakdown, recent reviews, practiced-card count
+- **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **75 automated tests**, ruff clean, CI with an empty-database migration gate
+- **104 automated tests**, ruff clean, CI with an empty-database migration gate
 
 ## What changed in Phase 0
 
@@ -41,19 +44,27 @@
 |---|---|
 | ![Answer revealed](screenshots/learn-review-answer.png) | ![Mobile](screenshots/learn-mobile.png) |
 
+| Onboarding | First spoken sentence |
+|---|---|
+| ![Onboarding](screenshots/onboarding-welcome.png) | ![First word](screenshots/onboarding-first-word.png) |
+
+| Hangul lessons | Hangul drills |
+|---|---|
+| ![Hangul index](screenshots/hangul-index.png) | ![Hangul lesson](screenshots/hangul-lesson.png) |
+
 ## What still does not exist
 
 - Real user accounts, sessions, OAuth, and per-user data isolation (local single-user only)
 - Postgres deployment; SQLite is still the default
-- Onboarding: goal/time/experience flow, placement, first spoken sentence
-- Hangul bootcamp (letters, batchim, liaison, typing)
-- Microphone capture, ASR, pronunciation scoring, Sound Gym
+- Placement test and an adaptive starting point (onboarding captures self-report only)
+- Hangul days 4–7: typing drills, double batchim, fluency practice
+- Microphone capture beyond the first-word keepsake, ASR, pronunciation scoring, Sound Gym
 - Scene/roleplay engine and conversation debrief
 - Grammar explanation UI beyond short notes on seed items
-- Can-do artifacts, skill map, retention dashboard, weekly recap
+- Can-do artifacts, full skill map, retention dashboard, weekly recap
 - Streak repair, reminders, notifications, vacation mode, and a flexible habit system (a basic day streak exists)
 - PWA/offline support
-- Content pipeline: 30 items only; no 20-scene library, no native review queue, no audio for seed items
+- Content pipeline: 30 items and 3 Hangul lessons only; no 20-scene library, no native review queue, no audio for seed items
 - Speech/TTS cost controls beyond caching (no per-user budget)
 - Postgres/Redis/multi-worker production setup
 

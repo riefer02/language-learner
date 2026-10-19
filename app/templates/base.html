@@ -19,8 +19,15 @@
           <li>
             <a
               href="{{ url_for('learn.today') }}"
-              aria-current="{{ 'page' if request.blueprint == 'learn' else 'false' }}"
+              aria-current="{{ 'page' if request.endpoint in ['learn.today', 'learn.review', 'learn.progress'] else 'false' }}"
               >Learn</a
+            >
+          </li>
+          <li>
+            <a
+              href="{{ url_for('learn.hangul') }}"
+              aria-current="{{ 'page' if request.blueprint == 'learn' and request.path.startswith('/learn/hangul') else 'false' }}"
+              >Hangul</a
             >
           </li>
           <li>

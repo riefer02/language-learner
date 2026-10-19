@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %} - Hangul day {{ lesson.day }}{% endblock %}
+{% block content %}
+<div class="hangul">
+  <div class="review-top">
+    <a href="{{ url_for('learn.hangul') }}">← Hangul</a>
+    <span class="review-count">Day {{ lesson.day }} of 3</span>
+  </div>
+
+  <p class="learn-eyebrow">Day {{ lesson.day }}</p>
+  <h2>{{ lesson.title }}</h2>
+  <p class="learn-sub">{{ lesson.subtitle }}</p>
+
+  <div class="hangul-can-do">
+    <strong>Goal:</strong> {{ lesson.goal }}
+  </div>
+
+  {% for section in lesson.sections %}
+  <section class="hangul-section">
+    <h3>{{ section.heading }}</h3>
+    <p>{{ section.body }}</p>
+    {% if section.table %}
+    <div class="table-scroll">
+      <table class="hangul-table">
+        <thead>
+          <tr>
+            {% for header in section.table.headers %}
+            <th scope="col" {% if header|has_hangul %}lang="ko"{% endif %}>
+              {{ header }}
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in section.table.rows %}
+          <tr>
+            {% for cell in row %}
+            <td {% if cell|has_hangul %}lang="ko"{% endif %}>{{ cell }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+  <section class="hangul-section" aria-labelledby="drills-heading">
+    <h3 id="drills-heading">Read it out loud</h3>
+    <p>Say the answer before you tap. The explanation is the lesson.</p>
+    {% for drill in lesson.drills %}
+    <div class="drill" data-answer="{{ drill.answer }}">
+      <p class="drill-prompt">{{ drill.prompt }}</p>
+      <div class="drill-options">
+        {% for option in drill.options %}
+        <button type="button" class="drill-option" data-option="{{ option }}">
+          {{ option }}
+        </button>
+        {% endfor %}
+      </div>
+      <p
+        class="drill-feedback"
+        data-explanation="{{ drill.explanation }}"
+        hidden
+        aria-live="polite"
+      >
+        {{ drill.explanation }}
+      </p>
+    </div>
+    {% endfor %}
+  </section>
+
+  <div class="hangul-notes">
+    <strong>Notes</strong>
+    <ul>
+      {% for note in lesson.notes %}
+      <li>{{ note }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="hangul-can-do">
+    <strong>Can-do:</strong> {{ lesson.can_do }}
+  </div>
+
+  <div class="learn-primary">
+    {% if next_lesson %}
+    <a
+      class="btn btn-primary btn-large"
+      href="{{ url_for('learn.hangul_lesson', slug=next_lesson.slug) }}"
+    >
+      Next: Day {{ next_lesson.day }} · {{ next_lesson.title }}
+    </a>
+    {% else %}
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.today') }}">
+      Back to Today
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/hangul.js') }}"></script>
+{% endblock %}

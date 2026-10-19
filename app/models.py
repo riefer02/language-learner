@@ -74,6 +74,13 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=True)
     display_name = db.Column(db.String(100), nullable=False, default="Learner")
     is_local = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    goal = db.Column(db.String(30), nullable=False, default="everyday")
+    daily_minutes = db.Column(db.Integer, nullable=False, default=10)
+    experience = db.Column(db.String(20), nullable=False, default="new")
+    timezone = db.Column(db.String(64), nullable=False, default="UTC")
+    onboarding_complete = db.Column(
+        db.Boolean, nullable=False, default=False
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     def __repr__(self):

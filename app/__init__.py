@@ -259,10 +259,12 @@ def create_app(config_name=None, overrides=None):
 
     from app.learning.cli import register_learning_cli
     from app.learning.routes import learn as learn_blueprint
+    from app.onboarding.routes import onboarding as onboarding_blueprint
     from app.routes import main as main_blueprint
 
     app.register_blueprint(main_blueprint)
     app.register_blueprint(learn_blueprint)
+    app.register_blueprint(onboarding_blueprint)
     register_learning_cli(app)
 
     from app.errors import register_error_handlers
@@ -285,6 +287,15 @@ def create_app(config_name=None, overrides=None):
     @app.context_processor
     def inject_csrf_token():
         return {"csrf_token": generate_csrf}
+
+    @app.template_filter("has_hangul")
+    def has_hangul(value):
+        return any(
+            "\uac00" <= char <= "\ud7a3"
+            or "\u1100" <= char <= "\u11ff"
+            or "\u3130" <= char <= "\u318f"
+            for char in str(value)
+        )
 
     _register_security_headers(app)
     _register_cli(app)

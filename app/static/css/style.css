@@ -10,6 +10,12 @@
   --error: #d9534f;
 }
 
+/* Korean text needs a font with Hangul coverage; the UI font may not. */
+[lang="ko"] {
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Nanum Gothic", "Segoe UI", sans-serif;
+}
+
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
@@ -248,6 +254,10 @@ button:disabled {
 /* Utility classes */
 .hidden {
   display: none;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .btn-spaced {
@@ -809,6 +819,381 @@ progress {
 
   .review-card {
     padding: 22px 16px;
+  }
+}
+
+/* Onboarding */
+.onboarding {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.onboarding h2 {
+  margin: 0 0 8px;
+  font-size: 1.9rem;
+  line-height: 1.2;
+}
+
+.onboarding-back {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.onboarding-form {
+  margin-top: 22px;
+}
+
+.onboarding-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 22px;
+}
+
+.onboarding-form legend {
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.choice-grid-three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.choice {
+  position: relative;
+  display: block;
+  padding: 14px;
+  border: 1px solid var(--grey);
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.choice input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.choice span {
+  display: block;
+}
+
+.choice strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 3px;
+}
+
+.choice small {
+  display: block;
+  margin: 0;
+  color: #5b6472;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.choice:hover {
+  border-color: var(--primary);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--accent);
+  background: #fff7ed;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.onboarding-footnote {
+  margin: 18px 0 0;
+  font-size: 0.82rem;
+  color: #5b6472;
+}
+
+.onboarding-link {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #5b6472;
+}
+
+.onboarding-link a {
+  color: var(--primary);
+}
+
+.first-word-card {
+  margin-top: 20px;
+  padding: 28px 20px;
+  text-align: center;
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 14px;
+}
+
+.first-word-korean {
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+}
+
+.first-word-romanization {
+  margin-top: 4px;
+  color: #5b6472;
+  font-style: italic;
+}
+
+.first-word-meaning {
+  margin: 12px 0 0;
+}
+
+.record-panel {
+  margin: 18px 0;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 10px;
+}
+
+.record-title {
+  margin: 0 0 10px;
+  font-weight: 650;
+}
+
+.record-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.record-status {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: #5b6472;
+}
+
+#playback {
+  width: 100%;
+  margin-top: 12px;
+}
+
+@media (max-width: 560px) {
+  .choice-grid,
+  .choice-grid-three {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding h2 {
+    font-size: 1.6rem;
+  }
+}
+
+/* Hangul */
+.hangul {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.hangul h2 {
+  margin: 0 0 8px;
+  font-size: 1.9rem;
+}
+
+.hangul-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.hangul-card {
+  display: block;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.hangul-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.hangul-card .day {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hangul-card h3 {
+  margin: 6px 0;
+  font-size: 1.05rem;
+}
+
+.hangul-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #5b6472;
+}
+
+.hangul-section {
+  margin: 22px 0;
+}
+
+.hangul-section h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.hangul-section p {
+  margin: 0 0 10px;
+  color: #4b5563;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hangul-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  background: white;
+}
+
+.hangul-table th,
+.hangul-table td {
+  border: 1px solid var(--grey);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.hangul-table th {
+  background: var(--light);
+  font-weight: 700;
+}
+
+.hangul-table td[lang="ko"],
+.hangul-table th[lang="ko"] {
+  font-size: 1.15rem;
+}
+
+.drill {
+  margin: 12px 0;
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--grey);
+  border-radius: 10px;
+}
+
+.drill-prompt {
+  margin: 0 0 10px;
+  font-weight: 650;
+}
+
+.drill-prompt .korean {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+.drill-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.drill-option {
+  padding: 10px;
+  border: 1px solid var(--grey);
+  border-radius: 8px;
+  background: #f9fafb;
+  text-align: left;
+  color: var(--dark);
+}
+
+.drill-option:hover,
+.drill-option:focus-visible {
+  border-color: var(--primary);
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.drill-option.correct {
+  border-color: #166534;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.drill-option.incorrect {
+  border-color: #991b1b;
+  background: #fde8e8;
+  color: #991b1b;
+}
+
+.drill-feedback {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.drill-feedback[hidden] {
+  display: none;
+}
+
+.hangul-notes {
+  padding: 16px 18px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+}
+
+.hangul-notes ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: #4b5563;
+  font-size: 0.88rem;
+}
+
+.hangul-notes li {
+  margin-bottom: 6px;
+}
+
+.hangul-can-do {
+  margin: 18px 0;
+  padding: 16px;
+  border-left: 4px solid var(--accent);
+  background: white;
+  border-radius: 6px;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 700px) {
+  .hangul-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .drill-options {
+    grid-template-columns: 1fr;
   }
 }
 

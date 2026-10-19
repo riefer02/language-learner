@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %} - Welcome{% endblock %}
+{% block content %}
+<div class="onboarding">
+  <p class="learn-eyebrow">Welcome to Kiku</p>
+  <h2>What do you want Korean to do for you?</h2>
+  <p class="learn-sub">
+    Three choices. Then you will say your first Korean sentence.
+  </p>
+
+  {% if error %}
+  <div class="error-message" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form
+    class="onboarding-form"
+    method="post"
+    action="{{ url_for('onboarding.welcome') }}"
+  >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <input type="hidden" name="timezone" id="timezone" value="UTC" />
+
+    <fieldset>
+      <legend>Your goal</legend>
+      <div class="choice-grid">
+        {% set selected_goal = request.form.get('goal', user.goal) %}
+        {% for goal in goals %}
+        <label class="choice">
+          <input
+            type="radio"
+            name="goal"
+            value="{{ goal.value }}"
+            {% if selected_goal == goal.value %}checked{% endif %}
+            required
+          />
+          <span>
+            <strong>{{ goal.label }}</strong>
+            <small>{{ goal.hint }}</small>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Daily practice</legend>
+      <div class="choice-grid choice-grid-three">
+        {% set selected_time = request.form.get('daily_minutes', user.daily_minutes|string) %}
+        {% for time in times %}
+        <label class="choice">
+          <input
+            type="radio"
+            name="daily_minutes"
+            value="{{ time.value }}"
+            {% if selected_time == time.value|string %}checked{% endif %}
+            required
+          />
+          <span>
+            <strong>{{ time.label }}</strong>
+            <small>{{ time.hint }}</small>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Where are you starting?</legend>
+      <div class="choice-grid">
+        {% set selected_experience = request.form.get('experience', user.experience) %}
+        {% for option in experience_options %}
+        <label class="choice">
+          <input
+            type="radio"
+            name="experience"
+            value="{{ option.value }}"
+            {% if selected_experience == option.value %}checked{% endif %}
+            required
+          />
+          <span>
+            <strong>{{ option.label }}</strong>
+            <small>{{ option.hint }}</small>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary btn-large">
+      Continue
+    </button>
+  </form>
+
+  <p class="onboarding-footnote">
+    No account needed yet. Your progress is stored locally on this Kiku
+    instance.
+  </p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %} - Your first Korean sentence{% endblock %}
+{% block content %}
+<div class="onboarding">
+  <a class="onboarding-back" href="{{ url_for('onboarding.welcome') }}">← Back</a>
+  <p class="learn-eyebrow">Your first win</p>
+  <h2>Say your first Korean sentence.</h2>
+  <p class="learn-sub">
+    Not a quiz. One real phrase, out loud. That is the whole point.
+  </p>
+
+  <div class="first-word-card">
+    <div class="first-word-korean" lang="ko">안녕하세요</div>
+    <div class="first-word-romanization">annyeonghaseyo</div>
+    <p class="first-word-meaning">Hello — the default polite greeting.</p>
+    <button
+      type="button"
+      class="btn speak-btn"
+      data-speak="안녕하세요"
+      aria-label="Hear 안녕하세요 in Korean"
+    >
+      Hear it
+    </button>
+  </div>
+
+  <div class="record-panel" id="record-panel">
+    <p class="record-title">Record yourself, then listen back.</p>
+    <div class="record-actions">
+      <button type="button" class="btn" id="record-btn">Record</button>
+      <button type="button" class="btn" id="stop-btn" hidden>Stop</button>
+    </div>
+    <p class="record-status" id="record-status" role="status" aria-live="polite">
+      Your recording stays on this device.
+    </p>
+    <audio id="playback" controls hidden></audio>
+  </div>
+
+  <form method="post" action="{{ url_for('onboarding.complete') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <button type="submit" class="btn btn-primary btn-large">
+      I said it — start my plan
+    </button>
+  </form>
+
+  <p class="onboarding-footnote">
+    No microphone? Say it out loud and continue. You can record later.
+  </p>
+
+  <p class="onboarding-link">
+    Want a head start? <a href="{{ url_for('learn.hangul') }}">Preview the Hangul bootcamp</a>.
+  </p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
+{% endblock %}
