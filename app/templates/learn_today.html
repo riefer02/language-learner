@@ -61,6 +61,13 @@
     {% endif %}
   </div>
 
+  {% if user.reminder_enabled %}
+  <p class="learn-meta">
+    Reminder set for {{ user.reminder_time }} ({{ user.timezone }}).
+    <a href="{{ url_for('main.settings') }}">Change</a>
+  </p>
+  {% endif %}
+
   {% if next_mission %}
   <div class="next-mission">
     <div>
@@ -93,6 +100,8 @@
     <a href="{{ url_for('learn.sound_gym') }}">Sound Gym</a>
     <span aria-hidden="true">·</span>
     <a href="{{ url_for('main.resources') }}">Resources</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ url_for('main.settings') }}">Settings</a>
   </div>
 </div>
 {% endblock %}

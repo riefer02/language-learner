@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %} - Settings{% endblock %}
+{% block content %}
+<div class="settings">
+  <p class="learn-eyebrow">Settings</p>
+  <h2>Make the loop fit your life.</h2>
+  <p class="learn-sub">
+    Your goal, your time, and at most one gentle reminder a day.
+  </p>
+
+  {% if saved %}
+  <div class="settings-saved" role="status">Settings saved.</div>
+  {% endif %}
+
+  <form class="settings-form" method="post" action="{{ url_for('main.settings') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+    <fieldset>
+      <legend>Your path</legend>
+      <label for="settings-goal">Goal</label>
+      <select id="settings-goal" name="goal">
+        {% for value, label in [
+          ("everyday", "Everyday Korean"),
+          ("travel", "Travel"),
+          ("work", "Work"),
+          ("culture", "K-drama & music"),
+          ("topik", "TOPIK"),
+          ("family", "Family & heritage")
+        ] %}
+        <option value="{{ value }}" {% if user.goal == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="settings-minutes">Daily practice</label>
+      <select id="settings-minutes" name="daily_minutes">
+        {% for value in [3, 10, 25] %}
+        <option value="{{ value }}" {% if user.daily_minutes == value %}selected{% endif %}>{{ value }} minutes</option>
+        {% endfor %}
+      </select>
+
+      <label for="settings-experience">Starting point</label>
+      <select id="settings-experience" name="experience">
+        {% for value, label in [
+          ("new", "Completely new"),
+          ("hangul", "I know some Hangul"),
+          ("some", "I can handle some conversation"),
+          ("intermediate", "Intermediate")
+        ] %}
+        <option value="{{ value }}" {% if user.experience == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="settings-timezone">Timezone</label>
+      <input
+        id="settings-timezone"
+        name="timezone"
+        type="text"
+        value="{{ user.timezone }}"
+        list="timezone-options"
+        autocomplete="off"
+      />
+      <datalist id="timezone-options">
+        <option value="UTC"></option>
+        <option value="Asia/Seoul"></option>
+        <option value="America/New_York"></option>
+        <option value="America/Chicago"></option>
+        <option value="America/Denver"></option>
+        <option value="America/Los_Angeles"></option>
+        <option value="Europe/London"></option>
+        <option value="Europe/Berlin"></option>
+        <option value="Australia/Sydney"></option>
+      </datalist>
+    </fieldset>
+
+    <fieldset>
+      <legend>Reminder</legend>
+      <label class="checkbox-row">
+        <input
+          type="checkbox"
+          name="reminder_enabled"
+          {% if user.reminder_enabled %}checked{% endif %}
+        />
+        <span>One daily reminder when cards are due</span>
+      </label>
+      <label for="settings-reminder-time">Reminder time ({{ user.timezone }})</label>
+      <input
+        id="settings-reminder-time"
+        name="reminder_time"
+        type="time"
+        value="{{ user.reminder_time }}"
+      />
+      <p class="learn-meta">
+        No streak threats. No “you’re behind.” One value-carrying nudge, and you
+        can turn it off here any time. After saving, enable notifications below
+        so it can reach this device.
+      </p>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary btn-large">Save settings</button>
+  </form>
+
+  <section
+    class="push-panel"
+    data-vapid="{{ vapid_public_key or '' }}"
+    data-csrf="{{ csrf_token() }}"
+  >
+    <h3>Push notifications</h3>
+    {% if push_enabled %}
+    <p>
+      Enable notifications on this device to receive the daily reminder. Kiku
+      sends at most one per day.
+    </p>
+    <div class="push-actions">
+      <button type="button" class="btn" id="push-enable">Enable notifications</button>
+      <button type="button" class="btn" id="push-disable" hidden>Disable notifications</button>
+      <button type="button" class="btn" id="push-test" hidden>Send a test</button>
+    </div>
+    <p class="record-status" id="push-status" role="status" aria-live="polite"></p>
+    {% else %}
+    <p>
+      Push is not configured on this server. Add <code>VAPID_PUBLIC_KEY</code>
+      and <code>VAPID_PRIVATE_KEY</code> to enable reminders.
+    </p>
+    {% endif %}
+  </section>
+
+  <p class="learn-library-link">
+    <a href="{{ url_for('learn.today') }}">Back to Today</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ url_for('main.resources') }}">Resources</a>
+  </p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

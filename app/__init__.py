@@ -164,6 +164,57 @@ def _register_cli(app):
         for name in missing:
             click.echo(f"  missing {name}")
 
+    @app.cli.command("generate-vapid-keys")
+    def generate_vapid_keys():
+        """Generate a VAPID key pair for browser push reminders."""
+        import base64
+
+        from cryptography.hazmat.primitives import serialization
+        from py_vapid import Vapid
+
+        vapid = Vapid()
+        vapid.generate_keys()
+        raw_public = vapid.public_key.public_bytes(
+            serialization.Encoding.X962,
+            serialization.PublicFormat.UncompressedPoint,
+        )
+        public_key = (
+            base64.urlsafe_b64encode(raw_public).rstrip(b"=").decode()
+        )
+        private_key = vapid.private_pem().decode().replace("\n", "\\n")
+        click.echo(f"VAPID_PUBLIC_KEY={public_key}")
+        click.echo(f'VAPID_PRIVATE_KEY="{private_key}"')
+        click.echo(
+            "\nAdd these to .env, restart the app, then run "
+            "`flask send-reminders --dry-run`."
+        )
+
+    @app.cli.command("send-reminders")
+    @click.option(
+        "--dry-run",
+        is_flag=True,
+        help="List learners whose reminder window is open without sending.",
+    )
+    def send_reminders(dry_run):
+        """Send at most one due-card reminder per learner per local day."""
+        from app.services.push import PushConfigError, send_due_reminders
+
+        try:
+            results = send_due_reminders(dry_run=dry_run)
+        except PushConfigError as error:
+            raise click.ClickException(str(error)) from error
+
+        if not results:
+            click.echo("No reminders are due.")
+            return
+
+        for result in results:
+            click.echo(
+                f"user {result['user_id']}: {result['due']} due, "
+                f"{result['subscriptions']} subscription(s), "
+                f"local {result['local_time']}, sent {result['sent']}"
+            )
+
     @app.cli.command("media-gc")
     @click.option(
         "--delete",

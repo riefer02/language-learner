@@ -72,6 +72,15 @@ class Config:
     SPEECH_ACCEPT_THRESHOLD = 0.72
     SCENE_MATCH_THRESHOLD = 0.78
 
+    # PWA push reminders. Generate keys with `flask generate-vapid-keys`.
+    VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY")
+    VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY")
+    VAPID_SUBJECT = os.environ.get(
+        "VAPID_SUBJECT", "mailto:hello@kiku.example"
+    )
+    PUSH_ENABLED = _env_bool("PUSH_ENABLED", True)
+    REMINDER_WINDOW_MINUTES = _env_int("REMINDER_WINDOW_MINUTES", 15)
+
     # Optional stop-gap auth. Real per-user accounts arrive in Phase 1.
     REQUIRE_AUTH = _env_bool("REQUIRE_AUTH", False)
     APP_USERNAME = os.environ.get("APP_USERNAME", "kiku")

@@ -2,7 +2,7 @@
 
 **Status:** Active · started 19 October 2026
 **Source of truth for scope:** [`KIKU_BLUEPRINT.md`](KIKU_BLUEPRINT.md)
-**Current focus:** Phase 0 (stabilize) + first Phase 1 vertical slice (review loop)
+**Current focus:** Phase 0 (stabilize) + Phase 1 review loop + installable PWA reminders
 
 ---
 
@@ -78,6 +78,7 @@
 | P1-08 | Hangul bootcamp days 1–7 | Learning/Experience | Read-aloud checks; typing; batchim/liaison drills | [x] 7 lessons, 88 interactive drills; timed typing/fluency coaching next |
 | P1-09 | Can-do + progress model | Learning | Skill map, retention, artifacts; no XP hero metric | [x] skill map, 7-day activity, 7+/30+ delayed-retention signal, dated can-do artifacts; cohort dashboard later |
 | P1-10 | Alpha instrumentation | Quality | Activation, D1/D7, review latency, error rate | [~] Event table + `flask metrics` done; latency/error dashboards pending |
+| P1-11 | Installable PWA + reminders | Experience/Platform | Manifest, service worker, offline fallback, settings, one-per-day push, no dark patterns | [x] manifest/icons/sw, `/settings`, VAPID keys, subscription storage, `flask send-reminders`; offline review queue + cron deployment pending |
 
 **Exit criteria:** 20 alpha users; first spoken sentence < 2 min; 10-minute session end to end; p95 review < 200 ms; no orphan files; 30-day retention instrumentation live.
 
@@ -106,7 +107,7 @@
 - Elo item calibration; BKT mastery; Thompson-sampling selection.
 - Placement test with uncertainty; recommended start.
 - Leech intervention; scaffold automation; 85% success targeting.
-- PWA install, offline review queue, media cache, push where supported.
+- Offline review queue and media cache (PWA install + shell cache + push reminders are done).
 - Can-do progress, weekly recap, before/after audio.
 - Ethical streak: rest day, repair by practice, vacation, notification controls.
 - Beta 100–500 users; retention/learning dashboards; pricing test.
@@ -158,14 +159,15 @@ P1-09 ─> P3 (adaptive/beta)
 | P0-09 Rate limiter | Platform | done | Thread-safe bounded limiter, per-endpoint, `Retry-After` |
 | P0-10 Errors | Platform | done | 404/415/500, request IDs, no raw exception leakage |
 | P0-11 Headers/auth | Platform | done | CSP, frame/referrer headers, optional basic auth |
-| P0-12 Tests/CI | Quality | done | 185 tests, ruff, empty-DB migration gate |
+| P0-12 Tests/CI | Quality | done | 195 tests, ruff, empty-DB migration gate |
 | P1-02/04/05/06 vertical slice | Learning/Experience | done | Local user, 30 seed items, FSRS review, 10-new/day cap, Today/Review/Progress screens |
 | P1-07 Onboarding + first word | Experience | done | Goal/time/experience/timezone, first spoken 안녕하세요, local recording |
 | P1-08 Hangul days 1–7 | Learning/Experience | done | 7 lessons, 88 drills, mobile tables, Korean font fallback |
 | Seed audio pipeline | AI/Media | done | `flask generate-item-audio` with dry-run, limit, force, rollback |
 | Mission scenes v0 | Learning/Experience | done | 4 scenes, tolerant matcher, progress, debrief → 3 cards |
+| PWA + reminders v0 | Experience/Platform | done | manifest/icons/service worker, offline fallback, `/settings`, VAPID push subscriptions, one-per-day reminder job |
 
-**Sprint exit demo:** ✅ boot with no key → ✅ `pytest` green → ✅ `flask db upgrade` from empty → ✅ failure path leaves zero rows/files → ✅ review a seeded card → ✅ grade it → ✅ see the due count drop and the next card.
+**Sprint exit demo:** ✅ boot with no key → ✅ `pytest` green → ✅ `flask db upgrade` from empty → ✅ failure path leaves zero rows/files → ✅ review a seeded card → ✅ grade it → ✅ see the due count drop and the next card → ✅ install the PWA → ✅ `flask send-reminders --dry-run` lists an eligible learner.
 
 **Remaining before Phase 0 can be called fully closed:**
 

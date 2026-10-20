@@ -52,6 +52,7 @@ jobs:
               "scene_session",
               "can_do_artifact",
               "event",
+              "push_subscription",
               "alembic_version",
           }
           missing = expected - tables
@@ -63,6 +64,12 @@ jobs:
           }
           if "was_new" not in columns:
               raise SystemExit("review_log.was_new is missing after migration")
+          user_columns = {
+              row[1]
+              for row in sqlite3.connect(path).execute("pragma table_info(user)")
+          }
+          if not {"reminder_enabled", "reminder_time"} <= user_columns:
+              raise SystemExit("reminder preferences are missing after migration")
           print("migration schema ok:", sorted(tables))
           PY
 

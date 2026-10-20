@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %} - Offline{% endblock %}
+{% block content %}
+<div class="learn learn-done">
+  <p class="learn-eyebrow">Offline</p>
+  <h2>Kiku is offline.</h2>
+  <p class="learn-sub">
+    Your saved pages are still here. New reviews and speech checks need a
+    connection.
+  </p>
+  <div class="learn-primary">
+    <a class="btn btn-primary btn-large" href="{{ url_for('learn.today') }}">
+      Try Today again
+    </a>
+  </div>
+</div>
+{% endblock %}

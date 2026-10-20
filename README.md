@@ -1,6 +1,6 @@
 # Korean Language Learner
 
-> **Status: functional early prototype.** This repository provides translation, text-to-speech, a phrase library, short generated conversations, and a working FSRS review loop with a 30-item starter deck and progress view. It does **not** yet include real per-user accounts, Hangul onboarding, pronunciation feedback, scene roleplay, or PWA/offline support. See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the honest current state, [`docs/ROADMAP.md`](docs/ROADMAP.md) for execution status, and [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) for the product redesign.
+> **Status: functional alpha prototype.** This repository provides translation, text-to-speech, a phrase library, short generated conversations, a working FSRS review loop with a 30-item starter deck, Hangul bootcamp, mission scenes, progress proof, an installable PWA, and a one-per-day push reminder. It does **not** yet include real per-user accounts, phoneme-level pronunciation feedback, native-reviewed seed audio, or a full offline review queue. See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the honest current state, [`docs/ROADMAP.md`](docs/ROADMAP.md) for execution status, and [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) for the product redesign.
 
 An application for learning Korean that includes both a command-line interface and a web application. Translate English phrases to Korean, generate pronunciation audio, and browse saved phrases and conversations.
 
@@ -23,6 +23,8 @@ An application for learning Korean that includes both a command-line interface a
 - **Weekly recap:** `/learn/progress` shows 7-day review activity, new cards, can-dos, active days, a 30-day Good/Easy recall signal, and 7+/30+ day delayed-retention rates
 - **Resources:** `/resources` searches Korean, English, romanization, and notes, with type/level filters and quick links to every reference surface
 - **Sound Gym:** `/learn/sound-gym` has minimal-pair perception drills and production prompts with local recording and transcript-based speech checks (not an accent grade; raw audio is not stored)
+- **Installable PWA:** web manifest, icons, install metadata, an app-shell service worker, and a cached offline fallback
+- **Gentle reminders:** `/settings` stores goal, daily time, timezone, reminder on/off, and reminder time; the browser subscribes to push, and `flask send-reminders` sends at most one due-card reminder per learner per local day
 - **Alpha metrics:** `flask metrics` prints activation, users with reviews, speech attempts, and D1/D7
 - **Starter deck:** `flask seed-content` adds 30 Korean items and creates review cards for the local learner
 - **Daily guardrail:** 10 new cards per day by default; review cards come first
@@ -32,7 +34,7 @@ An application for learning Korean that includes both a command-line interface a
 - Generated conversation scenarios with per-line and merged audio
 - SQLite storage for phrases, conversations, lines, items, and review state
 
-**Still planned:** real per-user accounts, placement testing, phoneme-level pronunciation feedback, native-reviewed seed audio, scene/roleplay debriefs, can-do progress, and PWA/offline. See [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) and [`docs/ROADMAP.md`](docs/ROADMAP.md).
+**Still planned:** real per-user accounts, placement testing, phoneme-level pronunciation feedback, native-reviewed seed audio, and a full offline review queue. See [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) and [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ### Conversational Scenarios
 
@@ -148,8 +150,21 @@ To run the web application:
    flask generate-item-audio --dry-run
    flask generate-item-audio
    ```
-5. Open your web browser and navigate to `http://localhost:5000`
-6. Start at **Learn**. The first visit opens a two-minute onboarding flow and a first spoken sentence; after that, the daily review loop is ready. Use **Hangul** for the reading bootcamp, or **Conversations** to create and study conversational scenarios.
+5. Optional: enable browser push reminders. Generate a VAPID key pair,
+   add both values to `.env`, and restart:
+   ```bash
+   flask generate-vapid-keys
+   # paste VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY into .env
+   flask send-reminders --dry-run
+   ```
+   Then open **Settings** from Today or Resources and choose **Enable
+   notifications**. Push requires HTTPS in production; `localhost` works for
+   development. Run `flask send-reminders` from cron (every 5–15 minutes) to
+   deliver the daily reminder. The job only sends when the learner has cards
+   due, has not already received a reminder that local day, and has an active
+   subscription.
+6. Open your web browser and navigate to `http://localhost:5000`
+7. Start at **Learn**. The first visit opens a two-minute onboarding flow and a first spoken sentence; after that, the daily review loop is ready. Use **Hangul** for the reading bootcamp, or **Conversations** to create and study conversational scenarios.
 
 ## Project Structure
 
@@ -171,6 +186,7 @@ make install-dev   # runtime + test/lint dependencies
 make test          # pytest
 make lint          # ruff
 flask metrics      # alpha activation/retention summary
+flask send-reminders --dry-run  # who is eligible for a reminder now
 ```
 
 The test suite does not call OpenAI and does not need a real API key. It uses a
@@ -203,6 +219,13 @@ make clean
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Troubleshooting
+
+### Push reminders
+
+- `flask generate-vapid-keys` prints a public/private VAPID pair; add both to `.env`.
+- Browser push requires HTTPS except on `localhost`.
+- `flask send-reminders --dry-run` is safe and does not send. Run without `--dry-run` from cron every 5–15 minutes.
+- The job sends at most one notification per learner per local day and skips learners with no cards due or no active subscription.
 
 ### Audio Merging (ffmpeg)
 

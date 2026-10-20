@@ -1,3 +1,12 @@
+// Register the PWA service worker for installability and reminders.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js").catch(function () {
+      // The app still works without the service worker.
+    });
+  });
+}
+
 // Common utility functions for Korean Language Learner
 
 // Safely play audio with error handling

@@ -1,4 +1,4 @@
-# Project Status — 19 October 2026
+# Project Status — 20 October 2026
 
 **Repository:** Korean Language Learner (working product name: **Kiku**)
 **Verdict:** Phase 0 (stabilize) is complete except user key rotation. The first Phase 1 vertical slice — a real FSRS review loop — is working.
@@ -19,12 +19,14 @@
 - **Sound Gym:** 11 minimal-pair perception drills, 8 production prompts, local-only recording, and transcript-based speech checks
 - **Speech evidence:** `SpeechAttempt` records what the model heard and a transcript-match score — explicitly not a pronunciation grade; raw audio is never stored
 - **Alpha instrumentation:** append-only `Event` table and `flask metrics` for activation, review users, speech attempts, D1/D7
-- **Resources:** searchable Korean/English/romanization/notes lookup with type and level filters, plus quick links to Hangul, scenes, Sound Gym, library, conversations, and translation
+- **Resources:** searchable Korean/English/romanization/notes lookup with type and level filters, plus quick links to Hangul, scenes, Sound Gym, library, conversations, translation, and settings
+- **Installable PWA:** web manifest, icons, install metadata, an app-shell service worker, and a cached offline fallback
+- **Gentle reminders:** `/settings` stores goal, daily time, timezone, reminder on/off, and reminder time; browser push subscriptions are stored server-side; `flask send-reminders` delivers at most one due-card reminder per learner per local day and skips days with nothing due
 - **Progress view:** skill breakdown, last-7-days activity, 7+/30+ day delayed-retention signal, can-do proof, recent reviews, practiced-card count
 - **Local single-user mode:** a local `User` row scopes profile, review cards, and logs; real accounts are next
 - CLI translation/TTS tool (`hangul.py`)
 - `flask seed-content`, `flask media-audit`, `flask media-gc`
-- **185 automated tests**, ruff clean, CI with an empty-database migration gate
+- **195 automated tests**, ruff clean, CI with an empty-database migration gate and push-schema assertions
 
 ## What changed in Phase 0
 
@@ -74,6 +76,10 @@
 |---|---|
 | ![Resources](screenshots/resources.png) | ![Resource search](screenshots/resources-search.png) |
 
+| Settings & reminders |
+|---|
+| ![Settings](screenshots/settings.png) |
+
 ## What still does not exist
 
 - Real user accounts, sessions, OAuth, and per-user data isolation (local single-user only)
@@ -85,9 +91,8 @@
 - Branching scene state and adaptive difficulty (scenes are scripted, 3 steps each)
 - Native-reviewed character audio for scenes (browser TTS is a stopgap)
 - Fuller grammar reference: parsed examples, register notes, and contrast pages beyond short item notes
-- Notifications, reminders, notification preferences, and PWA push
 - Streak repair, vacation mode, and a flexible habit system (a basic day streak exists)
-- PWA/offline support
+- A full offline review queue (the PWA currently caches the shell and an offline fallback, not review data)
 - Content pipeline: 30 items, 7 Hangul lessons, and 4 scenes only; no 20-scene library, no native review queue, no audio for seed items
 - Speech/TTS cost controls beyond caching (no per-user budget)
 - Postgres/Redis/multi-worker production setup
@@ -95,11 +100,11 @@
 ## Top risks
 
 1. Content quality and breadth: 30 items is a demo, not a curriculum.
-2. No onboarding or first-spoken-sentence experience yet.
-3. No audio on seed items; browser speech synthesis is a temporary fallback.
+2. Single-user local mode; real accounts and per-user isolation are required before a public beta.
+3. No native audio on seed items; browser speech synthesis is a temporary fallback.
 4. Single-user local mode; auth and data isolation are required before any public deployment.
-5. No speech/pronunciation loop yet; this is the main differentiator and the hardest build.
-6. No retention instrumentation; the next step is 20 alpha users and real D1/D7 data.
+5. Transcript matching is useful evidence, not pronunciation scoring; phoneme/prosody feedback is still the hardest differentiator to build.
+6. Reminder delivery needs a cron worker and HTTPS in production; the in-app loop works without it.
 
 ## Where to go next
 
@@ -111,4 +116,4 @@
 - **Competitive teardown:** [`research/04-competitive-teardown.md`](research/04-competitive-teardown.md)
 - **Architecture and AI:** [`research/05-tech-and-ai.md`](research/05-tech-and-ai.md)
 
-**Immediate next sprint:** run `flask generate-item-audio` after rotating the key to pre-generate the 30 seed MP3s → wire speech answers into scenes → add phoneme evidence (Azure/SpeechSuper) behind the existing speech interface → 20 alpha users and a `flask metrics` review.
+**Immediate next sprint:** rotate the exposed key and run `flask generate-item-audio` → add phoneme evidence (Azure/SpeechSuper) behind the existing speech interface → real accounts + Postgres → 20 alpha users and a `flask metrics` review. Deploy `flask send-reminders` on a 5–15 minute cron once HTTPS is available.

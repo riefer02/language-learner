@@ -81,6 +81,8 @@ class User(db.Model):
     onboarding_complete = db.Column(
         db.Boolean, nullable=False, default=False
     )
+    reminder_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    reminder_time = db.Column(db.String(5), nullable=False, default="19:00")
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     def __repr__(self):
@@ -303,6 +305,32 @@ class SpeechAttempt(db.Model):
             if self.created_at
             else None,
         }
+
+
+class PushSubscription(db.Model):
+    """A browser push endpoint for one learner."""
+
+    __table_args__ = (
+        db.Index("ix_push_subscription_user", "user_id"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    endpoint = db.Column(db.Text, nullable=False, unique=True)
+    p256dh = db.Column(db.String(300), nullable=False)
+    auth = db.Column(db.String(120), nullable=False)
+    user_agent = db.Column(db.String(300), nullable=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+    )
+    last_success_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    failure_count = db.Column(db.Integer, nullable=False, default=0)
+
+    user = db.relationship("User")
 
 
 class Event(db.Model):

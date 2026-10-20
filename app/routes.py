@@ -1,4 +1,5 @@
 import uuid
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import (
     Blueprint,
@@ -6,17 +7,28 @@ from flask import (
     current_app,
     g,
     jsonify,
+    redirect,
     render_template,
     request,
+    send_from_directory,
+    url_for,
 )
+from flask_wtf.csrf import validate_csrf
 from pydantic import ValidationError
 from sqlalchemy import or_, text
 from sqlalchemy.orm import selectinload
+from werkzeug.exceptions import BadRequest
 
 from app import db
+from app.learning.service import get_or_create_local_user
 from app.models import Conversation, ConversationLine, Item, Phrase
 from app.services.ai import OpenAIConfigError
 from app.services.audio import generate_audio
+from app.services.push import (
+    push_configured,
+    subscribe,
+    unsubscribe,
+)
 from app.services.translation import (
     generate_conversation_scenario,
     translate_to_korean,
@@ -122,6 +134,120 @@ def resources():
         level=level,
         counts=counts,
     )
+
+
+def _check_csrf():
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        try:
+            validate_csrf(request.form.get("csrf_token"))
+        except Exception as error:
+            raise BadRequest("Invalid or missing CSRF token") from error
+
+
+@main.route("/settings", methods=["GET", "POST"])
+def settings():
+    user = get_or_create_local_user()
+    if request.method == "POST":
+        _check_csrf()
+        goal = request.form.get("goal", user.goal)
+        daily_minutes = request.form.get("daily_minutes", type=int)
+        experience = request.form.get("experience", user.experience)
+        timezone = request.form.get("timezone") or user.timezone
+        reminder_time = request.form.get("reminder_time") or "19:00"
+
+        try:
+            ZoneInfo(timezone)
+        except (KeyError, ValueError, ZoneInfoNotFoundError):
+            timezone = "UTC"
+
+        if daily_minutes in {3, 10, 25}:
+            user.daily_minutes = daily_minutes
+        if goal in {
+            "everyday",
+            "travel",
+            "work",
+            "culture",
+            "topik",
+            "family",
+        }:
+            user.goal = goal
+        if experience in {"new", "hangul", "some", "intermediate"}:
+            user.experience = experience
+        user.timezone = timezone
+        try:
+            hour, minute = [
+                int(part) for part in reminder_time.split(":")
+            ]
+            if 0 <= hour <= 23 and 0 <= minute <= 59:
+                user.reminder_time = f"{hour:02d}:{minute:02d}"
+        except (TypeError, ValueError):
+            pass
+        user.reminder_enabled = request.form.get("reminder_enabled") == "on"
+        db.session.commit()
+        return redirect(url_for("main.settings", saved=1))
+
+    return render_template(
+        "settings.html",
+        user=user,
+        push_enabled=push_configured(),
+        vapid_public_key=current_app.config.get("VAPID_PUBLIC_KEY"),
+        saved=request.args.get("saved") == "1",
+    )
+
+
+@main.route("/api/push/subscribe", methods=["POST"])
+def push_subscribe():
+    user = get_or_create_local_user()
+    if not push_configured():
+        return jsonify({"error": "Push is not configured on this server"}), 503
+
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        try:
+            validate_csrf(request.headers.get("X-CSRFToken"))
+        except Exception as error:
+            raise BadRequest("Invalid or missing CSRF token") from error
+
+    payload = request.get_json(silent=True) or {}
+    keys = payload.get("keys") or {}
+    try:
+        subscribe(
+            user,
+            endpoint=payload.get("endpoint"),
+            p256dh=keys.get("p256dh"),
+            auth=keys.get("auth"),
+            user_agent=request.user_agent.string,
+        )
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    return jsonify({"ok": True})
+
+
+@main.route("/api/push/unsubscribe", methods=["POST"])
+def push_unsubscribe():
+    user = get_or_create_local_user()
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        try:
+            validate_csrf(request.headers.get("X-CSRFToken"))
+        except Exception as error:
+            raise BadRequest("Invalid or missing CSRF token") from error
+    payload = request.get_json(silent=True) or {}
+    unsubscribe(user, payload.get("endpoint"))
+    return jsonify({"ok": True})
+
+
+@main.route("/offline")
+def offline():
+    return render_template("offline.html")
+
+
+@main.route("/sw.js")
+def service_worker():
+    response = send_from_directory(
+        current_app.static_folder, "sw.js", mimetype="application/javascript"
+    )
+    response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
 
 
 @main.route("/healthz")
