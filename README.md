@@ -56,13 +56,15 @@ Microphone access requires `localhost` or HTTPS.
 
 | Route | Purpose |
 |---|---|
-| `/<lang>/learn` | Today: what is due, streak, next action (`ko`, `am`) |
+| `/<lang>/` | Redirects to Today |
+| `/<lang>/learn` | Today: what is due, my terms, next action (`ko`, `am`) |
+| `/<lang>/translate` | Translate a phrase and generate audio |
 | `/<lang>/learn/review` | FSRS retrieval card and grading |
 | `/<lang>/learn/teacher` | Live voice lesson, transcript, debrief (Korean) |
 | `/am/learn/fidel` | Amharic fidel bootcamp |
 | `/ko/learn/hangul` | Korean Hangul bootcamp |
 | `/<lang>/dictionary` | Search the active deck, save a term |
-| `/<lang>/library` | Saved terms and translations |
+| `/<lang>/library` | My terms: saved terms and translations |
 | `/<lang>/resources` | Browse/filter the active deck |
 | `/<lang>/settings` | Language, goal, timezone, reminders |
 
@@ -87,6 +89,7 @@ FLASK_APP=run.py venv/bin/python -m flask metrics
 ## Documentation
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — module map, data model, flows, invariants
+- [`docs/DESIGN.md`](docs/DESIGN.md) — framework decision, tokens, components, IA and accessibility
 - [`AGENTS.md`](AGENTS.md) — how coding agents should work in this repo
 - [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — honest current state
 - [`docs/architecture/00-decision-2026-11-23.md`](docs/architecture/00-decision-2026-11-23.md) — product and architecture decisions

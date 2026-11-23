@@ -142,3 +142,20 @@ def test_fidel_page_explains_the_grid(client):
     assert page.status_code == 200
     assert b"How to read the fidel grid" in page.data
     assert b'id="fidel-bar"' in page.data
+
+
+def test_header_language_switch_updates_target(app, client):
+    with app.app_context():
+        seed_amharic()
+        korean = Language.query.filter_by(code="ko").first()
+        user = get_or_create_local_user()
+        user.target_language_id = korean.id if korean else None
+        db.session.commit()
+        amharic_id = Language.query.filter_by(code="am").one().id
+
+    response = client.post("/language", data={"code": "am"})
+    assert response.status_code == 302
+    assert "/am/learn" in response.headers["Location"]
+
+    with app.app_context():
+        assert get_or_create_local_user().target_language_id == amharic_id

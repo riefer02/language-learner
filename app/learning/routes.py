@@ -24,6 +24,7 @@ from app.learning.analytics import (
     retention_signal,
     weekly_recap,
 )
+from app.learning.dictionary import list_terms
 from app.learning.hangul_data import HANGUL_LESSONS
 from app.learning.scenes import (
     can_do_artifacts,
@@ -136,9 +137,14 @@ def today():
     language = current_language(user)
     summary = stats(user.id, language_id=language.id if language else None)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
+    terms = list_terms(
+        user.id, language_id=language.id if language else None
+    )
     return render_template(
         "learn_today.html",
         summary=summary,
+        terms=terms[:3],
+        term_count=len(terms),
         user=user,
         next_mission=(
             None

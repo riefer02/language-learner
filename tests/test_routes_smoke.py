@@ -13,9 +13,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_index_page_renders(client):
-    response = client.get("/ko/")
+    response = client.get("/ko/translate")
 
     assert response.status_code == 200
+
+
+def test_language_home_redirects_to_learn(client):
+    response = client.get("/ko/")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/ko/learn/")
 
 
 def test_root_redirects_to_a_language(client):
@@ -109,8 +115,15 @@ def test_conversation_renderer_does_not_inject_api_data_via_inner_html():
 
 
 def test_navigation_has_brand_link_and_mobile_toggle(client):
-    page = client.get("/ko/")
+    page = client.get("/ko/learn")
     assert b'class="brand"' in page.data
     assert b'id="nav-toggle"' in page.data
     assert b'aria-controls="primary-nav"' in page.data
     assert b'id="primary-nav"' in page.data
+
+
+def test_design_system_page_renders(client):
+    page = client.get("/design")
+    assert page.status_code == 200
+    assert b"Design system" in page.data
+    assert b"--primary" in page.data

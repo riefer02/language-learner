@@ -8,6 +8,8 @@ The product currently teaches **Korean** (voice teacher, scenes, Hangul) and
 ## Read first
 
 - `docs/ARCHITECTURE.md` — module map, data model, request flows, invariants.
+- `docs/DESIGN.md` — framework decision, tokens, components, IA and a11y rules.
+  Live reference at `/design`.
 - `docs/PROJECT_STATUS.md` — what is actually working and what is not.
 - `docs/architecture/00-decision-2026-11-23.md` — why the teacher, languages,
   and model choices are what they are.
@@ -37,7 +39,7 @@ Never commit `.env`, `*.db`, `backups/`, `audio_output/`, or generated media.
 | `app/models.py` | Core tables (`Item`, `ReviewCard`, `ReviewLog`, learner state); imports the two model modules below for metadata |
 | `app/models_language.py` | Language, Script, LevelScale, Course/Deck, ItemForm/ItemGloss, Dictionary, TermCard |
 | `app/models_teacher.py` | TeacherSession, TeacherTurn, Drill, DrillAttempt |
-| `app/main/` | `main` blueprint split by surface: home, content, settings, system, translate, conversations |
+| `app/main/` | `main` blueprint split by surface: home, content, settings, system, translate, conversations, design |
 | `app/learning/service.py` | Review queue, stats, streak, language resolution — every query is language-scoped |
 | `app/learning/dictionary.py` | Dictionary search, save-term, review-card handoff |
 | `app/services/teacher.py` | Teacher engine, provider adapter, tool router, drill grading |
@@ -87,9 +89,16 @@ load-bearing decision because FSRS is keyed by `(user, item, skill)`.
 
 - `base.html` owns the single `<h1>` (brand) and the `<main>` landmark. Page
   titles are `<h2>`; sections are `<h3>`.
-- Reuse the existing classes: `page-hero`, `language-badge`, `tutorial-card`
-  (with `data-dismissible` + `[data-dismiss]`), `help-tip` (native
-  `<details>`), `empty-state`, `chip-row`, `learn-meta`.
+- Use semantic tokens (`--primary`, `--surface`, `--space-*`, `--radius-*`,
+  `--text-*`). Never add a new raw hex value; see `docs/DESIGN.md`.
+- Reuse the existing classes: `page-hero`, `language-badge`, `surface-card`,
+  `tutorial-card` (with `data-dismissible` + `[data-dismiss]`), `help-tip`
+  (native `<details>`), `empty-state`, `chip-row`, `learn-meta`.
+- Home is Today. Translate lives at `/<lang>/translate`. “My terms” is the
+  saved-term library; keep it in the Words nav group and on Today.
+- Header groups are Learn / Practice / Words / Settings. Do not go back to a
+  flat list of eight links.
+- Prefer an existing component and add it to `/design` when you introduce one.
 - Every control needs a visible `<label>` or `aria-label`; every icon button
   needs a name. Keep the skip link and the global focus-visible ring.
 - The primary nav collapses at 900px via `#nav-toggle`; test a new nav item at

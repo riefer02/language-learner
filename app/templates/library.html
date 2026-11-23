@@ -1,11 +1,21 @@
 {% extends "base.html" %}
-{% block title %} - Phrase Library{% endblock %}
+{% block title %} - My terms{% endblock %}
 {% block content %}
 <div class="library">
-  <h2>Your Library</h2>
+  <div class="page-hero">
+    <p class="learn-eyebrow">My terms</p>
+    <h2>Words you kept.</h2>
+    <p>
+      Every term here carries the sentence where you met it, and most are
+      already in your review queue.
+    </p>
+    <p>
+      <a class="btn" href="{{ url_for('main.dictionary') }}">Find more terms</a>
+      <a class="btn" href="{{ url_for('learn.review') }}">Practice terms</a>
+    </p>
+  </div>
 
   <section class="term-library">
-    <h3>My terms</h3>
     {% if terms %}
     <ul class="term-list">
       {% for term in terms %}
@@ -22,13 +32,14 @@
       </li>
       {% endfor %}
     </ul>
-    <p><a class="btn btn-primary" href="{{ url_for('learn.review') }}">Practice terms</a></p>
     {% else %}
-    <p class="learn-meta">
-      No saved terms yet. Use the
-      <a href="{{ url_for('main.dictionary') }}">dictionary</a> or ask the
-      teacher to save one.
-    </p>
+    <div class="empty-state">
+      <p>
+        No saved terms yet. Search the
+        <a href="{{ url_for('main.dictionary') }}">dictionary</a>, or say
+        “save that” during a teacher call.
+      </p>
+    </div>
     {% endif %}
   </section>
 
@@ -82,7 +93,7 @@
   <div class="empty-library">
     <p>
       Your library is empty.
-      <a href="{{ url_for('main.index') }}">Add your first phrase</a> to get
+      <a href="{{ url_for('main.index') }}">Translate a phrase</a> to get
       started.
     </p>
   </div>

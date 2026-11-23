@@ -26,7 +26,7 @@
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}?v=20261123d"
+      href="{{ url_for('static', filename='css/style.css') }}?v=20261123e"
     />
     {% block head %}{% endblock %}
   </head>
@@ -37,12 +37,39 @@
         <h1 class="brand-heading">
           <a
             class="brand"
-            href="{{ url_for('main.index') }}"
+            href="{{ url_for('learn.today') }}"
             aria-label="Kiku — {{ active_language.name if active_language else 'language learning' }} home"
           >
             Kiku
           </a>
         </h1>
+
+        {% if nav_languages %}
+        <form
+          class="language-switch"
+          method="post"
+          action="{{ url_for('main.set_language') }}"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <label class="sr-only" for="language-select">Learning language</label>
+          <span class="language-label" aria-hidden="true">Learning</span>
+          <select
+            id="language-select"
+            name="code"
+            aria-label="Learning language"
+          >
+            {% for item in nav_languages %}
+            <option
+              value="{{ item.code }}"
+              {% if active_language and item.code == active_language.code %}selected{% endif %}
+            >
+              {{ item.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </form>
+        {% endif %}
+
         <button
           type="button"
           class="nav-toggle"
@@ -53,68 +80,125 @@
           <span class="nav-toggle-icon" aria-hidden="true">☰</span>
           Menu
         </button>
+
         <ul id="primary-nav">
-          <li>
-            <a
-              href="{{ url_for('learn.today') }}"
-              aria-current="{{ 'page' if request.endpoint in ['learn.today', 'learn.review', 'learn.progress'] else 'false' }}"
-              >Learn</a
+          <li class="nav-group">
+            <details
+              {% if request.endpoint in ['learn.today', 'learn.review', 'learn.review_complete', 'learn.progress'] %}class="is-active"{% endif %}
             >
+              <summary>Learn</summary>
+              <ul class="nav-submenu">
+                <li>
+                  <a
+                    href="{{ url_for('learn.today') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'learn.today' else 'false' }}"
+                    >Today</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{{ url_for('learn.review') }}"
+                    aria-current="{{ 'page' if request.endpoint in ['learn.review', 'learn.review_complete'] else 'false' }}"
+                    >Review</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{{ url_for('learn.progress') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'learn.progress' else 'false' }}"
+                    >Progress</a
+                  >
+                </li>
+              </ul>
+            </details>
           </li>
-          {% if not (active_language and active_language.code == 'am') %}
-          <li>
-            <a
-              href="{{ url_for('learn.scenes') }}"
-              aria-current="{{ 'page' if request.endpoint in ['learn.scenes', 'learn.scene_detail'] else 'false' }}"
-              >Scenes</a
+
+          <li class="nav-group">
+            <details
+              {% if request.endpoint in ['teacher.panel', 'learn.scenes', 'learn.scene_detail', 'learn.fidel', 'learn.fidel_lesson', 'learn.hangul', 'learn.hangul_lesson', 'learn.sound_gym'] %}class="is-active"{% endif %}
             >
+              <summary>Practice</summary>
+              <ul class="nav-submenu">
+                <li>
+                  <a
+                    href="{{ url_for('teacher.panel') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'teacher.panel' else 'false' }}"
+                    >Teacher</a
+                  >
+                </li>
+                {% if active_language and active_language.code == 'am' %}
+                <li>
+                  <a
+                    href="{{ url_for('learn.fidel') }}"
+                    aria-current="{{ 'page' if request.endpoint in ['learn.fidel', 'learn.fidel_lesson'] else 'false' }}"
+                    >Fidel</a
+                  >
+                </li>
+                {% else %}
+                <li>
+                  <a
+                    href="{{ url_for('learn.scenes') }}"
+                    aria-current="{{ 'page' if request.endpoint in ['learn.scenes', 'learn.scene_detail'] else 'false' }}"
+                    >Scenes</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{{ url_for('learn.hangul') }}"
+                    aria-current="{{ 'page' if request.endpoint in ['learn.hangul', 'learn.hangul_lesson'] else 'false' }}"
+                    >Hangul</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{{ url_for('learn.sound_gym') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'learn.sound_gym' else 'false' }}"
+                    >Sound Gym</a
+                  >
+                </li>
+                {% endif %}
+              </ul>
+            </details>
           </li>
-          {% endif %}
-          {% if active_language and active_language.code == 'am' %}
-          <li>
-            <a
-              href="{{ url_for('learn.fidel') }}"
-              aria-current="{{ 'page' if request.endpoint in ['learn.fidel', 'learn.fidel_lesson'] else 'false' }}"
-              >Fidel</a
+
+          <li class="nav-group">
+            <details
+              {% if request.endpoint in ['main.library', 'main.dictionary', 'main.index', 'main.resources'] %}class="is-active"{% endif %}
             >
+              <summary>Words</summary>
+              <ul class="nav-submenu">
+                <li>
+                  <a
+                    href="{{ url_for('main.library') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.library' else 'false' }}"
+                    >My terms</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{{ url_for('main.dictionary') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.dictionary' else 'false' }}"
+                    >Dictionary</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{{ url_for('main.resources') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.resources' else 'false' }}"
+                    >Browse</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{{ url_for('main.index') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.index' else 'false' }}"
+                    >Translate</a
+                  >
+                </li>
+              </ul>
+            </details>
           </li>
-          {% else %}
-          <li>
-            <a
-              href="{{ url_for('learn.hangul') }}"
-              aria-current="{{ 'page' if request.endpoint in ['learn.hangul', 'learn.hangul_lesson'] else 'false' }}"
-              >Hangul</a
-            >
-          </li>
-          {% endif %}
-          <li>
-            <a
-              href="{{ url_for('teacher.panel') }}"
-              aria-current="{{ 'page' if request.endpoint == 'teacher.panel' else 'false' }}"
-              >Teacher</a
-            >
-          </li>
-          <li>
-            <a
-              href="{{ url_for('learn.progress') }}"
-              aria-current="{{ 'page' if request.endpoint == 'learn.progress' else 'false' }}"
-              >Progress</a
-            >
-          </li>
-          <li>
-            <a
-              href="{{ url_for('main.dictionary') }}"
-              aria-current="{{ 'page' if request.endpoint in ['main.dictionary'] else 'false' }}"
-              >Dictionary</a
-            >
-          </li>
-          <li>
-            <a
-              href="{{ url_for('main.resources') }}"
-              aria-current="{{ 'page' if request.endpoint == 'main.resources' else 'false' }}"
-              >Resources</a
-            >
-          </li>
+
           <li>
             <a
               href="{{ url_for('main.settings') }}"

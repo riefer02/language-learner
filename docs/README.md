@@ -4,6 +4,7 @@
 |---|---|
 | [`../AGENTS.md`](../AGENTS.md) | How coding agents should work here: commands, invariants, workflows |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Current module map, data model, request flows, and structural debt |
+| [`DESIGN.md`](DESIGN.md) | Framework decision, tokens, components, IA rules, accessibility contract |
 | [`PROJECT_STATUS.md`](PROJECT_STATUS.md) | Where the project is right now, what works, what does not, top risks |
 | [`ROADMAP.md`](ROADMAP.md) | Historical Phase 0–4 plan (Oct 2026); see the decision record for current sequencing |
 | [`KIKU_BLUEPRINT.md`](KIKU_BLUEPRINT.md) | Historical product/learning blueprint (Oct 2026); current truth is in `architecture/00-decision-2026-11-23.md` |

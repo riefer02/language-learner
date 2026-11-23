@@ -8,6 +8,7 @@ main = Blueprint("main", __name__)
 from app.main import (  # noqa: F401
     content,
     conversations,
+    design,
     home,
     settings,
     system,

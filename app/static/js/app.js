@@ -134,3 +134,35 @@ document.addEventListener("keydown", function (e) {
     }
   });
 })();
+
+// Language switch: submit the header form when the selection changes.
+(function () {
+  document.querySelectorAll(".language-switch select").forEach(function (select) {
+    select.addEventListener("change", function () {
+      if (select.form) {
+        if (select.form.requestSubmit) select.form.requestSubmit();
+        else select.form.submit();
+      }
+    });
+  });
+})();
+
+// Close open nav menus on Escape or an outside click.
+(function () {
+  const groups = [...document.querySelectorAll(".nav-group details")];
+  if (!groups.length) return;
+
+  document.addEventListener("click", function (event) {
+    if (event.target.closest(".nav-group")) return;
+    groups.forEach(function (details) {
+      details.open = false;
+    });
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+    groups.forEach(function (details) {
+      details.open = false;
+    });
+  });
+})();

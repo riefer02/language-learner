@@ -238,7 +238,7 @@ def test_request_id_logging_filter(app):
 
 
 def test_security_headers_are_present(client):
-    response = client.get("/ko/")
+    response = client.get("/ko/translate")
 
     assert response.status_code == 200
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
@@ -260,7 +260,7 @@ def test_optional_basic_auth_gate(app, client):
     assert client.get("/healthz").status_code == 200
     assert client.get("/ko/").status_code == 401
 
-    response = client.get("/ko/", auth=("kiku", "secret"))
+    response = client.get("/ko/translate", auth=("kiku", "secret"))
     assert response.status_code == 200
 
 

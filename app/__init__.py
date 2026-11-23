@@ -366,12 +366,22 @@ def create_app(config_name=None, overrides=None):
     @app.context_processor
     def inject_active_language():
         from app.learning.service import current_language
+        from app.models_language import Language
 
         try:
-            return {"active_language": current_language()}
+            language = current_language()
+            languages = (
+                Language.query.filter_by(is_active=True)
+                .order_by(Language.id.asc())
+                .all()
+            )
+            return {
+                "active_language": language,
+                "nav_languages": languages,
+            }
         except Exception:
             current_app.logger.exception("Could not resolve the active language")
-            return {"active_language": None}
+            return {"active_language": None, "nav_languages": []}
 
     @app.template_filter("has_hangul")
     def has_hangul(value):

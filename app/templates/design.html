@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %} - Design system{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <p class="learn-eyebrow">Design system</p>
+  <h2>Tokens and components.</h2>
+  <p>
+    This page is a live reference for Kiku’s UI. It is not part of the learner
+    flow. Source of truth: <code>app/static/css/style.css</code> and
+    <code>docs/DESIGN.md</code>.
+  </p>
+</div>
+
+<section class="surface-card" aria-labelledby="tokens-heading">
+  <h3 id="tokens-heading">Semantic colors</h3>
+  <div class="token-grid">
+    <div class="swatch swatch-primary"><code>--primary</code><span>Actions, links</span></div>
+    <div class="swatch swatch-primary-strong"><code>--primary-strong</code><span>Hover</span></div>
+    <div class="swatch swatch-accent"><code>--accent</code><span>Primary CTA</span></div>
+    <div class="swatch swatch-surface"><code>--surface</code><span>Cards</span></div>
+    <div class="swatch swatch-muted"><code>--surface-muted</code><span>Subtle panels</span></div>
+    <div class="swatch swatch-ink"><code>--ink-700</code><span>Body text</span></div>
+    <div class="swatch swatch-mutedink"><code>--ink-500</code><span>Secondary text</span></div>
+    <div class="swatch swatch-success"><code>--success</code><span>Correct</span></div>
+    <div class="swatch swatch-danger"><code>--danger</code><span>Error</span></div>
+  </div>
+</section>
+
+<section class="surface-card" aria-labelledby="type-heading">
+  <h3 id="type-heading">Type scale</h3>
+  <p class="type-3xl">Page hero · --text-3xl</p>
+  <p class="type-2xl">Section · --text-2xl</p>
+  <p class="type-xl">Card title · --text-xl</p>
+  <p class="type-lg">Lead · --text-lg</p>
+  <p>Body · --text-md</p>
+  <p class="learn-meta">Meta · --text-sm and --muted</p>
+</section>
+
+<section class="surface-card" aria-labelledby="space-heading">
+  <h3 id="space-heading">Spacing</h3>
+  <div class="spacing-row"><span class="spacing-bar space-1"></span><code>--space-1</code></div>
+  <div class="spacing-row"><span class="spacing-bar space-2"></span><code>--space-2</code></div>
+  <div class="spacing-row"><span class="spacing-bar space-3"></span><code>--space-3</code></div>
+  <div class="spacing-row"><span class="spacing-bar space-4"></span><code>--space-4</code></div>
+  <div class="spacing-row"><span class="spacing-bar space-5"></span><code>--space-5</code></div>
+  <div class="spacing-row"><span class="spacing-bar space-6"></span><code>--space-6</code></div>
+</section>
+
+<section class="surface-card" aria-labelledby="components-heading">
+  <h3 id="components-heading">Components</h3>
+  <p>
+    <button type="button" class="btn btn-primary">Primary action</button>
+    <button type="button" class="btn">Secondary action</button>
+    <a class="btn" href="{{ url_for('main.dictionary') }}">Link action</a>
+    <button type="button" class="link-button">Quiet action</button>
+  </p>
+  <p class="chip-row">
+    <span class="chip">Chip</span>
+    <span class="language-badge">Korean</span>
+  </p>
+  <details class="help-tip">
+    <summary>Help pattern</summary>
+    <p>Use native details for explanations. No hover-only tooltips.</p>
+  </details>
+  <div class="empty-state">
+    <h4>Empty state</h4>
+    <p>Say what is missing, why it matters, and the next action.</p>
+    <a class="btn" href="{{ url_for('main.dictionary') }}">Next action</a>
+  </div>
+</section>
+
+<section class="surface-card" aria-labelledby="forms-heading">
+  <h3 id="forms-heading">Forms</h3>
+  <div class="form-group">
+    <label for="demo-field">Label</label>
+    <input id="demo-field" type="text" placeholder="Placeholder is not a label" />
+    <small class="learn-meta">Helper text explains the constraint.</small>
+  </div>
+  <label for="demo-select">Select</label>
+  <select id="demo-select">
+    <option>One option</option>
+    <option>Another option</option>
+  </select>
+</section>
+
+<section class="surface-card" aria-labelledby="rules-heading">
+  <h3 id="rules-heading">Rules</h3>
+  <ul>
+    <li>Use semantic tokens, not raw hex values, for new components.</li>
+    <li>One <code>h1</code> per page; page titles are <code>h2</code>.</li>
+    <li>Every control needs a visible label or a verified accessible name.</li>
+    <li>Tests run against the page, not a screenshot: labels, focus, mobile width.</li>
+    <li>Legacy rules migrate opportunistically; do not add new hard-coded colors.</li>
+  </ul>
+</section>
+{% endblock %}

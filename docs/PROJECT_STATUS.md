@@ -280,3 +280,21 @@ Tested in Chrome against `127.0.0.1:5000`:
   duplicate IDs, no unlabelled form controls, no unnamed buttons/links, no
   images without alt text, no horizontal overflow at 390px.
 - Mobile and desktop screenshots verified in Chrome; console clean.
+
+
+### Information architecture and design system (same day)
+
+- **Home is Today.** `/` and `/<lang>/` land on `/<lang>/learn`; the phrase
+  translator moved to `/<lang>/translate` under the **Words** group.
+- **Navigation is grouped** into Learn / Practice / Words / Settings instead of
+  eight flat links. The current language is a persistent header select that
+  changes language and lands on Today.
+- **My terms is discoverable** from the header, from a Today card with the saved
+  count and preview, and from the dictionary. The page is now “Words you kept.”
+- **Design tokens**: primitive palette → semantic colors → spacing, radius,
+  elevation, type, and motion scales. New components use tokens; legacy CSS is
+  migrated opportunistically. Tailwind was deliberately not added (see
+  `docs/DESIGN.md`); the framework remains Flask + Jinja + vanilla JS + plain CSS.
+- **Live style guide** at `/design` documents tokens and components.
+- Browser-tested desktop and 390px mobile: grouped menus, language switch
+  KO↔AM, My terms navigation, no overflow, no console errors.

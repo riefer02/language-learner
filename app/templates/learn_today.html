@@ -81,6 +81,42 @@
   </p>
   {% endif %}
 
+  <section class="surface-card learn-terms" aria-labelledby="my-terms-heading">
+    <div class="tutorial-head">
+      <div>
+        <h3 id="my-terms-heading">My terms</h3>
+        <p class="learn-meta">
+          {% if term_count %}
+          {{ term_count }} saved term{% if term_count != 1 %}s{% endif %},
+          ready to review.
+          {% else %}
+          Words you save from the dictionary or ask Teacher to keep.
+          {% endif %}
+        </p>
+      </div>
+      <a class="btn" href="{{ url_for('main.library') }}">Open My terms</a>
+    </div>
+    {% if terms %}
+    <ul class="term-list term-list-compact">
+      {% for term in terms %}
+      <li class="term-card">
+        <div>
+          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text if term.item else '' }}</strong>
+          <span class="learn-meta">{{ term.item.transliteration if term.item else '' }}</span>
+          <p>{{ term.item.gloss if term.item else '' }}</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="learn-meta">
+      Start in the
+      <a href="{{ url_for('main.dictionary') }}">dictionary</a>, or say
+      “save that” during a teacher call.
+    </p>
+    {% endif %}
+  </section>
+
   <div class="learn-primary">
     {% if summary.due %}
     <a class="btn btn-primary btn-large" href="{{ url_for('learn.review') }}">

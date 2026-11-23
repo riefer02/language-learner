@@ -199,3 +199,10 @@ def test_today_shows_first_run_guidance(client):
     assert response.status_code == 200
     assert b"New here? Start with three moves" in response.data
     assert b"What does" in response.data
+
+
+def test_today_shows_my_terms_card(client):
+    page = client.get("/ko/learn")
+    assert page.status_code == 200
+    assert b"My terms" in page.data
+    assert b"Open My terms" in page.data

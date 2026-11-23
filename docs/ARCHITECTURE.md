@@ -11,7 +11,7 @@ Browser (Jinja + vanilla JS)
    │  forms / fetch + CSRF
    ▼
 Flask blueprints
-   ├─ main        /<lang>/, dictionary, library, settings, translation, PWA
+   ├─ main        /<lang>/, dictionary, library, settings, translate, PWA, /design
    ├─ learn       /learn, /learn/review, /learn/fidel, /learn/hangul, scenes
    ├─ onboarding  /welcome
    └─ teacher     /<lang>/learn/teacher, /api/teacher/*
