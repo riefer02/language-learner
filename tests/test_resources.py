@@ -1,9 +1,9 @@
 """Resources search and reference surface."""
 
 def test_resources_page_renders(client):
-    client.get("/learn")
+    client.get("/ko/learn")
 
-    response = client.get("/resources")
+    response = client.get("/ko/resources")
 
     assert response.status_code == 200
     assert b"Look it up. Then use it." in response.data
@@ -12,10 +12,10 @@ def test_resources_page_renders(client):
 
 
 def test_resources_searches_korean_and_english(client, app):
-    client.get("/learn")
+    client.get("/ko/learn")
 
-    korean = client.get("/resources?q=커피")
-    english = client.get("/resources?q=coffee")
+    korean = client.get("/ko/resources?q=커피")
+    english = client.get("/ko/resources?q=coffee")
 
     assert korean.status_code == 200
     assert "커피".encode() in korean.data
@@ -24,10 +24,10 @@ def test_resources_searches_korean_and_english(client, app):
 
 
 def test_resources_filters_by_type_and_level(client, app):
-    client.get("/learn")
+    client.get("/ko/learn")
 
-    grammar = client.get("/resources?type=grammar")
-    level_two = client.get("/resources?level=2")
+    grammar = client.get("/ko/resources?type=grammar")
+    level_two = client.get("/ko/resources?level=2")
 
     assert grammar.status_code == 200
     assert "은/는".encode() in grammar.data
@@ -35,16 +35,16 @@ def test_resources_filters_by_type_and_level(client, app):
 
 
 def test_resources_empty_state(client):
-    client.get("/learn")
+    client.get("/ko/learn")
 
-    response = client.get("/resources?q=zzzz-not-in-deck")
+    response = client.get("/ko/resources?q=zzzz-not-in-deck")
 
     assert response.status_code == 200
     assert b"No matches yet" in response.data
 
 
 def test_nav_uses_resources_and_scenes_not_legacy_tools(client):
-    response = client.get("/learn")
+    response = client.get("/ko/learn")
 
     assert b"Scenes" in response.data
     assert b"Resources" in response.data

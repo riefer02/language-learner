@@ -20,63 +20,63 @@
 
   <div class="review-card">
     <p class="review-label">
-      {% if prompt_side == "korean" %}{{ language.name if language else "Korean" }} → English{% else %}English → {{ language.name if language else "Korean" }}{% endif %}
+      {% if prompt_side == "target" %}{{ language.name if language else "Korean" }} → English{% else %}English → {{ language.name if language else "Korean" }}{% endif %}
     </p>
 
-    {% if prompt_side == "korean" %}
-    <div class="review-prompt" lang="{{ item_lang }}">{{ item.korean }}</div>
+    {% if prompt_side == "target" %}
+    <div class="review-prompt" lang="{{ item_lang }}">{{ item.target_text }}</div>
       {% if item.audio_path %}
       <audio
         class="review-audio"
         src="{{ item.audio_path }}"
         controls
         preload="none"
-        aria-label="Play pronunciation for {{ item.korean }}"
+        aria-label="Play pronunciation for {{ item.target_text }}"
       ></audio>
       {% else %}
       <button
         type="button"
         class="speak-btn"
-        data-speak="{{ item.korean }}"
-        aria-label="Hear {{ item.korean }} in {{ language.name if language else 'Korean' }}"
+        data-speak="{{ item.target_text }}"
+        aria-label="Hear {{ item.target_text }} in {{ language.name if language else 'Korean' }}"
       >
         Hear it
       </button>
       {% endif %}
     {% else %}
-    <div class="review-prompt" lang="en">{{ item.english }}</div>
+    <div class="review-prompt" lang="en">{{ item.gloss }}</div>
     <p class="review-hint">Say it in {{ language.name if language else "Korean" }}, then reveal the answer.</p>
     {% endif %}
 
     <details class="review-answer">
       <summary>Show answer</summary>
       <div class="review-answer-body">
-        {% if answer_side == "korean" %}
-        <div class="review-answer-korean" lang="{{ item_lang }}">{{ item.korean }}</div>
+        {% if answer_side == "target" %}
+        <div class="review-answer-korean" lang="{{ item_lang }}">{{ item.target_text }}</div>
           {% if item.audio_path %}
           <audio
             class="review-audio"
             src="{{ item.audio_path }}"
             controls
             preload="none"
-            aria-label="Play answer for {{ item.korean }}"
+            aria-label="Play answer for {{ item.target_text }}"
           ></audio>
           {% else %}
           <button
             type="button"
             class="speak-btn"
-            data-speak="{{ item.korean }}"
-            aria-label="Hear {{ item.korean }} in {{ language.name if language else 'Korean' }}"
+            data-speak="{{ item.target_text }}"
+            aria-label="Hear {{ item.target_text }} in {{ language.name if language else 'Korean' }}"
           >
             Hear the answer
           </button>
           {% endif %}
         {% else %}
-        <div class="review-answer-english" lang="en">{{ item.english }}</div>
+        <div class="review-answer-english" lang="en">{{ item.gloss }}</div>
         {% endif %}
 
-        {% if item.romanization %}
-        <div class="review-romanization">{{ item.romanization }}</div>
+        {% if item.transliteration %}
+        <div class="review-romanization">{{ item.transliteration }}</div>
         {% endif %}
         {% if item.notes %}
         <p class="review-notes">{{ item.notes }}</p>

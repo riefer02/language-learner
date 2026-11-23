@@ -91,14 +91,14 @@ def seed_amharic():
     created_items = 0
     for fidel, roman, english, item_type, level, note in AMHARIC_ITEMS:
         item = Item.query.filter_by(
-            korean=fidel, english=english, item_type=item_type
+            target_text=fidel, gloss=english, item_type=item_type
         ).first()
         if item is None:
             item = Item(
                 item_type=item_type,
-                korean=fidel,
-                english=english,
-                romanization=roman,
+                target_text=fidel,
+                gloss=english,
+                transliteration=roman,
                 level=level,
                 notes=note,
                 language_id=language.id,

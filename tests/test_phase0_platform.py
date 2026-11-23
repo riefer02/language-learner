@@ -158,8 +158,8 @@ def test_media_gc_keeps_audio_referenced_by_an_item(app, runner):
         db.session.add(
             Item(
                 item_type="lexeme",
-                korean="테스트",
-                english="test",
+                target_text="테스트",
+                gloss="test",
                 level=1,
                 default_skill="recognize",
                 audio_path="/static/audio/item_seed.mp3",
@@ -238,7 +238,7 @@ def test_request_id_logging_filter(app):
 
 
 def test_security_headers_are_present(client):
-    response = client.get("/")
+    response = client.get("/ko/")
 
     assert response.status_code == 200
     assert "default-src 'self'" in response.headers["Content-Security-Policy"]
@@ -258,9 +258,9 @@ def test_optional_basic_auth_gate(app, client):
     app.config.update(REQUIRE_AUTH=True, APP_USERNAME="kiku", APP_PASSWORD="secret")
 
     assert client.get("/healthz").status_code == 200
-    assert client.get("/").status_code == 401
+    assert client.get("/ko/").status_code == 401
 
-    response = client.get("/", auth=("kiku", "secret"))
+    response = client.get("/ko/", auth=("kiku", "secret"))
     assert response.status_code == 200
 
 
@@ -315,13 +315,13 @@ class _FailingConversationClient:
                                 "lines": [
                                     {
                                         "speaker": 1,
-                                        "english_text": "Hello.",
-                                        "korean_text": "안녕하세요.",
+                                        "source_text": "Hello.",
+                                        "target_text": "안녕하세요.",
                                     },
                                     {
                                         "speaker": 2,
-                                        "english_text": "Hi.",
-                                        "korean_text": "안녕.",
+                                        "source_text": "Hi.",
+                                        "target_text": "안녕.",
                                     },
                                 ],
                             }

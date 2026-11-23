@@ -31,7 +31,7 @@ class _Client:
 
 def _post_audio(client, slug, text):
     return client.post(
-        f"/learn/scenes/{slug}/speak",
+        f"/ko/learn/scenes/{slug}/speak",
         data={"audio": (io.BytesIO(b"fake-audio"), "answer.webm")},
         content_type="multipart/form-data",
     )
@@ -39,7 +39,7 @@ def _post_audio(client, slug, text):
 
 def test_scene_speech_accepts_matching_transcript(app, client):
     scene = SCENES[0]
-    client.get(f"/learn/scenes/{scene['slug']}")
+    client.get(f"/ko/learn/scenes/{scene['slug']}")
     app.extensions["openai_client"] = _Client(scene["steps"][0]["expected"][0])
 
     response = _post_audio(client, scene["slug"], "hello")
@@ -57,7 +57,7 @@ def test_scene_speech_accepts_matching_transcript(app, client):
 
 def test_scene_speech_rejects_wrong_transcript(app, client):
     scene = SCENES[0]
-    client.get(f"/learn/scenes/{scene['slug']}")
+    client.get(f"/ko/learn/scenes/{scene['slug']}")
     app.extensions["openai_client"] = _Client("안녕하세요")
 
     response = _post_audio(client, scene["slug"], "hello")
@@ -76,7 +76,7 @@ def test_scene_speech_rejects_wrong_transcript(app, client):
 def test_scene_speech_returns_503_when_disabled(app, client):
     app.config["SPEECH_SCORING_ENABLED"] = False
     scene = SCENES[0]
-    client.get(f"/learn/scenes/{scene['slug']}")
+    client.get(f"/ko/learn/scenes/{scene['slug']}")
 
     response = _post_audio(client, scene["slug"], "hello")
 
@@ -85,8 +85,8 @@ def test_scene_speech_returns_503_when_disabled(app, client):
 
 def test_scene_speech_requires_audio(client):
     scene = SCENES[0]
-    client.get(f"/learn/scenes/{scene['slug']}")
+    client.get(f"/ko/learn/scenes/{scene['slug']}")
 
-    response = client.post(f"/learn/scenes/{scene['slug']}/speak", data={})
+    response = client.post(f"/ko/learn/scenes/{scene['slug']}/speak", data={})
 
     assert response.status_code == 400

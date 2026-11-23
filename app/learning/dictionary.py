@@ -16,9 +16,9 @@ def item_query(language_id=None, query_text=None, item_type=None, level=None):
         like = f"%{query_text}%"
         query = query.filter(
             or_(
-                Item.korean.ilike(like),
-                Item.english.ilike(like),
-                Item.romanization.ilike(like),
+                Item.target_text.ilike(like),
+                Item.gloss.ilike(like),
+                Item.transliteration.ilike(like),
                 Item.notes.ilike(like),
             )
         )
@@ -89,7 +89,7 @@ def serialize_item(item):
         "id": item.id,
         "text": item.target_text,
         "gloss": item.gloss,
-        "romanization": item.romanization,
+        "transliteration": item.transliteration,
         "item_type": item.item_type,
         "level": item.level,
         "audio_url": item.audio_path,
@@ -101,9 +101,9 @@ def serialize_term(card):
     return {
         "id": card.id,
         "item_id": card.item_id,
-        "text": card.item.korean if card.item else None,
-        "gloss": card.item.english if card.item else None,
-        "romanization": card.item.romanization if card.item else None,
+        "text": card.item.target_text if card.item else None,
+        "gloss": card.item.gloss if card.item else None,
+        "transliteration": card.item.transliteration if card.item else None,
         "context_sentence": card.context_sentence,
         "source": card.source,
         "created_at": card.created_at.isoformat() if card.created_at else None,

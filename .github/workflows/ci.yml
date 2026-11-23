@@ -87,6 +87,22 @@ jobs:
           }
           if not {"reminder_enabled", "reminder_time"} <= user_columns:
               raise SystemExit("reminder preferences are missing after migration")
+          item_columns = {
+              row[1]
+              for row in sqlite3.connect(path).execute("pragma table_info(item)")
+          }
+          if not {"target_text", "gloss", "transliteration"} <= item_columns:
+              raise SystemExit("language-neutral item columns are missing")
+          if "korean" in item_columns:
+              raise SystemExit("legacy item.korean column still exists")
+          phrase_columns = {
+              row[1]
+              for row in sqlite3.connect(path).execute("pragma table_info(phrase)")
+          }
+          if not {"source_text", "target_text"} <= phrase_columns:
+              raise SystemExit("language-neutral phrase columns are missing")
+          if "korean_text" in phrase_columns:
+              raise SystemExit("legacy phrase.korean_text column still exists")
           print("migration schema ok:", sorted(tables))
           PY
 

@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block title %} - Sound Gym{% endblock %}
 {% block content %}
-<div class="sound-gym" data-csrf="{{ csrf_token() }}">
+<div
+  class="sound-gym"
+  data-csrf="{{ csrf_token() }}"
+  data-score-url="{{ url_for('learn.api_speech_score') }}"
+>
   <p class="learn-eyebrow">Sound Gym</p>
   <h2>Train your ear. Then use your voice.</h2>
   <p class="learn-sub">
@@ -29,11 +33,11 @@
         <button
           type="button"
           class="pair-option"
-          data-korean="{{ word.korean }}"
-          data-romanization="{{ word.romanization }}"
+          data-target="{{ word.target_text }}"
+          data-transliteration="{{ word.transliteration }}"
         >
-          <span lang="ko">{{ word.korean }}</span>
-          <small>{{ word.romanization }} · {{ word.english }}</small>
+          <span lang="ko">{{ word.target_text }}</span>
+          <small>{{ word.transliteration }} · {{ word.gloss }}</small>
         </button>
         {% endfor %}
       </div>
@@ -52,18 +56,18 @@
     </p>
 
     {% for prompt in prompts %}
-    <div class="production-card" data-target="{{ prompt.korean }}">
+    <div class="production-card" data-target="{{ prompt.target_text }}">
       <div class="production-head">
         <div>
-          <div class="production-korean" lang="ko">{{ prompt.korean }}</div>
-          <div class="production-romanization">{{ prompt.romanization }}</div>
-          <div class="production-english">{{ prompt.english }}</div>
+          <div class="production-korean" lang="ko">{{ prompt.target_text }}</div>
+          <div class="production-romanization">{{ prompt.transliteration }}</div>
+          <div class="production-english">{{ prompt.gloss }}</div>
         </div>
         <button
           type="button"
           class="btn speak-btn"
-          data-speak="{{ prompt.korean }}"
-          aria-label="Hear {{ prompt.korean }} in Korean"
+          data-speak="{{ prompt.target_text }}"
+          aria-label="Hear {{ prompt.target_text }} in Korean"
         >
           Hear it
         </button>

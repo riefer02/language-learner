@@ -81,7 +81,7 @@ def _item_payload(item):
         "item_id": item.id,
         "target": item.target_text,
         "gloss": item.gloss,
-        "romanization": item.romanization,
+        "transliteration": item.transliteration,
         "level": item.level,
         "audio_url": item.audio_path,
     }
@@ -409,9 +409,9 @@ def tool_lookup_dictionary(session, args):
     items = (
         Item.query.filter(
             db.or_(
-                Item.korean.ilike(pattern),
-                Item.english.ilike(pattern),
-                Item.romanization.ilike(pattern),
+                Item.target_text.ilike(pattern),
+                Item.gloss.ilike(pattern),
+                Item.transliteration.ilike(pattern),
             )
         )
         .order_by(Item.level.asc(), Item.id.asc())
@@ -435,14 +435,14 @@ def tool_create_drill(session, args):
     for item_id in item_ids[: args.count]:
         item = _find_item(session, item_id)
         if args.drill_type == "translate_to_english":
-            prompt = f'What does "{item.korean}" mean?'
-            expected = item.english
+            prompt = f'What does "{item.target_text}" mean?'
+            expected = item.gloss
         elif args.drill_type == "repeat":
-            prompt = f"Repeat after me: {item.korean}"
-            expected = item.korean
+            prompt = f"Repeat after me: {item.target_text}"
+            expected = item.target_text
         else:
-            prompt = f"Say in Korean: {item.english}"
-            expected = item.korean
+            prompt = f"Say in Korean: {item.gloss}"
+            expected = item.target_text
         drill = Drill(
             uuid=str(uuid.uuid4()),
             session_id=session.id,
@@ -489,7 +489,7 @@ def tool_add_term_to_library(session, args):
         raise TeacherToolError("language_required") from error
     if args.note:
         card.note = args.note
-    return {"term_card_id": card.id, "item_id": item.id, "target": item.korean}
+    return {"term_card_id": card.id, "item_id": item.id, "target": item.target_text}
 
 
 def grade_drill(user_id, drill, response, score=None, client_attempt_id=None,
@@ -701,8 +701,8 @@ def session_to_dict(session):
         {
             "id": card.id,
             "item_id": card.item_id,
-            "text": card.item.korean if card.item else None,
-            "gloss": card.item.english if card.item else None,
+            "text": card.item.target_text if card.item else None,
+            "gloss": card.item.gloss if card.item else None,
             "context_sentence": card.context_sentence,
         }
         for card in TermCard.query.filter_by(

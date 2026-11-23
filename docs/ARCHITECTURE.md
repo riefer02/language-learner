@@ -11,10 +11,10 @@ Browser (Jinja + vanilla JS)
    │  forms / fetch + CSRF
    ▼
 Flask blueprints
-   ├─ main        /, /dictionary, /library, /api/translate, /settings, PWA
+   ├─ main        /<lang>/, dictionary, library, settings, translation, PWA
    ├─ learn       /learn, /learn/review, /learn/fidel, /learn/hangul, scenes
    ├─ onboarding  /welcome
-   └─ teacher     /learn/teacher, /api/teacher/*
+   └─ teacher     /<lang>/learn/teacher, /api/teacher/*
    │
    ├─ app/learning   review queue, FSRS, stats, scenes, dictionary
    ├─ app/languages  content packs + seeders
@@ -72,25 +72,24 @@ teacher_session ──< teacher_turn
 `teacher_session.provider` names the adapter; `provider_session_id` is opaque.
 Raw audio is never persisted.
 
-## Legacy mapping (important)
+## Column names
 
-| Legacy column | Actual meaning now |
-|---|---|
-| `item.korean` | target-language text (Korean **or Amharic**) |
-| `item.english` | English gloss |
-| `item.romanization` | transliteration for the primary form |
-| `phrase.korean_text` | target text of a saved translation |
-| `phrase.english_text` | source text |
-
-Canonical accessors in `Item`: `target_text`, `gloss`. Use them in new code.
-The physical rename is a later contract migration; do not "fix" it by editing
-templates only.
+`item.target_text`, `item.gloss`, and `item.transliteration` are the canonical
+names for target text, English gloss, and romanization. `phrase.source_text`
+and `phrase.target_text` are canonical. The old `korean`/`english`/`korean_text`
+columns were renamed in migration `20261123_0014`; do not reintroduce them.
 
 ## Request flows
 
+All learner pages live under `/<lang_code>/` (`ko` or `am`). A URL value
+preprocessor resolves the language into `g.language`; `url_for` automatically
+fills `lang_code` from `g`. Unprefixed legacy paths (`/learn`, `/settings`, …)
+301-redirect to the active language. API routes stay unprefixed and resolve the
+language from the learner.
+
 ### Review
 
-`GET /learn` → `current_language(user)` → `ensure_review_cards(user, language)`
+`GET /<lang>/learn` → `current_language(user)` → `ensure_review_cards(user, language)`
 → `stats(user, language)` → `learn_today.html`.
 `GET /learn/review` → `next_due_card(user, language)` → reveal → POST rating →
 `apply_rating` → `ReviewLog`.
@@ -169,14 +168,11 @@ preference → `ko` fallback. Content packs should not edit core routes.
 
 ## Known structural debt
 
-1. **Legacy column names** (`item.korean`, `phrase.korean_text`) still mislead;
-   canonical accessors exist, physical rename is deferred.
-2. **Routes are not language-prefixed.** `/learn` resolves the active language;
-   Korean-only pages (`/learn/hangul`, scenes, Sound Gym) still exist for
-   Amharic users if reached by URL.
-3. **`app/routes.py` is a grab bag** (dictionary, translation, conversations,
-   settings, PWA, push). Split only when it starts causing conflicts.
-4. **Content is starter-depth.** Amharic needs native review and audio review;
+1. **Content is starter-depth.** Amharic needs native review and audio review;
    fidel needs native audio; scenes are Korean-only.
-5. **No accounts.** Every feature assumes the single local user.
-6. **Amharic ASR/TTS quality is not usable**; do not enable speech features.
+2. **No accounts.** Every feature assumes the single local user.
+3. **Amharic ASR/TTS quality is not usable**; do not enable speech features.
+4. **Korean-only surfaces remain** (scenes, Hangul, Sound Gym, conversations).
+   They redirect for Amharic, but are not yet generalized.
+5. **Onboarding is generic**, but the goals/experience wording and first-word
+   choice still need language-specific packs beyond Korean and Amharic.

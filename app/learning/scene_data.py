@@ -29,8 +29,8 @@ SCENES = [
         "can_do": "I can order a drink and ask for a receipt in polite Korean.",
         "steps": [
             {
-                "character_korean": "어서 오세요, 뭐 드릴까요?",
-                "character_english": "Welcome, what can I get you?",
+                "character_text": "어서 오세요, 뭐 드릴까요?",
+                "character_gloss": "Welcome, what can I get you?",
                 "expected": [
                     "아이스 아메리카노 한 잔 주세요",
                     "아메리카노 한 잔 주세요",
@@ -39,17 +39,17 @@ SCENES = [
                 "hint": "Drink + 한 잔 + 주세요.",
                 "success_note": "한 잔 is the counter for cups.",
                 "target_item": {
-                    "korean": "아이스 아메리카노 한 잔 주세요",
-                    "english": "One iced Americano, please",
-                    "romanization": "aiseu amerikano han jan juseyo",
+                    "target_text": "아이스 아메리카노 한 잔 주세요",
+                    "gloss": "One iced Americano, please",
+                    "transliteration": "aiseu amerikano han jan juseyo",
                     "notes": "한 잔 = one cup; 주세요 = please give me.",
                 },
             },
             {
-                "character_korean": (
+                "character_text": (
                     "아이스로 드릴까요? 사이즈는 어떻게 해 드릴까요?"
                 ),
-                "character_english": (
+                "character_gloss": (
                     "Would you like it iced? What size would you like?"
                 ),
                 "expected": [
@@ -60,17 +60,17 @@ SCENES = [
                 "hint": "Size + 로 주세요.",
                 "success_note": "로 marks the size or option you choose.",
                 "target_item": {
-                    "korean": "큰 사이즈로 주세요",
-                    "english": "A large size, please",
-                    "romanization": "keun saijeu-ro juseyo",
+                    "target_text": "큰 사이즈로 주세요",
+                    "gloss": "A large size, please",
+                    "transliteration": "keun saijeu-ro juseyo",
                     "notes": "큰 = large; 사이즈 = size; -로 = as / with.",
                 },
             },
             {
-                "character_korean": (
+                "character_text": (
                     "커피 여기 있습니다. 더 필요하신 거 있으세요?"
                 ),
-                "character_english": (
+                "character_gloss": (
                     "Here's your coffee. Is there anything else you need?"
                 ),
                 "expected": [
@@ -81,9 +81,9 @@ SCENES = [
                 "hint": "영수증 + 주세요.",
                 "success_note": "영수증 means receipt; 도 makes it 'also'.",
                 "target_item": {
-                    "korean": "영수증도 주세요",
-                    "english": "A receipt too, please",
-                    "romanization": "yeongsujeung-do juseyo",
+                    "target_text": "영수증도 주세요",
+                    "gloss": "A receipt too, please",
+                    "transliteration": "yeongsujeung-do juseyo",
                     "notes": "영수증 = receipt; 도 = also / too.",
                 },
             },
@@ -99,21 +99,21 @@ SCENES = [
             ),
             "cards": [
                 {
-                    "korean": "아이스 아메리카노 한 잔 주세요",
-                    "english": "One iced Americano, please",
-                    "romanization": "aiseu amerikano han jan juseyo",
+                    "target_text": "아이스 아메리카노 한 잔 주세요",
+                    "gloss": "One iced Americano, please",
+                    "transliteration": "aiseu amerikano han jan juseyo",
                     "notes": "한 잔 = one cup; 주세요 = please give me.",
                 },
                 {
-                    "korean": "큰 사이즈로 주세요",
-                    "english": "A large size, please",
-                    "romanization": "keun saijeu-ro juseyo",
+                    "target_text": "큰 사이즈로 주세요",
+                    "gloss": "A large size, please",
+                    "transliteration": "keun saijeu-ro juseyo",
                     "notes": "큰 = large; -로 marks the chosen option.",
                 },
                 {
-                    "korean": "영수증도 주세요",
-                    "english": "A receipt too, please",
-                    "romanization": "yeongsujeung-do juseyo",
+                    "target_text": "영수증도 주세요",
+                    "gloss": "A receipt too, please",
+                    "transliteration": "yeongsujeung-do juseyo",
                     "notes": "영수증 = receipt; 도 = also / too.",
                 },
             ],
@@ -130,8 +130,8 @@ SCENES = [
         "can_do": "I can ask for directions and repeat a simple route back.",
         "steps": [
             {
-                "character_korean": "네, 도와드릴까요?",
-                "character_english": "Yes, can I help you?",
+                "character_text": "네, 도와드릴까요?",
+                "character_gloss": "Yes, can I help you?",
                 "expected": [
                     "화장실이 어디예요?",
                     "지하철역이 어디예요?",
@@ -143,9 +143,9 @@ SCENES = [
                     "means 'where is it?'"
                 ),
                 "target_item": {
-                    "korean": "화장실이 어디예요?",
-                    "english": "Where is the restroom?",
-                    "romanization": "hwajangsil-i eodiyeyo?",
+                    "target_text": "화장실이 어디예요?",
+                    "gloss": "Where is the restroom?",
+                    "transliteration": "hwajangsil-i eodiyeyo?",
                     "notes": (
                         "화장실 = restroom; 이 = subject marker; 어디예요? "
                         "= where is it?"
@@ -153,10 +153,10 @@ SCENES = [
                 },
             },
             {
-                "character_korean": (
+                "character_text": (
                     "여기서 쭉 가서 왼쪽으로 도세요. 그러면 바로 보여요."
                 ),
-                "character_english": (
+                "character_gloss": (
                     "Go straight from here and turn left. Then you'll see it."
                 ),
                 "expected": [
@@ -167,9 +167,9 @@ SCENES = [
                 "hint": "Repeat the route + 는 거죠? to check.",
                 "success_note": "-는 거죠? checks that you understood.",
                 "target_item": {
-                    "korean": "쭉 가서 왼쪽으로 도는 거죠?",
-                    "english": "I go straight and turn left, right?",
-                    "romanization": "jjuk gaseo oenjjok-euro doneun geojyo?",
+                    "target_text": "쭉 가서 왼쪽으로 도는 거죠?",
+                    "gloss": "I go straight and turn left, right?",
+                    "transliteration": "jjuk gaseo oenjjok-euro doneun geojyo?",
                     "notes": (
                         "쭉 = straight; 왼쪽 = left; -는 거죠? = so I …, "
                         "right?"
@@ -177,10 +177,10 @@ SCENES = [
                 },
             },
             {
-                "character_korean": (
+                "character_text": (
                     "네, 맞아요. 저기 편의점 옆에 있어요."
                 ),
-                "character_english": (
+                "character_gloss": (
                     "Yes, that's right. It's next to the convenience store "
                     "over there."
                 ),
@@ -192,11 +192,11 @@ SCENES = [
                 "hint": "Thank the person, then confirm with 이죠?",
                 "success_note": "이죠? asks 'it's …, right?' after a noun.",
                 "target_item": {
-                    "korean": "감사합니다. 편의점 옆이죠?",
-                    "english": (
+                    "target_text": "감사합니다. 편의점 옆이죠?",
+                    "gloss": (
                         "Thank you. It's next to the convenience store, right?"
                     ),
-                    "romanization": "gamsahamnida. pyeonuijeom yeop-ijyo?",
+                    "transliteration": "gamsahamnida. pyeonuijeom yeop-ijyo?",
                     "notes": (
                         "편의점 = convenience store; 옆 = next to; 이죠? = "
                         "is it …?"
@@ -215,23 +215,23 @@ SCENES = [
             ),
             "cards": [
                 {
-                    "korean": "화장실이 어디예요?",
-                    "english": "Where is the restroom?",
-                    "romanization": "hwajangsil-i eodiyeyo?",
+                    "target_text": "화장실이 어디예요?",
+                    "gloss": "Where is the restroom?",
+                    "transliteration": "hwajangsil-i eodiyeyo?",
                     "notes": "화장실 = restroom; 어디예요? = where is it?",
                 },
                 {
-                    "korean": "쭉 가서 왼쪽으로 도는 거죠?",
-                    "english": "I go straight and turn left, right?",
-                    "romanization": "jjuk gaseo oenjjok-euro doneun geojyo?",
+                    "target_text": "쭉 가서 왼쪽으로 도는 거죠?",
+                    "gloss": "I go straight and turn left, right?",
+                    "transliteration": "jjuk gaseo oenjjok-euro doneun geojyo?",
                     "notes": "쭉 = straight; 왼쪽 = left; -는 거죠? = right?",
                 },
                 {
-                    "korean": "감사합니다. 편의점 옆이죠?",
-                    "english": (
+                    "target_text": "감사합니다. 편의점 옆이죠?",
+                    "gloss": (
                         "Thank you. It's next to the convenience store, right?"
                     ),
-                    "romanization": "gamsahamnida. pyeonuijeom yeop-ijyo?",
+                    "transliteration": "gamsahamnida. pyeonuijeom yeop-ijyo?",
                     "notes": "편의점 = convenience store; 옆 = next to.",
                 },
             ],
@@ -248,8 +248,8 @@ SCENES = [
         "can_do": "I can describe a symptom and ask about dosage in polite Korean.",
         "steps": [
             {
-                "character_korean": "어서 오세요, 어디가 불편하세요?",
-                "character_english": "Welcome, what's bothering you?",
+                "character_text": "어서 오세요, 어디가 불편하세요?",
+                "character_gloss": "Welcome, what's bothering you?",
                 "expected": [
                     "머리가 아파서 왔어요",
                     "두통이 있어서 약을 사러 왔어요",
@@ -258,9 +258,9 @@ SCENES = [
                 "hint": "Use -아/어서 to give the reason: 아프다 → 아파서.",
                 "success_note": "-아/어서 links your symptom to why you came.",
                 "target_item": {
-                    "korean": "머리가 아파서 왔어요",
-                    "english": "I came because I have a headache.",
-                    "romanization": "meori-ga apaseo wasseoyo",
+                    "target_text": "머리가 아파서 왔어요",
+                    "gloss": "I came because I have a headache.",
+                    "transliteration": "meori-ga apaseo wasseoyo",
                     "notes": (
                         "머리 = head; 아파서 = because it hurts; 왔어요 = "
                         "I came."
@@ -268,8 +268,8 @@ SCENES = [
                 },
             },
             {
-                "character_korean": "그럼 두통약을 드릴까요?",
-                "character_english": "Then shall I give you a headache medicine?",
+                "character_text": "그럼 두통약을 드릴까요?",
+                "character_gloss": "Then shall I give you a headache medicine?",
                 "expected": [
                     "네, 두통약 좀 주세요",
                     "두통약 주세요",
@@ -278,9 +278,9 @@ SCENES = [
                 "hint": "Name the medicine + (좀) 주세요.",
                 "success_note": "좀 softens a request so it does not sound demanding.",
                 "target_item": {
-                    "korean": "두통약 좀 주세요",
-                    "english": "Some headache medicine, please",
-                    "romanization": "dutongyak jom juseyo",
+                    "target_text": "두통약 좀 주세요",
+                    "gloss": "Some headache medicine, please",
+                    "transliteration": "dutongyak jom juseyo",
                     "notes": (
                         "두통 = headache; 약 = medicine; 좀 softens the "
                         "request."
@@ -288,8 +288,8 @@ SCENES = [
                 },
             },
             {
-                "character_korean": "이 약은 식후에 드시면 됩니다.",
-                "character_english": "Take this medicine after meals.",
+                "character_text": "이 약은 식후에 드시면 됩니다.",
+                "character_gloss": "Take this medicine after meals.",
                 "expected": [
                     "하루에 몇 번 먹어요?",
                     "얼마나 자주 먹어야 돼요?",
@@ -298,9 +298,9 @@ SCENES = [
                 "hint": "Ask 하루에 몇 번…? for 'how many times a day'.",
                 "success_note": "하루에 몇 번 = how many times per day.",
                 "target_item": {
-                    "korean": "하루에 몇 번 먹어요?",
-                    "english": "How many times a day do I take it?",
-                    "romanization": "haru-e myeot beon meogeoyo?",
+                    "target_text": "하루에 몇 번 먹어요?",
+                    "gloss": "How many times a day do I take it?",
+                    "transliteration": "haru-e myeot beon meogeoyo?",
                     "notes": (
                         "하루 = one day; 에 = per; 몇 번 = how many times; "
                         "먹어요 = I eat / take."
@@ -319,21 +319,21 @@ SCENES = [
             ),
             "cards": [
                 {
-                    "korean": "머리가 아파서 왔어요",
-                    "english": "I came because I have a headache.",
-                    "romanization": "meori-ga apaseo wasseoyo",
+                    "target_text": "머리가 아파서 왔어요",
+                    "gloss": "I came because I have a headache.",
+                    "transliteration": "meori-ga apaseo wasseoyo",
                     "notes": "머리 = head; 아파서 = because it hurts.",
                 },
                 {
-                    "korean": "두통약 좀 주세요",
-                    "english": "Some headache medicine, please",
-                    "romanization": "dutongyak jom juseyo",
+                    "target_text": "두통약 좀 주세요",
+                    "gloss": "Some headache medicine, please",
+                    "transliteration": "dutongyak jom juseyo",
                     "notes": "두통 = headache; 좀 softens the request.",
                 },
                 {
-                    "korean": "하루에 몇 번 먹어요?",
-                    "english": "How many times a day do I take it?",
-                    "romanization": "haru-e myeot beon meogeoyo?",
+                    "target_text": "하루에 몇 번 먹어요?",
+                    "gloss": "How many times a day do I take it?",
+                    "transliteration": "haru-e myeot beon meogeoyo?",
                     "notes": "하루 = one day; 몇 번 = how many times.",
                 },
             ],
@@ -350,10 +350,10 @@ SCENES = [
         "can_do": "I can introduce myself and ask a practical question in formal Korean.",
         "steps": [
             {
-                "character_korean": (
+                "character_text": (
                     "안녕하세요, 처음 오셨죠? 저는 마케팅팀 김민수입니다."
                 ),
-                "character_english": (
+                "character_gloss": (
                     "Hello, you're new here, right? I'm Kim Minsu from the "
                     "marketing team."
                 ),
@@ -368,17 +368,17 @@ SCENES = [
                     "first-meeting greeting."
                 ),
                 "target_item": {
-                    "korean": "안녕하세요, 새로 온 알렉스입니다",
-                    "english": "Hello, I'm Alex, the new hire.",
-                    "romanization": "annyeonghaseyo, saero on allekseus-imnida",
+                    "target_text": "안녕하세요, 새로 온 알렉스입니다",
+                    "gloss": "Hello, I'm Alex, the new hire.",
+                    "transliteration": "annyeonghaseyo, saero on allekseus-imnida",
                     "notes": (
                         "새로 온 = newly arrived; 입니다 is the formal copula."
                     ),
                 },
             },
             {
-                "character_korean": "알렉스 씨는 어느 팀에서 일하세요?",
-                "character_english": "Which team do you work on, Alex?",
+                "character_text": "알렉스 씨는 어느 팀에서 일하세요?",
+                "character_gloss": "Which team do you work on, Alex?",
                 "expected": [
                     "저는 디자인팀에서 일합니다",
                     "디자인팀에서 일하고 있습니다",
@@ -387,9 +387,9 @@ SCENES = [
                 "hint": "Team + 에서 일합니다.",
                 "success_note": "에서 marks the place where an action happens.",
                 "target_item": {
-                    "korean": "저는 디자인팀에서 일합니다",
-                    "english": "I work on the design team.",
-                    "romanization": "jeoneun dijain-tim-eseo ilhamnida",
+                    "target_text": "저는 디자인팀에서 일합니다",
+                    "gloss": "I work on the design team.",
+                    "transliteration": "jeoneun dijain-tim-eseo ilhamnida",
                     "notes": (
                         "에서 = at / in (workplace); 일합니다 = I work "
                         "(formal)."
@@ -397,8 +397,8 @@ SCENES = [
                 },
             },
             {
-                "character_korean": "자리는 저쪽 빈자리에 앉으시면 됩니다.",
-                "character_english": (
+                "character_text": "자리는 저쪽 빈자리에 앉으시면 됩니다.",
+                "character_gloss": (
                     "You can sit at an empty desk over there."
                 ),
                 "expected": [
@@ -412,11 +412,11 @@ SCENES = [
                     "you should do."
                 ),
                 "target_item": {
-                    "korean": "업무 관련 질문은 누구에게 하면 됩니까?",
-                    "english": (
+                    "target_text": "업무 관련 질문은 누구에게 하면 됩니까?",
+                    "gloss": (
                         "Who should I ask if I have a work-related question?"
                     ),
-                    "romanization": (
+                    "transliteration": (
                         "eommu gwanryeon jilmun-eun nugu-ege hamyeon "
                         "doemnikka?"
                     ),
@@ -438,23 +438,23 @@ SCENES = [
             ),
             "cards": [
                 {
-                    "korean": "안녕하세요, 새로 온 알렉스입니다",
-                    "english": "Hello, I'm Alex, the new hire.",
-                    "romanization": "annyeonghaseyo, saero on allekseus-imnida",
+                    "target_text": "안녕하세요, 새로 온 알렉스입니다",
+                    "gloss": "Hello, I'm Alex, the new hire.",
+                    "transliteration": "annyeonghaseyo, saero on allekseus-imnida",
                     "notes": "새로 온 = newly arrived; 입니다 = formal copula.",
                 },
                 {
-                    "korean": "저는 디자인팀에서 일합니다",
-                    "english": "I work on the design team.",
-                    "romanization": "jeoneun dijain-tim-eseo ilhamnida",
+                    "target_text": "저는 디자인팀에서 일합니다",
+                    "gloss": "I work on the design team.",
+                    "transliteration": "jeoneun dijain-tim-eseo ilhamnida",
                     "notes": "에서 = at / in (workplace); 일합니다 = I work.",
                 },
                 {
-                    "korean": "업무 관련 질문은 누구에게 하면 됩니까?",
-                    "english": (
+                    "target_text": "업무 관련 질문은 누구에게 하면 됩니까?",
+                    "gloss": (
                         "Who should I ask if I have a work-related question?"
                     ),
-                    "romanization": (
+                    "transliteration": (
                         "eommu gwanryeon jilmun-eun nugu-ege hamyeon "
                         "doemnikka?"
                     ),

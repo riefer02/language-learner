@@ -131,8 +131,8 @@
       {% for log in reviews %}
       <li>
         <div>
-          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ log.card.item.korean }}</strong>
-          <span lang="en"> — {{ log.card.item.english }}</span>
+          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ log.card.item.target_text }}</strong>
+          <span lang="en"> — {{ log.card.item.gloss }}</span>
         </div>
         <div class="review-history-meta">
           <span class="rating-pill rating-{{ log.rating }}">

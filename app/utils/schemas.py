@@ -16,7 +16,6 @@ __all__ = [
     "ConversationRequest",
     "ConversationScenario",
     "TranslationRequest",
-    "TranslationResponse",
     "ValidationError",
     "contains_hangul",
 ]
@@ -49,26 +48,6 @@ class TranslationRequest(BaseModel):
         return _required_text(value, "text")
 
 
-class TranslationResponse(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
-
-    korean_translation: str = Field(min_length=1, max_length=500)
-
-    @field_validator("korean_translation", mode="before")
-    @classmethod
-    def _strip_translation(cls, value):
-        return _required_text(value, "korean_translation")
-
-    @field_validator("korean_translation")
-    @classmethod
-    def _require_hangul(cls, value):
-        if not contains_hangul(value):
-            raise ValueError(
-                "korean_translation must contain at least one Hangul character"
-            )
-        return value
-
-
 class GenericTranslationResponse(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 
@@ -95,24 +74,24 @@ class ConversationLine(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 
     speaker: Literal[1, 2]
-    english_text: str = Field(min_length=1, max_length=300)
-    korean_text: str = Field(min_length=1, max_length=300)
+    source_text: str = Field(min_length=1, max_length=300)
+    target_text: str = Field(min_length=1, max_length=300)
 
-    @field_validator("english_text", mode="before")
+    @field_validator("source_text", mode="before")
     @classmethod
     def _strip_english(cls, value):
-        return _required_text(value, "english_text")
+        return _required_text(value, "source_text")
 
-    @field_validator("korean_text", mode="before")
+    @field_validator("target_text", mode="before")
     @classmethod
     def _strip_korean(cls, value):
-        return _required_text(value, "korean_text")
+        return _required_text(value, "target_text")
 
-    @field_validator("korean_text")
+    @field_validator("target_text")
     @classmethod
     def _require_hangul(cls, value):
         if not contains_hangul(value):
-            raise ValueError("korean_text must contain at least one Hangul character")
+            raise ValueError("target_text must contain at least one Hangul character")
         return value
 
 

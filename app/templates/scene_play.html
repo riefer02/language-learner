@@ -30,12 +30,12 @@
 
     <div class="bubble bubble-character">
       <div class="bubble-label">{{ scene.persona }}</div>
-      <div class="bubble-korean" lang="ko">{{ step.character_korean }}</div>
-      <div class="bubble-english">{{ step.character_english }}</div>
+      <div class="bubble-korean" lang="ko">{{ step.character_text }}</div>
+      <div class="bubble-english">{{ step.character_gloss }}</div>
       <button
         type="button"
         class="btn speak-btn bubble-speak"
-        data-speak="{{ step.character_korean }}"
+        data-speak="{{ step.character_text }}"
         aria-label="Hear the {{ scene.persona }} line in Korean"
       >
         Hear it
@@ -81,6 +81,7 @@
     class="scene-speak-panel"
     id="scene-speak-panel"
     data-scene="{{ scene.slug }}"
+    data-speak-url="{{ url_for('learn.scene_speak', slug=scene.slug) }}"
     data-csrf="{{ csrf_token() }}"
   >
     <p class="record-title">Or say it out loud</p>

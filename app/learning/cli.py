@@ -132,7 +132,7 @@ def register_learning_cli(app):
                 f"Dry run: would generate {len(items)} item(s) with voice {voice}."
             )
             for item in items:
-                click.echo(f"  {item.id}: {item.korean} — {item.english}")
+                click.echo(f"  {item.id}: {item.target_text} — {item.gloss}")
             return
 
         audio_dir = current_app.config["AUDIO_DIR"]
@@ -144,7 +144,7 @@ def register_learning_cli(app):
                 pending = []
                 filename = (
                     f"item_{item.id}_"
-                    f"{safe_audio_filename(item.english, max_length=20)}_"
+                    f"{safe_audio_filename(item.gloss, max_length=20)}_"
                     f"{uuid.uuid4().hex[:6]}.mp3"
                 )
                 staged = batch.path(filename)
@@ -154,7 +154,7 @@ def register_learning_cli(app):
                     else None
                 )
                 generate_audio(
-                    item.korean,
+                    item.target_text,
                     staged,
                     voice=voice,
                     language_code=language.code if language else "ko",
@@ -169,7 +169,7 @@ def register_learning_cli(app):
                 # The file is referenced now; do not include it in rollback.
                 pending = []
                 generated += 1
-                click.echo(f"  {item.id}: {item.korean} → {filename}")
+                click.echo(f"  {item.id}: {item.target_text} → {filename}")
 
                 if old_path and old_path != item.audio_path:
                     old_file = old_path.rsplit("/", 1)[-1]

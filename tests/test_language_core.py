@@ -87,8 +87,8 @@ def test_item_forms_and_glosses_carry_language_and_script(app):
 
         item = Item(
             item_type="lexeme",
-            korean="커피",
-            english="coffee",
+            target_text="커피",
+            gloss="coffee",
             level=1,
             language_id=korean.id,
             key_normalized="커피",
@@ -118,7 +118,7 @@ def test_item_forms_and_glosses_carry_language_and_script(app):
         assert reloaded.forms[0].transliteration_scheme == "rr"
         assert [gloss.text for gloss in reloaded.glosses] == ["coffee"]
         # Phase 1 must not change the legacy serialization contract.
-        assert reloaded.to_dict()["korean"] == "커피"
+        assert reloaded.to_dict()["target_text"] == "커피"
 
 
 def test_term_card_is_unique_per_user_and_item(app):
@@ -129,8 +129,8 @@ def test_term_card_is_unique_per_user_and_item(app):
         user = User(display_name="Learner", is_local=False)
         item = Item(
             item_type="lexeme",
-            korean="커피",
-            english="coffee",
+            target_text="커피",
+            gloss="coffee",
             level=1,
             language_id=language.id,
         )
@@ -159,7 +159,7 @@ def test_term_card_is_unique_per_user_and_item(app):
 def test_language_audit_cli_reports_unbackfilled_content(app, runner):
     with app.app_context():
         db.session.add(
-            Item(item_type="lexeme", korean="물", english="water", level=1)
+            Item(item_type="lexeme", target_text="물", gloss="water", level=1)
         )
         db.session.commit()
 

@@ -3,7 +3,7 @@
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from flask import current_app
+from flask import current_app, g, request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
@@ -33,7 +33,10 @@ def local_day_bounds(now=None):
 
 
 def current_language(user=None):
-    """The learner's active target language, defaulting to Korean."""
+    """Prefer the language in the URL, then the learner's choice, then Korean."""
+    language = getattr(g, "language", None)
+    if language is not None:
+        return language
     user = user or get_or_create_local_user()
     language = None
     if user.target_language_id:
@@ -41,6 +44,19 @@ def current_language(user=None):
     if language is None:
         language = Language.query.filter_by(code="ko").first()
     return language
+
+
+def request_language():
+    """Resolve a language for unprefixed APIs from ``?lang`` or JSON."""
+    code = request.args.get("lang")
+    if not code and request.is_json:
+        payload = request.get_json(silent=True) or {}
+        code = payload.get("lang")
+    if code:
+        language = Language.query.filter_by(code=code).first()
+        if language is not None:
+            return language
+    return current_language()
 
 
 def get_or_create_local_user():

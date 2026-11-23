@@ -12,14 +12,9 @@ class Phrase(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String(36), unique=True, default=lambda: str(uuid.uuid4()))
-    english_text = db.Column(db.String(500), nullable=False, index=True)
-    korean_text = db.Column(db.String(500), nullable=False)
     audio_path = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
-    # Multilingual expand-phase columns. ``english_text``/``korean_text`` remain
-    # the read/write path until the contract phase; these are backfilled and
-    # dual-written first.
     source_language_id = db.Column(
         db.Integer, db.ForeignKey("language.id"), nullable=True
     )
@@ -30,14 +25,14 @@ class Phrase(db.Model):
     target_text = db.Column(db.String(500), nullable=True)
 
     def __repr__(self):
-        return f"<Phrase {self.english_text}>"
+        return f"<Phrase {self.source_text}>"
 
     def to_dict(self):
         return {
             "id": self.id,
             "uuid": self.uuid,
-            "english_text": self.english_text,
-            "korean_text": self.korean_text,
+            "source_text": self.source_text,
+            "target_text": self.target_text,
             "audio_path": self.audio_path,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
@@ -109,16 +104,11 @@ class User(db.Model):
 
 
 class Item(db.Model):
-    """A single learnable unit: word, chunk, grammar point, or sentence.
-
-    ``korean`` is the legacy column name for the target-language text and
-    ``english`` for its English gloss. Both hold any language now; use the
-    ``target_text`` and ``gloss`` properties in new code.
-    """
+    """A single learnable unit, in any language (word, chunk, grammar, sentence)."""
 
     __table_args__ = (
         db.UniqueConstraint(
-            "korean", "english", "item_type", name="uq_item_content"
+            "target_text", "gloss", "item_type", name="uq_item_content"
         ),
         db.Index("ix_item_level_type", "level", "item_type"),
         db.Index("ix_item_language_level_type", "language_id", "level", "item_type"),
@@ -126,9 +116,9 @@ class Item(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     item_type = db.Column(db.String(20), nullable=False, default="lexeme")
-    korean = db.Column(db.String(300), nullable=False)
-    english = db.Column(db.String(300), nullable=False)
-    romanization = db.Column(db.String(300), nullable=True)
+    target_text = db.Column(db.String(300), nullable=False, index=True)
+    gloss = db.Column(db.String(300), nullable=False)
+    transliteration = db.Column(db.String(300), nullable=True)
     level = db.Column(db.Integer, nullable=False, default=1, index=True)
     freq_rank = db.Column(db.Integer, nullable=True)
     audio_path = db.Column(db.String(255), nullable=True)
@@ -159,24 +149,16 @@ class Item(db.Model):
         db.Integer, db.ForeignKey("item.id", use_alter=True), nullable=True
     )
 
-    @property
-    def target_text(self):
-        return self.korean
-
-    @property
-    def gloss(self):
-        return self.english
-
     def __repr__(self):
-        return f"<Item {self.korean}>"
+        return f"<Item {self.target_text}>"
 
     def to_dict(self):
         return {
             "id": self.id,
             "item_type": self.item_type,
-            "korean": self.korean,
-            "english": self.english,
-            "romanization": self.romanization,
+            "target_text": self.target_text,
+            "gloss": self.gloss,
+            "transliteration": self.transliteration,
             "level": self.level,
             "freq_rank": self.freq_rank,
             "audio_path": self.audio_path,

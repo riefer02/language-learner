@@ -18,10 +18,12 @@ document.addEventListener("DOMContentLoaded", function () {
     errorDiv.classList.add("hidden");
     loadingDiv.classList.remove("hidden");
     try {
+      const form = document.getElementById("conversation-form");
+      const lang = (form && form.dataset.lang) || "ko";
       const response = await fetch("/api/conversation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, lang }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -118,8 +120,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     for (const line of lines) {
       const phrase = (line && line.phrase) || {};
-      const koreanText = phrase.korean_text || "";
-      const englishText = phrase.english_text || "";
+      const koreanText = phrase.target_text || "";
+      const englishText = phrase.source_text || "";
       const phraseLabel = koreanText || "this phrase";
 
       const card = document.createElement("div");

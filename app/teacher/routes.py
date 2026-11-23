@@ -38,7 +38,7 @@ def _error(message, status):
     return jsonify({"error": message}), status
 
 
-@teacher.route("/learn/teacher")
+@teacher.route("/<lang_code>/learn/teacher")
 def panel():
     if not teacher_service.teacher_enabled():
         return _error("The teacher is disabled", 404)

@@ -42,13 +42,13 @@ def _korean(app):
     return language
 
 
-def _item(app, korean="커피", english="coffee", language_id=None):
+def _item(app, target_text="커피", gloss="coffee", language_id=None):
     if language_id is None:
         language_id = _korean(app).id
     item = Item(
         item_type="lexeme",
-        korean=korean,
-        english=english,
+        target_text=target_text,
+        gloss=gloss,
         level=1,
         language_id=language_id,
     )
@@ -74,7 +74,7 @@ def _session(app, language_id=None):
 
 
 def test_panel_renders(client):
-    response = client.get("/learn/teacher")
+    response = client.get("/ko/learn/teacher")
     assert response.status_code == 200
     assert b"Talk to Kiku" in response.data
     assert b"Start speaking" in response.data

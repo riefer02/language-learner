@@ -11,6 +11,7 @@ from app.learning.analytics import record_event
 from app.learning.scheduler import ensure_utc, utcnow
 from app.learning.service import local_day_bounds
 from app.models import Event, PushSubscription, ReviewCard, User
+from app.models_language import Language
 
 
 class PushError(RuntimeError):
@@ -187,13 +188,19 @@ def send_due_reminders(now=None, dry_run=False):
     results = []
     for candidate in reminder_candidates(now):
         user = candidate["user"]
+        language = (
+            db.session.get(Language, user.target_language_id)
+            if user.target_language_id
+            else None
+        )
+        lang_code = language.code if language else "ko"
         payload = {
             "title": "Kiku",
             "body": (
                 f"{candidate['due']} cards due. "
                 "A 3-minute session is enough."
             ),
-            "url": "/learn/",
+            "url": f"/{lang_code}/learn/",
         }
         if dry_run:
             results.append(

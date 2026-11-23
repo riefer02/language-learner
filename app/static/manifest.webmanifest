@@ -1,8 +1,8 @@
 {
-  "name": "Kiku — Korean",
+  "name": "Kiku — Language Learning",
   "short_name": "Kiku",
-  "description": "Voice-first Korean from Hangul to real conversation.",
-  "start_url": "/learn/",
+  "description": "Voice-first language learning from script to real conversation.",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -26,7 +26,7 @@
     {
       "name": "Review",
       "short_name": "Review",
-      "url": "/learn/review",
+      "url": "/ko/learn/review",
       "icons": [
         {
           "src": "/static/icons/icon-192.png",
@@ -37,7 +37,7 @@
     {
       "name": "Mission scenes",
       "short_name": "Scenes",
-      "url": "/learn/scenes"
+      "url": "/ko/learn/scenes"
     }
   ]
 }

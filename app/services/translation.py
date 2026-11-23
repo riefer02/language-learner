@@ -80,7 +80,7 @@ def _parse_translation_response(response, target_code="ko"):
             "OpenAI translation response must be a JSON object"
         )
 
-    value = payload.get("translation") or payload.get("korean_translation")
+    value = payload.get("translation")
     try:
         translated = GenericTranslationResponse.model_validate(
             {"translation": value}
@@ -185,13 +185,13 @@ def _conversation_system_prompt(min_lines, max_lines):
         "fences, and no commentary outside the JSON. The object must have this "
         "shape:\n"
         '{"title": "...", "description": "...", "lines": ['
-        '{"speaker": 1, "english_text": "...", "korean_text": "..."}, ...]}\n'
+        '{"speaker": 1, "source_text": "...", "target_text": "..."}, ...]}\n'
         "Rules:\n"
         f"- Use between {min_lines} and {max_lines} lines.\n"
         "- Speakers must alternate, starting with speaker 1 (1, 2, 1, ...).\n"
-        "- english_text and korean_text must be non-empty, at most 300 "
+        "- source_text and target_text must be non-empty, at most 300 "
         "characters each.\n"
-        "- korean_text must be natural Korean written in Hangul.\n"
+        "- target_text must be natural Korean written in Hangul.\n"
         "- title must be non-empty and at most 200 characters; description at "
         "most 1000 characters.\n"
     )

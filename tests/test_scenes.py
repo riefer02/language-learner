@@ -12,7 +12,7 @@ from app.models import (
 
 
 def test_scene_list_renders(client):
-    response = client.get("/learn/scenes")
+    response = client.get("/ko/learn/scenes")
 
     assert response.status_code == 200
     assert b"Use Korean before you feel ready" in response.data
@@ -20,7 +20,7 @@ def test_scene_list_renders(client):
 
 
 def test_scene_start_renders_first_character_line(client):
-    response = client.get("/learn/scenes/cafe-order")
+    response = client.get("/ko/learn/scenes/cafe-order")
 
     assert response.status_code == 200
     assert b"Step 1 of 3" in response.data
@@ -29,10 +29,10 @@ def test_scene_start_renders_first_character_line(client):
 
 def test_correct_answer_advances_scene(client, app):
     scene = get_scene("cafe-order")
-    client.get("/learn/scenes/cafe-order")
+    client.get("/ko/learn/scenes/cafe-order")
 
     response = client.post(
-        "/learn/scenes/cafe-order/answer",
+        "/ko/learn/scenes/cafe-order/answer",
         data={"answer": scene["steps"][0]["expected"][0]},
     )
 
@@ -44,10 +44,10 @@ def test_correct_answer_advances_scene(client, app):
 
 
 def test_incorrect_answer_keeps_step_and_shows_hint(client, app):
-    client.get("/learn/scenes/cafe-order")
+    client.get("/ko/learn/scenes/cafe-order")
 
     response = client.post(
-        "/learn/scenes/cafe-order/answer",
+        "/ko/learn/scenes/cafe-order/answer",
         data={"answer": "hello"},
     )
 
@@ -60,19 +60,19 @@ def test_incorrect_answer_keeps_step_and_shows_hint(client, app):
 
 def test_completing_scene_creates_cards_and_debrief(client, app):
     scene = get_scene("cafe-order")
-    client.get("/learn/scenes/cafe-order")
+    client.get("/ko/learn/scenes/cafe-order")
     with app.app_context():
         items_before = Item.query.count()
         cards_before = ReviewCard.query.count()
 
     for step in scene["steps"]:
         response = client.post(
-            "/learn/scenes/cafe-order/answer",
+            "/ko/learn/scenes/cafe-order/answer",
             data={"answer": step["expected"][0]},
         )
         assert response.status_code == 302
 
-    response = client.get("/learn/scenes/cafe-order")
+    response = client.get("/ko/learn/scenes/cafe-order")
 
     assert response.status_code == 200
     assert b"What went well" in response.data
@@ -90,16 +90,16 @@ def test_completing_scene_creates_cards_and_debrief(client, app):
 
 def test_replaying_scene_updates_one_can_do_artifact(client, app):
     scene = get_scene("cafe-order")
-    client.get("/learn/scenes/cafe-order")
+    client.get("/ko/learn/scenes/cafe-order")
     for step in scene["steps"]:
         client.post(
-            "/learn/scenes/cafe-order/answer",
+            "/ko/learn/scenes/cafe-order/answer",
             data={"answer": step["expected"][0]},
         )
-    client.post("/learn/scenes/cafe-order/reset")
+    client.post("/ko/learn/scenes/cafe-order/reset")
     for step in scene["steps"]:
         client.post(
-            "/learn/scenes/cafe-order/answer",
+            "/ko/learn/scenes/cafe-order/answer",
             data={"answer": step["expected"][0]},
         )
 
@@ -110,32 +110,32 @@ def test_replaying_scene_updates_one_can_do_artifact(client, app):
 
 def test_progress_and_today_show_can_do(client, app):
     scene = get_scene("cafe-order")
-    client.get("/learn/scenes/cafe-order")
+    client.get("/ko/learn/scenes/cafe-order")
     for step in scene["steps"]:
         client.post(
-            "/learn/scenes/cafe-order/answer",
+            "/ko/learn/scenes/cafe-order/answer",
             data={"answer": step["expected"][0]},
         )
 
-    progress = client.get("/learn/progress")
+    progress = client.get("/ko/learn/progress")
     assert progress.status_code == 200
     assert b"Can-do proof" in progress.data
     assert scene["can_do"].split(".")[0].encode() in progress.data
 
-    today = client.get("/learn")
+    today = client.get("/ko/learn")
     assert today.status_code == 200
     assert b"Next can-do" in today.data
 
 
 def test_reset_scene_starts_over(client, app):
     scene = get_scene("cafe-order")
-    client.get("/learn/scenes/cafe-order")
+    client.get("/ko/learn/scenes/cafe-order")
     client.post(
-        "/learn/scenes/cafe-order/answer",
+        "/ko/learn/scenes/cafe-order/answer",
         data={"answer": scene["steps"][0]["expected"][0]},
     )
 
-    response = client.post("/learn/scenes/cafe-order/reset")
+    response = client.post("/ko/learn/scenes/cafe-order/reset")
 
     assert response.status_code == 302
     with app.app_context():
@@ -145,12 +145,12 @@ def test_reset_scene_starts_over(client, app):
 
 
 def test_unknown_scene_returns_404(client):
-    response = client.get("/learn/scenes/not-a-scene")
+    response = client.get("/ko/learn/scenes/not-a-scene")
 
     assert response.status_code == 404
 
 
 def test_all_scene_slugs_are_reachable(client):
     for scene in SCENES:
-        response = client.get(f"/learn/scenes/{scene['slug']}")
+        response = client.get(f"/ko/learn/scenes/{scene['slug']}")
         assert response.status_code == 200

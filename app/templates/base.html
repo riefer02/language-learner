@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Korean Language Learner{% block title %}{% endblock %}</title>
+    <title>Kiku — Language Learning{% block title %}{% endblock %}</title>
     <meta name="theme-color" content="#4a6fa5" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Kiku" />
@@ -33,7 +33,7 @@
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <nav aria-label="Main navigation">
       <div class="nav-container">
-        <h1 aria-label="Kiku, Korean language learner">Kiku</h1>
+        <h1 aria-label="Kiku, language learning">Kiku</h1>
         <ul>
           <li>
             <a
@@ -46,7 +46,7 @@
           <li>
             <a
               href="{{ url_for('learn.scenes') }}"
-              aria-current="{{ 'page' if request.path.startswith('/learn/scenes') else 'false' }}"
+              aria-current="{{ 'page' if request.endpoint in ['learn.scenes', 'learn.scene_detail'] else 'false' }}"
               >Scenes</a
             >
           </li>
@@ -55,7 +55,7 @@
           <li>
             <a
               href="{{ url_for('learn.fidel') }}"
-              aria-current="{{ 'page' if request.path.startswith('/learn/fidel') else 'false' }}"
+              aria-current="{{ 'page' if request.endpoint in ['learn.fidel', 'learn.fidel_lesson'] else 'false' }}"
               >Fidel</a
             >
           </li>
@@ -63,7 +63,7 @@
           <li>
             <a
               href="{{ url_for('learn.hangul') }}"
-              aria-current="{{ 'page' if request.path.startswith('/learn/hangul') else 'false' }}"
+              aria-current="{{ 'page' if request.endpoint in ['learn.hangul', 'learn.hangul_lesson'] else 'false' }}"
               >Hangul</a
             >
           </li>

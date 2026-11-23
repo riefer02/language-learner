@@ -218,3 +218,25 @@ then.
   `Item.target_text` / `Item.gloss` accessors for the legacy columns.
 - Korean-only scenes, Hangul, Sound Gym, and conversations now redirect or
   reject for Amharic instead of silently serving Korean content.
+
+### Structural refactor (same day)
+
+- **Column contract** migration `20261123_0014` renamed `item.korean` →
+  `target_text`, `item.english` → `gloss`, `item.romanization` →
+  `transliteration`; `phrase` now uses only `source_text`/`target_text`.
+  Verified up and down on a copy with real rows, then applied to the live
+  database; all 94 items and 13 phrases preserved.
+- **Language-explicit URLs**: every learner page now lives under `/<lang_code>/`
+  (`/ko/learn`, `/am/learn`, `/am/dictionary`, …). A URL preprocessor sets
+  `g.language`; `url_for` fills `lang_code` automatically. Legacy paths such as
+  `/learn` and `/settings` 301-redirect to the active language. Unprefixed APIs
+  accept `?lang=` or a JSON `lang` field.
+- **Route split**: `app/routes.py` is gone. The `main` blueprint now lives in
+  `app/main/` (`home`, `content`, `settings`, `system`, `translate`,
+  `conversations`, shared `helpers`). Endpoint names are unchanged.
+- **Dead compatibility code removed**: the Korean-only `TranslationResponse`
+  schema and `korean_translation` alias are gone.
+- **Onboarding is language-aware** for Korean and Amharic (first word, script
+  wording, goal filtering).
+- Full suite and ruff pass; `/`, `/ko/*`, `/am/*`, translation, dictionary, and
+  teacher pages all render against the migrated live database.

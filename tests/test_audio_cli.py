@@ -6,11 +6,11 @@ from app import db
 from app.models import Item
 
 
-def _make_item(korean="안녕하세요", english="hello"):
+def _make_item(target_text="안녕하세요", gloss="hello"):
     return Item(
         item_type="chunk",
-        korean=korean,
-        english=english,
+        target_text=target_text,
+        gloss=gloss,
         level=1,
         default_skill="produce",
     )

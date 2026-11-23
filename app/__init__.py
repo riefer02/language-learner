@@ -6,7 +6,7 @@ import sqlite3
 import uuid
 
 import click
-from flask import Flask, Response, current_app, g, jsonify, request
+from flask import Flask, Response, abort, current_app, g, jsonify, request
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
@@ -310,8 +310,8 @@ def create_app(config_name=None, overrides=None):
 
     from app.learning.cli import register_learning_cli
     from app.learning.routes import learn as learn_blueprint
+    from app.main import main as main_blueprint
     from app.onboarding.routes import onboarding as onboarding_blueprint
-    from app.routes import main as main_blueprint
     from app.teacher.routes import teacher as teacher_blueprint
 
     app.register_blueprint(main_blueprint)
@@ -334,6 +334,28 @@ def create_app(config_name=None, overrides=None):
         )
 
     app.before_request(_check_basic_auth)
+
+    @app.url_value_preprocessor
+    def pull_lang_code(endpoint, values):
+        if not values or "lang_code" not in values:
+            return
+        code = values.pop("lang_code")
+        from app.models_language import Language
+
+        language = Language.query.filter_by(code=code).first()
+        if language is None and code not in {"ko", "en", "am", "es", "ja"}:
+            abort(404)
+        g.lang_code = code
+        g.language = language
+
+    @app.url_defaults
+    def add_lang_code(endpoint, values):
+        if "lang_code" in values:
+            return
+        if endpoint in app.view_functions and app.url_map.is_endpoint_expecting(
+            endpoint, "lang_code"
+        ):
+            values["lang_code"] = getattr(g, "lang_code", None) or "ko"
 
     from flask_wtf.csrf import generate_csrf
 

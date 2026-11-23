@@ -45,10 +45,10 @@
     <article class="resource-card">
       <div class="resource-card-top">
         <div>
-          <div class="resource-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ item.korean }}</div>
-          <div class="resource-english" lang="en">{{ item.english }}</div>
-          {% if item.romanization %}
-          <div class="resource-romanization">{{ item.romanization }}</div>
+          <div class="resource-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ item.target_text }}</div>
+          <div class="resource-english" lang="en">{{ item.gloss }}</div>
+          {% if item.transliteration %}
+          <div class="resource-romanization">{{ item.transliteration }}</div>
           {% endif %}
         </div>
         <div class="resource-badges">
@@ -65,7 +65,7 @@
         src="{{ item.audio_path }}"
         controls
         preload="none"
-        aria-label="Play pronunciation for {{ item.korean }}"
+        aria-label="Play pronunciation for {{ item.target_text }}"
       ></audio>
       {% endif %}
     </article>

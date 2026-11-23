@@ -36,7 +36,9 @@ document.addEventListener("DOMContentLoaded", function () {
     loadingDiv.classList.remove("hidden");
 
     try {
-      const response = await fetch("/api/translate", {
+      const form = document.getElementById("phrase-form");
+      const lang = (form && form.dataset.lang) || "ko";
+      const response = await fetch("/api/translate?lang=" + encodeURIComponent(lang), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -50,12 +52,12 @@ document.addEventListener("DOMContentLoaded", function () {
         throw new Error(data.error || "Translation failed");
       }
 
-      const koreanText = data.korean_text || "";
+      const koreanText = data.target_text || "";
       const pronunciationLabel = koreanText || "this phrase";
 
       // Update the result div
       resultDiv.querySelector(".phrase-english").textContent =
-        data.english_text || "";
+        data.source_text || "";
       const targetEl = resultDiv.querySelector(".phrase-korean");
       targetEl.textContent = data.target_text || koreanText;
       if (data.target_lang) {

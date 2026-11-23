@@ -123,8 +123,8 @@ def _create_debrief_cards(user, scene):
     created_items = 0
     for card in scene["debrief"]["cards"]:
         existing = Item.query.filter_by(
-            korean=card["korean"],
-            english=card["english"],
+            target_text=card["target_text"],
+            gloss=card["gloss"],
             item_type="chunk",
         ).first()
         if existing:
@@ -132,9 +132,9 @@ def _create_debrief_cards(user, scene):
         db.session.add(
             Item(
                 item_type="chunk",
-                korean=card["korean"],
-                english=card["english"],
-                romanization=card.get("romanization"),
+                target_text=card["target_text"],
+                gloss=card["gloss"],
+                transliteration=card.get("transliteration"),
                 level=scene["level"],
                 notes=card.get("notes"),
                 default_skill="produce",
@@ -172,7 +172,7 @@ def submit_answer(user, session, scene, answer):
     transcript = session_transcript(session)
     transcript.append(
         {
-            "character": step["character_korean"],
+            "character": step["character_text"],
             "learner": answer.strip(),
             "expected": best_expected,
         }

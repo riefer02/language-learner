@@ -39,19 +39,19 @@
     {% for item in items %}
     <article class="dictionary-entry">
       <div class="dictionary-head">
-        <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ item.korean }}</strong>
-        {% if item.romanization %}<span class="learn-meta">{{ item.romanization }}</span>{% endif %}
+        <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ item.target_text }}</strong>
+        {% if item.transliteration %}<span class="learn-meta">{{ item.transliteration }}</span>{% endif %}
       </div>
-      <p>{{ item.english }}</p>
+      <p>{{ item.gloss }}</p>
       {% if item.notes %}<p class="learn-meta">{{ item.notes }}</p>{% endif %}
       <div class="dictionary-actions">
         {% if item.audio_path %}
-        <audio src="{{ item.audio_path }}" controls preload="none" aria-label="Play {{ item.korean }}"></audio>
+        <audio src="{{ item.audio_path }}" controls preload="none" aria-label="Play {{ item.target_text }}"></audio>
         {% else %}
         <button
           type="button"
           class="btn"
-          data-speak="{{ item.korean }}"
+          data-speak="{{ item.target_text }}"
           data-lang="{{ 'am-ET' if language and language.code == 'am' else 'ko-KR' }}"
         >
           Hear it

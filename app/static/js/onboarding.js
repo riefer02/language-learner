@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "ko-KR";
+      utterance.lang = button.getAttribute("data-lang") || "ko-KR";
       utterance.rate = 0.8;
       window.speechSynthesis.speak(utterance);
     });
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
       recorder.start();
       recordBtn.hidden = true;
       stopBtn.hidden = false;
-      setStatus("Recording… say 안녕하세요.");
+      setStatus("Recording… say " + (panel.dataset.firstWord || "the phrase") + ".");
     } catch (_error) {
       stopTracks();
       setStatus(

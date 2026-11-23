@@ -68,7 +68,7 @@ from app.services.speech import (
 from app.utils.rate_limit import rate_limit
 from app.utils.schemas import contains_hangul
 
-learn = Blueprint("learn", __name__, url_prefix="/learn")
+learn = Blueprint("learn", __name__, url_prefix="/<lang_code>/learn")
 
 
 def _current_user():
@@ -619,8 +619,8 @@ def review():
         )
 
     item = card.item
-    prompt_side = "korean" if card.skill in {"recognize", "listen"} else "english"
-    answer_side = "english" if prompt_side == "korean" else "korean"
+    prompt_side = "target" if card.skill in {"recognize", "listen"} else "source"
+    answer_side = "source" if prompt_side == "target" else "target"
     due_count = stats(
         user.id, language_id=language.id if language else None
     )["due"]

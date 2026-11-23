@@ -27,8 +27,8 @@ def test_weekly_recap_counts_reviews_days_and_recall(app):
         user = get_or_create_local_user()
         item = Item(
             item_type="lexeme",
-            korean="테스트",
-            english="test",
+            target_text="테스트",
+            gloss="test",
             level=1,
             default_skill="recognize",
         )
@@ -68,8 +68,8 @@ def test_retention_signal_uses_real_review_gaps(app):
         user = get_or_create_local_user()
         item = Item(
             item_type="lexeme",
-            korean="테스트",
-            english="test",
+            target_text="테스트",
+            gloss="test",
             level=1,
             default_skill="recognize",
         )
@@ -96,18 +96,18 @@ def test_retention_signal_uses_real_review_gaps(app):
 
 def test_progress_and_today_show_weekly_recap(client, app):
     now = datetime.now(UTC)
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         user = get_or_create_local_user()
         card = ReviewCard.query.first()
         _log(user, card, now, rating=3, was_new=True)
         db.session.commit()
 
-    progress = client.get("/learn/progress")
+    progress = client.get("/ko/learn/progress")
     assert b"Last 7 days" in progress.data
     assert b"Recent recall success" in progress.data
     assert b"Delayed retention" in progress.data
     assert b"7+ day recall" in progress.data
 
-    today = client.get("/learn")
+    today = client.get("/ko/learn")
     assert b"This week:" in today.data

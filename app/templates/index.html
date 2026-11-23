@@ -3,7 +3,7 @@
 {% block content %}
 <div class="phrase-input">
   <h2>Learn a new phrase</h2>
-  <form id="phrase-form">
+  <form id="phrase-form" data-lang="{{ language.code if language else 'ko' }}">
     <div class="form-group">
       <label for="english-text">Enter English phrase:</label>
       <input

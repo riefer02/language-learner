@@ -8,7 +8,7 @@ from app.models import Item, ReviewCard, ReviewLog
 
 
 def test_learn_page_auto_seeds_and_shows_due_cards(client, app):
-    response = client.get("/learn")
+    response = client.get("/ko/learn")
 
     assert response.status_code == 200
     assert b"One small session" in response.data
@@ -19,7 +19,7 @@ def test_learn_page_auto_seeds_and_shows_due_cards(client, app):
 
 
 def test_new_card_daily_cap(client, app):
-    response = client.get("/learn")
+    response = client.get("/ko/learn")
 
     assert b"10 cards" in response.data
 
@@ -27,15 +27,15 @@ def test_new_card_daily_cap(client, app):
         card_ids = [card.id for card in ReviewCard.query.limit(10).all()]
 
     for card_id in card_ids:
-        client.post(f"/learn/review/{card_id}", data={"rating": "3"})
+        client.post(f"/ko/learn/review/{card_id}", data={"rating": "3"})
 
-    response = client.get("/learn")
+    response = client.get("/ko/learn")
     assert b"You are caught up" in response.data
 
 
 def test_progress_page_renders(client, app):
-    client.get("/learn")
-    response = client.get("/learn/progress")
+    client.get("/ko/learn")
+    response = client.get("/ko/learn/progress")
 
     assert response.status_code == 200
     assert b"Skill breakdown" in response.data
@@ -43,8 +43,8 @@ def test_progress_page_renders(client, app):
 
 
 def test_review_page_renders_a_card(client, app):
-    client.get("/learn")
-    response = client.get("/learn/review")
+    client.get("/ko/learn")
+    response = client.get("/ko/learn/review")
 
     assert response.status_code == 200
     assert b"Show answer" in response.data
@@ -52,14 +52,14 @@ def test_review_page_renders_a_card(client, app):
 
 
 def test_rating_updates_card_and_writes_log(client, app):
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         card = ReviewCard.query.order_by(ReviewCard.id.asc()).first()
         card_id = card.id
         original_reps = card.reps
 
     response = client.post(
-        f"/learn/review/{card_id}",
+        f"/ko/learn/review/{card_id}",
         data={"rating": "3", "elapsed_ms": "1200"},
     )
 
@@ -76,12 +76,12 @@ def test_rating_updates_card_and_writes_log(client, app):
 
 def test_review_post_requires_csrf_token_when_enabled(client, app):
     app.config["WTF_CSRF_ENABLED"] = True
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         card_id = ReviewCard.query.first().id
 
     response = client.post(
-        f"/learn/review/{card_id}", data={"rating": "3"}
+        f"/ko/learn/review/{card_id}", data={"rating": "3"}
     )
 
     assert response.status_code == 400
@@ -90,17 +90,17 @@ def test_review_post_requires_csrf_token_when_enabled(client, app):
 
 
 def test_eleventh_new_card_is_rejected(client, app):
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         card_ids = [card.id for card in ReviewCard.query.limit(11).all()]
 
     for card_id in card_ids[:10]:
         assert (
-            client.post(f"/learn/review/{card_id}", data={"rating": "3"}).status_code
+            client.post(f"/ko/learn/review/{card_id}", data={"rating": "3"}).status_code
             == 302
         )
 
-    response = client.post(f"/learn/review/{card_ids[10]}", data={"rating": "3"})
+    response = client.post(f"/ko/learn/review/{card_ids[10]}", data={"rating": "3"})
 
     assert response.status_code == 409
     with app.app_context():
@@ -108,14 +108,14 @@ def test_eleventh_new_card_is_rejected(client, app):
 
 
 def test_card_that_is_not_due_is_rejected(client, app):
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         card_id = ReviewCard.query.first().id
 
-    first = client.post(f"/learn/review/{card_id}", data={"rating": "3"})
+    first = client.post(f"/ko/learn/review/{card_id}", data={"rating": "3"})
     assert first.status_code == 302
 
-    second = client.post(f"/learn/review/{card_id}", data={"rating": "3"})
+    second = client.post(f"/ko/learn/review/{card_id}", data={"rating": "3"})
 
     assert second.status_code == 409
     with app.app_context():
@@ -123,11 +123,11 @@ def test_card_that_is_not_due_is_rejected(client, app):
 
 
 def test_invalid_rating_is_rejected(client, app):
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         card_id = ReviewCard.query.first().id
 
-    response = client.post(f"/learn/review/{card_id}", data={"rating": "9"})
+    response = client.post(f"/ko/learn/review/{card_id}", data={"rating": "9"})
 
     assert response.status_code == 400
     with app.app_context():
@@ -135,18 +135,18 @@ def test_invalid_rating_is_rejected(client, app):
 
 
 def test_finishing_all_due_cards_shows_done_page(client, app):
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         card_ids = [card.id for card in ReviewCard.query.all()]
     app.config["NEW_CARDS_PER_DAY"] = len(card_ids)
 
     for card_id in card_ids:
         response = client.post(
-            f"/learn/review/{card_id}", data={"rating": "3"}
+            f"/ko/learn/review/{card_id}", data={"rating": "3"}
         )
         assert response.status_code == 302
 
-    response = client.get("/learn/review")
+    response = client.get("/ko/learn/review")
 
     assert response.status_code == 200
     assert b"You are caught up" in response.data
@@ -155,12 +155,12 @@ def test_finishing_all_due_cards_shows_done_page(client, app):
 
 
 def test_seed_content_is_idempotent(client, app):
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         first_items = Item.query.count()
         first_cards = ReviewCard.query.count()
 
-    client.get("/learn")
+    client.get("/ko/learn")
     with app.app_context():
         assert Item.query.count() == first_items
         assert ReviewCard.query.count() == first_cards
@@ -173,8 +173,8 @@ def test_fsrs_schedules_good_and_easy_differently(app):
         if item is None:
             item = Item(
                 item_type="lexeme",
-                korean="테스트",
-                english="test",
+                target_text="테스트",
+                gloss="test",
                 level=1,
                 default_skill="recognize",
             )

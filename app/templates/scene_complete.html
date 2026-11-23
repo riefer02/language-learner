@@ -23,8 +23,8 @@
     <ul>
       {% for card in scene.debrief.cards %}
       <li>
-        <strong lang="ko">{{ card.korean }}</strong>
-        <span lang="en"> — {{ card.english }}</span>
+        <strong lang="ko">{{ card.target_text }}</strong>
+        <span lang="en"> — {{ card.gloss }}</span>
       </li>
       {% endfor %}
     </ul>

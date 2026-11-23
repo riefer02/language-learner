@@ -11,7 +11,7 @@ from app.services.push import send_due_reminders
 
 
 def test_settings_page_renders(client):
-    response = client.get("/settings")
+    response = client.get("/ko/settings")
 
     assert response.status_code == 200
     assert b"Make the loop fit your life" in response.data
@@ -20,7 +20,7 @@ def test_settings_page_renders(client):
 
 def test_settings_post_updates_profile_and_reminder(client, app):
     response = client.post(
-        "/settings",
+        "/ko/settings",
         data={
             "goal": "work",
             "daily_minutes": "25",
@@ -101,8 +101,8 @@ def test_reminder_dry_run_finds_eligible_user(app, client):
         user.timezone = "UTC"
         item = Item(
             item_type="lexeme",
-            korean="테스트",
-            english="test",
+            target_text="테스트",
+            gloss="test",
             level=1,
             default_skill="recognize",
         )
@@ -162,8 +162,8 @@ def test_reminder_send_records_one_event_per_day(app, client, monkeypatch):
         user.timezone = "UTC"
         item = Item(
             item_type="lexeme",
-            korean="알림",
-            english="reminder",
+            target_text="알림",
+            gloss="reminder",
             level=1,
             default_skill="recognize",
         )
@@ -197,8 +197,8 @@ def test_reminder_is_skipped_after_one_send_per_local_day(app, client):
         user.timezone = "UTC"
         item = Item(
             item_type="lexeme",
-            korean="하루",
-            english="day",
+            target_text="하루",
+            gloss="day",
             level=1,
             default_skill="recognize",
         )

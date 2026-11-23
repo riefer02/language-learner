@@ -30,16 +30,16 @@ SCENE_KEYS = {
     "debrief",
 }
 STEP_KEYS = {
-    "character_korean",
-    "character_english",
+    "character_text",
+    "character_gloss",
     "expected",
     "hint",
     "success_note",
     "target_item",
 }
-TARGET_KEYS = {"korean", "english", "romanization", "notes"}
+TARGET_KEYS = {"target_text", "gloss", "transliteration", "notes"}
 DEBRIEF_KEYS = {"strengths", "fix", "cards"}
-CARD_KEYS = {"korean", "english", "romanization", "notes"}
+CARD_KEYS = {"target_text", "gloss", "transliteration", "notes"}
 
 
 def _assert_nonempty_string(value):
@@ -81,8 +81,8 @@ def test_steps_have_character_lines_and_answers(scene):
     for step in scene["steps"]:
         assert STEP_KEYS <= set(step)
 
-        _assert_nonempty_string(step["character_korean"])
-        _assert_nonempty_string(step["character_english"])
+        _assert_nonempty_string(step["character_text"])
+        _assert_nonempty_string(step["character_gloss"])
         _assert_nonempty_string(step["hint"])
         _assert_nonempty_string(step["success_note"])
 
@@ -126,6 +126,6 @@ def test_debrief_has_two_strengths_and_three_cards(scene):
         assert CARD_KEYS <= set(card)
         for key in CARD_KEYS:
             _assert_nonempty_string(card[key])
-        korean_chunks.append(card["korean"])
+        korean_chunks.append(card["target_text"])
 
     assert len(korean_chunks) == len(set(korean_chunks))

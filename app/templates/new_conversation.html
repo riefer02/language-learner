@@ -3,7 +3,7 @@
 {% block content %}
 <div class="new-conversation">
   <h2>Create a New Conversation Scenario</h2>
-  <form id="conversation-form">
+  <form id="conversation-form" data-lang="{{ active_language.code if active_language else 'ko' }}">
     <div class="form-group">
       <label for="scenario-prompt"
         >Describe a scenario (e.g., ordering at a bar, asking for

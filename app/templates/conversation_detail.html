@@ -17,20 +17,20 @@
   {% for line in conversation.lines %}
   <div class="phrase-card" data-id="{{ line.id }}">
     <div class="phrase-english" lang="en">
-      <strong>{{ line.speaker }}</strong>: {{ line.phrase.english_text }}
+      <strong>{{ line.speaker }}</strong>: {{ line.phrase.source_text }}
     </div>
-    <div class="phrase-korean" lang="ko">{{ line.phrase.korean_text }}</div>
+    <div class="phrase-korean" lang="ko">{{ line.phrase.target_text }}</div>
     <div class="audio-player">
       <audio
         src="{{ line.phrase.audio_path }}"
         controls
         preload="none"
-        aria-label="Play line from {{ line.speaker }}: {{ line.phrase.korean_text }}"
+        aria-label="Play line from {{ line.speaker }}: {{ line.phrase.target_text }}"
       ></audio>
       <button
         type="button"
         class="repeat-btn"
-        aria-label="Repeat line from {{ line.speaker }}: {{ line.phrase.korean_text }}"
+        aria-label="Repeat line from {{ line.speaker }}: {{ line.phrase.target_text }}"
       >
         Repeat
       </button>

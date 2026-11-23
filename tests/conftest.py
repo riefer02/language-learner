@@ -59,14 +59,14 @@ class _FakeCompletion:
 
 
 # A single payload that satisfies both current consumers: translation reads
-# ``korean_translation`` and conversation generation reads ``lines``.
+# ``translation`` and conversation generation reads ``lines``.
 _DEFAULT_PAYLOAD = {
-    "korean_translation": "안녕하세요",
+    "translation": "안녕하세요",
     "title": "Test conversation",
     "description": "A fake scenario for tests.",
     "lines": [
-        {"speaker": 1, "english_text": "Hello.", "korean_text": "안녕하세요."},
-        {"speaker": 2, "english_text": "Hi.", "korean_text": "안녕."},
+        {"speaker": 1, "source_text": "Hello.", "target_text": "안녕하세요."},
+        {"speaker": 2, "source_text": "Hi.", "target_text": "안녕."},
     ],
 }
 

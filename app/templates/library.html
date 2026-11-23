@@ -11,9 +11,9 @@
       {% for term in terms %}
       <li class="term-card">
         <div>
-          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.korean }}</strong>
-          <span class="learn-meta">{{ term.item.romanization }}</span>
-          <p>{{ term.item.english }}</p>
+          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text }}</strong>
+          <span class="learn-meta">{{ term.item.transliteration }}</span>
+          <p>{{ term.item.gloss }}</p>
           {% if term.context_sentence %}
           <p class="learn-meta">“{{ term.context_sentence }}”</p>
           {% endif %}
@@ -38,19 +38,19 @@
   <div id="phrases-container">
     {% for phrase in phrases.items %}
     <div class="phrase-card" data-id="{{ phrase.id }}">
-      <div class="phrase-english" lang="en">{{ phrase.english_text }}</div>
-      <div class="phrase-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ phrase.target_text or phrase.korean_text }}</div>
+      <div class="phrase-english" lang="en">{{ phrase.source_text }}</div>
+      <div class="phrase-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ phrase.target_text }}</div>
       <div class="audio-player">
         <audio
           src="{{ phrase.audio_path }}"
           controls
           preload="none"
-          aria-label="Play pronunciation for {{ phrase.korean_text }}"
+          aria-label="Play pronunciation for {{ phrase.target_text }}"
         ></audio>
         <button
           type="button"
           class="repeat-btn"
-          aria-label="Repeat pronunciation for {{ phrase.korean_text }}"
+          aria-label="Repeat pronunciation for {{ phrase.target_text }}"
         >
           Repeat
         </button>

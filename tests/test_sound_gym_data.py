@@ -7,12 +7,12 @@ from app.learning.sound_gym_data import (
 )
 
 PAIR_KEYS = {"id", "words", "contrast", "tip", "level"}
-WORD_KEYS = {"korean", "romanization", "english"}
+WORD_KEYS = {"target_text", "transliteration", "gloss"}
 PROMPT_KEYS = {
     "id",
-    "korean",
-    "romanization",
-    "english",
+    "target_text",
+    "transliteration",
+    "gloss",
     "focus",
     "tip",
     "level",
@@ -58,13 +58,13 @@ def test_minimal_pair_words_have_required_shape():
 
 def test_no_duplicate_korean_within_a_pair():
     for pair in MINIMAL_PAIRS:
-        korean = [word["korean"] for word in pair["words"]]
+        korean = [word["target_text"] for word in pair["words"]]
 
         assert len(korean) == len(set(korean)), pair["id"]
 
 
 def test_required_contrasts_are_covered():
-    covered = {word["korean"] for pair in MINIMAL_PAIRS for word in pair["words"]}
+    covered = {word["target_text"] for pair in MINIMAL_PAIRS for word in pair["words"]}
 
     expected = {
         "불", "뿔", "풀",

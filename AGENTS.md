@@ -34,9 +34,10 @@ Never commit `.env`, `*.db`, `backups/`, `audio_output/`, or generated media.
 
 | Path | Responsibility |
 |---|---|
-| `app/models.py` | Legacy Korean tables + `Item`/`ReviewCard`; imports the two model modules below for metadata |
+| `app/models.py` | Core tables (`Item`, `ReviewCard`, `ReviewLog`, learner state); imports the two model modules below for metadata |
 | `app/models_language.py` | Language, Script, LevelScale, Course/Deck, ItemForm/ItemGloss, Dictionary, TermCard |
 | `app/models_teacher.py` | TeacherSession, TeacherTurn, Drill, DrillAttempt |
+| `app/main/` | `main` blueprint split by surface: home, content, settings, system, translate, conversations |
 | `app/learning/service.py` | Review queue, stats, streak, language resolution — every query is language-scoped |
 | `app/learning/dictionary.py` | Dictionary search, save-term, review-card handoff |
 | `app/services/teacher.py` | Teacher engine, provider adapter, tool router, drill grading |
@@ -53,9 +54,12 @@ load-bearing decision because FSRS is keyed by `(user, item, skill)`.
 - **Language scoping:** any new content query filters `Item.language_id` (or
   joins through it). Use `available_cards(..., language_id=...)`; never
   `Item.query` without a scope in learner-facing code.
-- **Legacy columns:** `item.korean` means *target-language text*, not Korean;
-  `item.english` means *gloss*. Use `item.target_text` / `item.gloss` in new
-  code. Templates may still use the legacy names.
+- **Column names:** `item.target_text`, `item.gloss`, `item.transliteration`,
+  and `phrase.source_text` / `phrase.target_text` are canonical. Never
+  reintroduce `korean` / `english` / `korean_text` columns.
+- **Language URLs:** every learner page is `/<lang_code>/...`; `g.language` is
+  set by the URL preprocessor and `url_for` fills `lang_code` automatically.
+  API routes stay unprefixed and resolve language from the learner.
 - **Review scheduling:** teacher/drill paths may create a `ReviewCard`, but
   never call `apply_rating` to fabricate a review. Only the review page grades.
 - **Teacher:** the OpenAI key stays server-side; tools are allowlisted; drill
@@ -71,9 +75,9 @@ load-bearing decision because FSRS is keyed by `(user, item, skill)`.
 
 | Change | Do |
 |---|---|
-| New learner page | Blueprint route + `templates/<page>.html` + `static/js/<page>.js` + nav link + test |
+| New learner page | `app/main/` (or the owning blueprint) route under `/<lang_code>/` + template + JS + nav link + test |
 | Review/queue logic | `app/learning/service.py`, then tests in `tests/test_learning_loop.py` |
-| Dictionary/library | `app/learning/dictionary.py`, `app/routes.py`, `templates/dictionary.html` |
+| Dictionary/library | `app/learning/dictionary.py`, `app/main/content.py`, `templates/dictionary.html` |
 | Teacher behavior/tool | `app/services/teacher.py` (`TOOL_SCHEMAS` + handler + `TOOL_HANDLERS`), route if new HTTP surface |
 | New language | `app/languages/<code>_content.py` + `seed.py` + CLI; no core edits |
 | New table | matching `models_*.py`, import in `app/models.py`, migration, CI table list |

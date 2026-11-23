@@ -118,7 +118,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       const response = await fetch(
-        "/learn/scenes/" + encodeURIComponent(slug) + "/speak",
+        panel.getAttribute("data-speak-url") ||
+          "/ko/learn/scenes/" + encodeURIComponent(slug) + "/speak",
         { method: "POST", body: form }
       );
       const data = await response.json();

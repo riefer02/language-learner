@@ -1,7 +1,7 @@
 """Language-neutral content, dictionary, and library tables.
 
 Phase 1 of the multilingual refactor adds these tables alongside the legacy
-Korean-shaped columns (``item.korean``, ``item.english``, ``phrase.korean_text``)
+the Korean-shaped columns that predate the language core
 without reading from or writing to them yet. That keeps the running app and the
 existing test suite behaviourally unchanged while the schema gets a language
 dimension.

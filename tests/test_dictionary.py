@@ -15,11 +15,11 @@ def _language(app, code="ko", name="Korean", native="한국어"):
     return language
 
 
-def _item(korean, english, language_id):
+def _item(target_text, gloss, language_id):
     item = Item(
         item_type="lexeme",
-        korean=korean,
-        english=english,
+        target_text=target_text,
+        gloss=gloss,
         level=1,
         language_id=language_id,
         default_skill="recognize",
@@ -38,12 +38,12 @@ def test_dictionary_search_and_save_creates_term_and_review_card(app, client):
         item = _item("커피", "coffee", language.id)
         item_id = item.id
 
-    page = client.get("/dictionary?q=coffee")
+    page = client.get("/ko/dictionary?q=coffee")
     assert page.status_code == 200
     assert "커피".encode() in page.data
 
     response = client.post(
-        f"/dictionary/{item_id}/save",
+        f"/ko/dictionary/{item_id}/save",
         data={"context_sentence": "커피 한 잔 주세요.", "q": "coffee"},
     )
     assert response.status_code == 302
@@ -56,7 +56,7 @@ def test_dictionary_search_and_save_creates_term_and_review_card(app, client):
         card = ReviewCard.query.filter_by(item_id=item_id, skill="recognize").one()
         assert card.reps == 0
 
-    library = client.get("/library")
+    library = client.get("/ko/library")
     assert library.status_code == 200
     assert b"My terms" in library.data
     assert "커피".encode() in library.data
@@ -72,7 +72,7 @@ def test_dictionary_is_language_scoped(app, client):
         _item("커피", "coffee", korean.id)
         _item("ቡና", "coffee", amharic.id)
 
-    page = client.get("/dictionary?q=coffee")
+    page = client.get("/ko/dictionary?q=coffee")
     assert page.status_code == 200
     assert "커피".encode() in page.data
     assert "ቡና".encode() not in page.data

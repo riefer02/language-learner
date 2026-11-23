@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
   const csrfToken = root.getAttribute("data-csrf") || "";
+  const scoreUrl =
+    root.getAttribute("data-score-url") || "/ko/learn/api/speech-score";
 
   function speak(text, button) {
     if (!text || !("speechSynthesis" in window)) {
@@ -36,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     play.addEventListener("click", function () {
       const choice = options[Math.floor(Math.random() * options.length)];
-      current = choice.getAttribute("data-korean");
+      current = choice.getAttribute("data-target");
       options.forEach(function (option) {
         option.classList.remove("correct", "incorrect");
         option.disabled = false;
@@ -52,14 +54,14 @@ document.addEventListener("DOMContentLoaded", function () {
           feedback.hidden = false;
           return;
         }
-        const chosen = option.getAttribute("data-korean");
+        const chosen = option.getAttribute("data-target");
         const correct = chosen === current;
         option.classList.remove("correct", "incorrect");
         option.classList.add(correct ? "correct" : "incorrect");
         if (correct) {
           options.forEach(function (item) {
             item.disabled = true;
-            if (item.getAttribute("data-korean") === current) {
+            if (item.getAttribute("data-target") === current) {
               item.classList.add("correct");
             }
           });
@@ -165,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
       form.append("duration_ms", String(Date.now() - startedAt));
 
       try {
-        const response = await fetch("/learn/api/speech-score", {
+        const response = await fetch(scoreUrl, {
           method: "POST",
           body: form,
         });

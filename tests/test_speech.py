@@ -22,7 +22,7 @@ def test_score_transcript_exact_and_partial(app):
 
 def test_speech_score_route_records_attempt_and_no_audio(app, client):
     response = client.post(
-        "/learn/api/speech-score",
+        "/ko/learn/api/speech-score",
         data={
             "target_text": "안녕하세요",
             "duration_ms": "1200",
@@ -47,7 +47,7 @@ def test_speech_score_route_records_attempt_and_no_audio(app, client):
 
 def test_speech_score_requires_audio(client):
     response = client.post(
-        "/learn/api/speech-score",
+        "/ko/learn/api/speech-score",
         data={"target_text": "안녕하세요"},
     )
 
@@ -56,7 +56,7 @@ def test_speech_score_requires_audio(client):
 
 def test_speech_score_rejects_non_korean_target(client):
     response = client.post(
-        "/learn/api/speech-score",
+        "/ko/learn/api/speech-score",
         data={
             "target_text": "hello",
             "audio": (io.BytesIO(b"fake-audio"), "answer.webm"),
@@ -71,7 +71,7 @@ def test_speech_score_returns_503_when_disabled(app, client):
     app.config["SPEECH_SCORING_ENABLED"] = False
 
     response = client.post(
-        "/learn/api/speech-score",
+        "/ko/learn/api/speech-score",
         data={
             "target_text": "안녕하세요",
             "audio": (io.BytesIO(b"fake-audio"), "answer.webm"),
@@ -100,7 +100,7 @@ def test_metrics_cli_reports_activation(app, runner):
 
 
 def test_sound_gym_page_renders(client):
-    response = client.get("/learn/sound-gym")
+    response = client.get("/ko/learn/sound-gym")
 
     assert response.status_code == 200
     assert b"Train your ear" in response.data

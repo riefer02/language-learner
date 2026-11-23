@@ -56,15 +56,18 @@ Microphone access requires `localhost` or HTTPS.
 
 | Route | Purpose |
 |---|---|
-| `/learn` | Today: what is due, streak, next action |
-| `/learn/review` | FSRS retrieval card and grading |
-| `/learn/teacher` | Live voice lesson, transcript, debrief |
-| `/learn/fidel` | Amharic fidel bootcamp |
-| `/learn/hangul` | Korean Hangul bootcamp |
-| `/dictionary` | Search the active deck, save a term |
-| `/library` | Saved terms and translations |
-| `/resources` | Browse/filter the active deck |
-| `/settings` | Language, goal, timezone, reminders |
+| `/<lang>/learn` | Today: what is due, streak, next action (`ko`, `am`) |
+| `/<lang>/learn/review` | FSRS retrieval card and grading |
+| `/<lang>/learn/teacher` | Live voice lesson, transcript, debrief (Korean) |
+| `/am/learn/fidel` | Amharic fidel bootcamp |
+| `/ko/learn/hangul` | Korean Hangul bootcamp |
+| `/<lang>/dictionary` | Search the active deck, save a term |
+| `/<lang>/library` | Saved terms and translations |
+| `/<lang>/resources` | Browse/filter the active deck |
+| `/<lang>/settings` | Language, goal, timezone, reminders |
+
+Unprefixed paths such as `/learn` and `/settings` redirect to the active
+language. `/` redirects to the learner's language.
 
 ## Commands
 

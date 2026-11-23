@@ -21,7 +21,7 @@ from app.services import translation as translation_service
 from app.utils import caching
 from app.utils import retries as retries_module
 from app.utils.retries import call_with_retries
-from app.utils.schemas import ConversationScenario, TranslationResponse
+from app.utils.schemas import ConversationScenario, GenericTranslationResponse
 
 API_URL = "https://api.openai.com/v1/chat/completions"
 
@@ -115,11 +115,11 @@ def scenario_payload(lines):
     }
 
 
-def line(speaker, english="Hello", korean="안녕하세요"):
+def line(speaker, gloss="Hello", target_text="안녕하세요"):
     return {
         "speaker": speaker,
-        "english_text": english,
-        "korean_text": korean,
+        "source_text": gloss,
+        "target_text": target_text,
     }
 
 
@@ -179,7 +179,7 @@ def test_client_is_lazy_and_uses_explicit_timeouts(app, monkeypatch):
 
 
 def test_injected_client_takes_precedence(app):
-    fake = FakeOpenAIClient([chat_response('{"korean_translation": "안녕"}')])
+    fake = FakeOpenAIClient([chat_response('{"translation": "안녕"}')])
     ai.set_openai_client_for_testing(fake)
     app.config["OPENAI_API_KEY"] = None
 
@@ -192,7 +192,7 @@ def test_injected_client_takes_precedence(app):
 
 def test_translate_success(app):
     fake = FakeOpenAIClient(
-        [chat_response('{"korean_translation": "안녕하세요"}')]
+        [chat_response('{"translation": "안녕하세요"}')]
     )
     app.extensions["openai_client"] = fake
 
@@ -208,7 +208,7 @@ def test_translate_success(app):
 
 def test_reasoning_model_omits_temperature_and_uses_completion_tokens(app):
     fake = FakeOpenAIClient(
-        [chat_response('{"korean_translation": "안녕하세요"}')]
+        [chat_response('{"translation": "안녕하세요"}')]
     )
     app.extensions["openai_client"] = fake
 
@@ -225,7 +225,7 @@ def test_reasoning_model_omits_temperature_and_uses_completion_tokens(app):
 
 def test_classic_model_keeps_temperature_and_max_tokens(app):
     fake = FakeOpenAIClient(
-        [chat_response('{"korean_translation": "안녕하세요"}')]
+        [chat_response('{"translation": "안녕하세요"}')]
     )
     app.extensions["openai_client"] = fake
 
@@ -267,10 +267,10 @@ def test_translate_missing_key_in_response_raises(app):
 
 def test_translation_response_schema_rejects_blank_and_oversized_text():
     with pytest.raises(ValidationError):
-        TranslationResponse.model_validate({"korean_translation": "   "})
+        GenericTranslationResponse.model_validate({"translation": "   "})
 
     with pytest.raises(ValidationError):
-        TranslationResponse.model_validate({"korean_translation": "가" * 501})
+        GenericTranslationResponse.model_validate({"translation": "가" * 501})
 
 
 # --- Conversation schema and generation ------------------------------------
@@ -304,10 +304,10 @@ def test_conversation_schema_accepts_alternation_starting_with_speaker_2():
     assert [item.speaker for item in scenario.lines] == [2, 1]
 
 
-def test_conversation_schema_requires_hangul_in_korean_text():
+def test_conversation_schema_requires_hangul_in_target_text():
     with pytest.raises(ValidationError, match="Hangul"):
         ConversationScenario.model_validate(
-            scenario_payload([line(1), line(2, korean="annyeong")])
+            scenario_payload([line(1), line(2, target_text="annyeong")])
         )
 
 
@@ -322,7 +322,7 @@ def test_generate_conversation_success_returns_validated_dict(app):
 
     assert result["title"] == "At the cafe"
     assert [item["speaker"] for item in result["lines"]] == [1, 2]
-    assert result["lines"][0]["korean_text"] == "안녕하세요"
+    assert result["lines"][0]["target_text"] == "안녕하세요"
 
 
 def test_generate_conversation_rejects_invalid_output_after_retries(app):

@@ -13,19 +13,26 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_index_page_renders(client):
-    response = client.get("/")
+    response = client.get("/ko/")
 
     assert response.status_code == 200
 
 
+def test_root_redirects_to_a_language(client):
+    response = client.get("/")
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/ko/")
+
+
 def test_library_page_renders(client):
-    response = client.get("/library")
+    response = client.get("/ko/library")
 
     assert response.status_code == 200
 
 
 def test_conversations_page_renders(client):
-    response = client.get("/conversations")
+    response = client.get("/ko/conversations")
 
     assert response.status_code == 200
 

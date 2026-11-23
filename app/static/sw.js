@@ -53,7 +53,7 @@ self.addEventListener("push", (event) => {
   let payload = {
     title: "Kiku",
     body: "A short Korean session is ready.",
-    url: "/learn/",
+    url: "/",
   };
   if (event.data) {
     try {
@@ -75,7 +75,7 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || "/learn/";
+  const url = (event.notification.data && event.notification.data.url) || "/";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
@@ -94,7 +94,7 @@ self.addEventListener("message", (event) => {
       body: "Notifications are working. One gentle reminder a day, max.",
       icon: "/static/icons/icon-192.png",
       tag: "kiku-test",
-      data: { url: "/learn/" },
+      data: { url: "/" },
     });
   }
 });

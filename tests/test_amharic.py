@@ -48,11 +48,11 @@ def test_review_queue_is_scoped_to_the_active_language(app):
 
 
 def test_fidel_pages_render(client):
-    index = client.get("/learn/fidel")
+    index = client.get("/ko/learn/fidel")
     assert index.status_code == 200
     assert b"Read Amharic" in index.data
 
-    lesson = client.get("/learn/fidel/fidel-1")
+    lesson = client.get("/ko/learn/fidel/fidel-1")
     assert lesson.status_code == 200
     assert b"Meet the fidel" in lesson.data
     assert b'data-drills=' in lesson.data
@@ -65,7 +65,7 @@ def test_settings_switches_target_language(app, client):
         language_id = language.id
 
     response = client.post(
-        "/settings",
+        "/ko/settings",
         data={
             "language": "am",
             "goal": "everyday",
@@ -92,9 +92,28 @@ def test_korean_only_pages_redirect_for_amharic(app, client):
         user.target_language_id = amharic.id
         db.session.commit()
 
-    scenes = client.get("/learn/scenes")
+    scenes = client.get("/ko/learn/scenes")
     assert scenes.status_code == 302
-    assert scenes.headers["Location"].endswith("/learn/")
+    assert scenes.headers["Location"].endswith("/ko/learn/")
 
-    conversations = client.get("/conversations/new")
+    conversations = client.get("/ko/conversations/new")
     assert conversations.status_code == 302
+
+
+def test_amharic_url_prefix_is_explicit(app, client):
+    with app.app_context():
+        seed_amharic()
+
+    page = client.get("/am/learn")
+    assert page.status_code == 200
+    assert b"Today's Amharic" in page.data
+
+    fidel = client.get("/am/learn/fidel")
+    assert fidel.status_code == 200
+    assert b"Read Amharic" in fidel.data
+
+
+def test_legacy_learn_url_redirects_to_ko(client):
+    response = client.get("/learn")
+    assert response.status_code == 301
+    assert response.headers["Location"].endswith("/ko/learn")

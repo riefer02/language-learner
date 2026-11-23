@@ -18,13 +18,13 @@ from app.learning.analytics import record_event
 from app.learning.service import get_or_create_local_user
 
 onboarding = Blueprint(
-    "onboarding", __name__, url_prefix="/welcome"
+    "onboarding", __name__, url_prefix="/<lang_code>/welcome"
 )
 
 GOALS = [
     {
         "value": "everyday",
-        "label": "Everyday Korean",
+        "label": "Everyday language",
         "hint": "Cafés, directions, friends, daily life",
     },
     {
@@ -39,7 +39,7 @@ GOALS = [
     },
     {
         "value": "culture",
-        "label": "K-drama & music",
+        "label": "Culture & media",
         "hint": "Understand dialogue and lyrics",
     },
     {
@@ -64,11 +64,11 @@ EXPERIENCE = [
     {
         "value": "new",
         "label": "I'm completely new",
-        "hint": "Start with Hangul and survival phrases",
+        "hint": "Start with the script and survival phrases",
     },
     {
         "value": "hangul",
-        "label": "I know some Hangul",
+        "label": "I can read the script",
         "hint": "You can decode, but speaking is new",
     },
     {
@@ -104,8 +104,37 @@ def _valid_timezone(value):
         return "UTC"
 
 
+FIRST_WORDS = {
+    "ko": {
+        "text": "안녕하세요",
+        "romanization": "annyeonghaseyo",
+        "gloss": "Hello",
+        "tts": "ko-KR",
+    },
+    "am": {
+        "text": "ሰላም",
+        "romanization": "selam",
+        "gloss": "Hello / peace",
+        "tts": "am-ET",
+    },
+}
+
+
 def _user():
     return get_or_create_local_user()
+
+
+def _language():
+    from app.learning.service import current_language
+
+    return current_language()
+
+
+def _first_word():
+    language = _language()
+    return FIRST_WORDS.get(
+        language.code if language else "ko", FIRST_WORDS["ko"]
+    )
 
 
 @onboarding.route("/", methods=["GET", "POST"], strict_slashes=False)
@@ -143,9 +172,16 @@ def welcome():
             )
             return redirect(url_for("onboarding.first_word"))
 
+    language = _language()
+    goals = [
+        goal
+        for goal in GOALS
+        if goal["value"] != "topik" or (language and language.code == "ko")
+    ]
     return render_template(
         "welcome.html",
-        goals=GOALS,
+        goals=goals,
+        language=language,
         times=TIMES,
         experience_options=EXPERIENCE,
         error=error,
@@ -158,7 +194,12 @@ def first_word():
     user = _user()
     if user.onboarding_complete:
         return redirect(url_for("learn.today"))
-    return render_template("welcome_first_word.html", user=user)
+    return render_template(
+        "welcome_first_word.html",
+        user=user,
+        language=_language(),
+        first_word=_first_word(),
+    )
 
 
 @onboarding.route("/complete", methods=["POST"])

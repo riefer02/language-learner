@@ -1,29 +1,34 @@
 {% extends "base.html" %}
-{% block title %} - Your first Korean sentence{% endblock %}
+{% block title %} - Your first {{ language.name if language else 'Korean' }} sentence{% endblock %}
 {% block content %}
 <div class="onboarding">
   <a class="onboarding-back" href="{{ url_for('onboarding.welcome') }}">← Back</a>
   <p class="learn-eyebrow">Your first win</p>
-  <h2>Say your first Korean sentence.</h2>
+  <h2>Say your first {{ language.name if language else 'Korean' }} sentence.</h2>
   <p class="learn-sub">
     Not a quiz. One real phrase, out loud. That is the whole point.
   </p>
 
   <div class="first-word-card">
-    <div class="first-word-korean" lang="ko">안녕하세요</div>
-    <div class="first-word-romanization">annyeonghaseyo</div>
-    <p class="first-word-meaning">Hello — the default polite greeting.</p>
+    <div class="first-word-korean" lang="{{ first_word.tts.split('-')[0] }}">{{ first_word.text }}</div>
+    <div class="first-word-romanization">{{ first_word.romanization }}</div>
+    <p class="first-word-meaning">{{ first_word.gloss }}</p>
     <button
       type="button"
       class="btn speak-btn"
-      data-speak="안녕하세요"
-      aria-label="Hear 안녕하세요 in Korean"
+      data-speak="{{ first_word.text }}"
+      data-lang="{{ first_word.tts }}"
+      aria-label="Hear {{ first_word.text }} in {{ language.name if language else 'Korean' }}"
     >
       Hear it
     </button>
   </div>
 
-  <div class="record-panel" id="record-panel">
+  <div
+    class="record-panel"
+    id="record-panel"
+    data-first-word="{{ first_word.text }}"
+  >
     <p class="record-title">Record yourself, then listen back.</p>
     <div class="record-actions">
       <button type="button" class="btn" id="record-btn">Record</button>
