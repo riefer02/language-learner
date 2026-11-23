@@ -66,6 +66,10 @@ jobs:
               "dictionary_sense",
               "translation",
               "term_card",
+              "teacher_session",
+              "teacher_turn",
+              "drill",
+              "drill_attempt",
               "alembic_version",
           }
           missing = expected - tables

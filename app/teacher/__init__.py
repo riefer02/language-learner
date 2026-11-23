@@ -1,0 +1,1 @@
+"""Real-time teacher blueprint."""

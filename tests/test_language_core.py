@@ -193,6 +193,24 @@ def test_legacy_database_backfills_and_downgrades(tmp_path):
             "(uuid, english_text, korean_text, audio_path, created_at) "
             "VALUES ('legacy-1', 'coffee', '커피', 'coffee.mp3', CURRENT_TIMESTAMP)"
         )
+        # Rows that reference ``phrase`` / ``item`` with foreign keys on. These
+        # are what made an earlier batch-table migration fail only on real data.
+        connection.execute(
+            "INSERT INTO conversation "
+            "(title, description, audio_path, created_at) "
+            "VALUES ('Legacy', 'A legacy conversation', 'conv.mp3', CURRENT_TIMESTAMP)"
+        )
+        connection.execute(
+            "INSERT INTO conversation_line "
+            "(conversation_id, phrase_id, speaker, \"order\") "
+            "VALUES (1, 1, 'Speaker 1', 1)"
+        )
+        connection.execute(
+            "INSERT INTO review_card "
+            "(user_id, item_id, skill, state, step, stability, difficulty, "
+            "due_at, reps, lapses, version) "
+            "VALUES (1, 1, 'recognize', 1, 0, 1.0, 1.0, CURRENT_TIMESTAMP, 0, 0, 1)"
+        )
         connection.commit()
     finally:
         connection.close()

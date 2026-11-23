@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %} - Teacher{% endblock %}
+{% block content %}
+<div class="teacher" id="teacher-app" data-session-active="0">
+  <div class="learn-header">
+    <p class="learn-eyebrow">Speaking teacher</p>
+    <h2>Talk to Kiku.</h2>
+    <p class="learn-sub">
+      A short spoken lesson with a teacher who gives you drills, corrects you
+      once, and remembers what you saved. Seven minutes is enough.
+    </p>
+  </div>
+
+  {% if not provider_configured %}
+  <div class="teacher-warning">
+    The teacher needs <code>OPENAI_API_KEY</code> on the server. Everything else
+    in the app keeps working.
+  </div>
+  {% endif %}
+
+  <section class="teacher-panel" aria-label="Teacher call">
+    <div class="teacher-controls">
+      <label for="teacher-plan">Today's plan</label>
+      <select id="teacher-plan">
+        {% for slug, plan in plans.items() %}
+        <option value="{{ slug }}" {% if slug == 'free_talk' %}selected{% endif %}>
+          {{ plan.title }}
+        </option>
+        {% endfor %}
+      </select>
+      <button type="button" class="btn btn-primary" id="teacher-start">
+        Start speaking
+      </button>
+      <button type="button" class="btn" id="teacher-stop" disabled>
+        End lesson
+      </button>
+    </div>
+
+    <p class="teacher-status" id="teacher-status" role="status">
+      Ready when you are. Allow the microphone, then start.
+    </p>
+
+    <audio id="teacher-audio" autoplay controls hidden></audio>
+
+    <div class="teacher-transcript-wrap">
+      <h3>Live transcript</h3>
+      <ol class="teacher-transcript" id="teacher-transcript"></ol>
+    </div>
+  </section>
+
+  <section class="teacher-debrief" id="teacher-debrief" hidden>
+    <h3>Your debrief</h3>
+    <p class="learn-meta" id="teacher-summary"></p>
+    <div class="teacher-drills" id="teacher-drills"></div>
+    <h4>Saved to your library</h4>
+    <ul class="teacher-terms" id="teacher-terms"></ul>
+    <p class="learn-meta">
+      Drills that you finish become review cards. Saved terms are waiting in
+      your library.
+    </p>
+  </section>
+
+  {% if sessions %}
+  <section class="teacher-history">
+    <h3>Recent sessions</h3>
+    <ul>
+      {% for item in sessions %}
+      <li>
+        <b>{{ item.plan_title }}</b>
+        <span class="learn-meta">
+          {{ item.started_at.strftime('%d %b %H:%M') }} ·
+          {{ item.turn_count }} turns · {{ item.status }}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/teacher.js') }}"></script>
+{% endblock %}

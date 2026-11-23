@@ -58,6 +58,13 @@
           </li>
           <li>
             <a
+              href="{{ url_for('teacher.panel') }}"
+              aria-current="{{ 'page' if request.endpoint == 'teacher.panel' else 'false' }}"
+              >Teacher</a
+            >
+          </li>
+          <li>
+            <a
               href="{{ url_for('learn.progress') }}"
               aria-current="{{ 'page' if request.endpoint == 'learn.progress' else 'false' }}"
               >Progress</a

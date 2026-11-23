@@ -147,3 +147,18 @@ vendor decision are in
 **Expiring models to migrate next:** `tts-1` shuts down 6 Jan 2027 and
 `gpt-4o-transcribe` on 26 Feb 2027; both need the provider boundary before
 then.
+
+### Voice teacher (same day)
+
+- `/learn/teacher` runs a real two-way voice lesson through OpenAI Realtime
+  (`gpt-realtime-2.1-mini`) with Korean transcription, live transcript,
+  on-demand drills, a personal term library, and an end-of-session debrief.
+- Six allowlisted teacher tools write through the app: due items, dictionary
+  lookup, create drill, save term, log attempt (creates a `produce` FSRS card),
+  and end-summary.
+- New tables `teacher_session`, `teacher_turn`, `drill`, `drill_attempt`
+  (migration `20261123_0013`). No raw audio is stored.
+- `gpt-transcribe` replaces the retiring `gpt-4o-transcribe` for speech checks.
+- 211 tests pass; the teacher page renders on the migrated local database.
+- Remaining deadline: pre-generated item audio still uses `tts-1` (shutdown
+  6 Jan 2027). Live teacher voice does not depend on it.

@@ -304,7 +304,7 @@ def scene_speak(slug):
         acceptable=accepted,
         provider=current_app.config.get("SPEECH_PROVIDER", "openai"),
         model=current_app.config.get(
-            "SPEECH_TRANSCRIBE_MODEL", "gpt-4o-transcribe"
+            "SPEECH_TRANSCRIBE_MODEL", "gpt-transcribe"
         ),
         duration_ms=duration_ms,
     )

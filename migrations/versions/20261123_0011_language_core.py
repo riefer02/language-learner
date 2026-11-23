@@ -386,13 +386,16 @@ def upgrade():
     )
 
     # --- Expand-phase columns on existing tables -------------------------
+    # Deliberately plain ADD COLUMN: no table rebuild and no new foreign key
+    # constraints. SQLite blocks a batch rebuild of ``phrase`` / ``item`` while
+    # existing rows reference them with foreign_keys=ON. These columns are
+    # nullable and unused until the dual-write phase; constraints arrive with
+    # the contract migration.
     op.add_column(
-        "phrase",
-        sa.Column("source_language_id", sa.Integer(), nullable=True),
+        "phrase", sa.Column("source_language_id", sa.Integer(), nullable=True)
     )
     op.add_column(
-        "phrase",
-        sa.Column("target_language_id", sa.Integer(), nullable=True),
+        "phrase", sa.Column("target_language_id", sa.Integer(), nullable=True)
     )
     op.add_column(
         "phrase", sa.Column("source_text", sa.String(length=500), nullable=True)
@@ -400,13 +403,6 @@ def upgrade():
     op.add_column(
         "phrase", sa.Column("target_text", sa.String(length=500), nullable=True)
     )
-    with op.batch_alter_table("phrase") as batch:
-        batch.create_foreign_key(
-            "fk_phrase_source_language", "language", ["source_language_id"], ["id"]
-        )
-        batch.create_foreign_key(
-            "fk_phrase_target_language", "language", ["target_language_id"], ["id"]
-        )
 
     op.add_column(
         "conversation", sa.Column("language_id", sa.Integer(), nullable=True)
@@ -442,7 +438,9 @@ def upgrade():
             "sense_key", sa.String(length=300), nullable=False, server_default=""
         ),
     )
-    op.add_column("item", sa.Column("content_hash", sa.String(length=64), nullable=True))
+    op.add_column(
+        "item", sa.Column("content_hash", sa.String(length=64), nullable=True)
+    )
     op.add_column(
         "item",
         sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
@@ -451,23 +449,6 @@ def upgrade():
         "item", sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True)
     )
     op.add_column("item", sa.Column("superseded_by_id", sa.Integer(), nullable=True))
-    with op.batch_alter_table("item") as batch:
-        batch.create_foreign_key(
-            "fk_item_language", "language", ["language_id"], ["id"]
-        )
-        batch.create_foreign_key("fk_item_deck", "deck", ["primary_deck_id"], ["id"])
-        batch.create_foreign_key(
-            "fk_item_dictionary_entry",
-            "dictionary_entry",
-            ["dictionary_entry_id"],
-            ["id"],
-        )
-        batch.create_foreign_key(
-            "fk_item_level_scale", "level_scale", ["level_scale_id"], ["id"]
-        )
-        batch.create_foreign_key(
-            "fk_item_superseded_by", "item", ["superseded_by_id"], ["id"]
-        )
     op.create_index("ix_item_language_id", "item", ["language_id"])
     op.create_index(
         "ix_item_language_level_type", "item", ["language_id", "level", "item_type"]
@@ -492,13 +473,6 @@ def upgrade():
         "speech_attempt",
         sa.Column("scoring_version", sa.String(length=24), nullable=True),
     )
-    with op.batch_alter_table("speech_attempt") as batch:
-        batch.create_foreign_key(
-            "fk_speech_attempt_language", "language", ["language_id"], ["id"]
-        )
-        batch.create_foreign_key(
-            "fk_speech_attempt_item_form", "item_form", ["item_form_id"], ["id"]
-        )
     op.create_index(
         "ix_speech_attempt_language_id", "speech_attempt", ["language_id"]
     )
@@ -506,10 +480,6 @@ def upgrade():
     op.add_column(
         "scene_session", sa.Column("language_id", sa.Integer(), nullable=True)
     )
-    with op.batch_alter_table("scene_session") as batch:
-        batch.create_foreign_key(
-            "fk_scene_session_language", "language", ["language_id"], ["id"]
-        )
     op.create_index(
         "ix_scene_session_language_id", "scene_session", ["language_id"]
     )
@@ -517,40 +487,25 @@ def upgrade():
     op.add_column(
         "can_do_artifact", sa.Column("language_id", sa.Integer(), nullable=True)
     )
-    with op.batch_alter_table("can_do_artifact") as batch:
-        batch.create_foreign_key(
-            "fk_can_do_artifact_language", "language", ["language_id"], ["id"]
-        )
     op.create_index(
         "ix_can_do_artifact_language_id", "can_do_artifact", ["language_id"]
     )
 
     op.add_column("event", sa.Column("language_id", sa.Integer(), nullable=True))
-    with op.batch_alter_table("event") as batch:
-        batch.create_foreign_key("fk_event_language", "language", ["language_id"], ["id"])
     op.create_index("ix_event_language_id", "event", ["language_id"])
 
 
 def downgrade():
     op.drop_index("ix_event_language_id", table_name="event")
-    with op.batch_alter_table("event") as batch:
-        batch.drop_constraint("fk_event_language", type_="foreignkey")
     op.drop_column("event", "language_id")
 
     op.drop_index("ix_can_do_artifact_language_id", table_name="can_do_artifact")
-    with op.batch_alter_table("can_do_artifact") as batch:
-        batch.drop_constraint("fk_can_do_artifact_language", type_="foreignkey")
     op.drop_column("can_do_artifact", "language_id")
 
     op.drop_index("ix_scene_session_language_id", table_name="scene_session")
-    with op.batch_alter_table("scene_session") as batch:
-        batch.drop_constraint("fk_scene_session_language", type_="foreignkey")
     op.drop_column("scene_session", "language_id")
 
     op.drop_index("ix_speech_attempt_language_id", table_name="speech_attempt")
-    with op.batch_alter_table("speech_attempt") as batch:
-        batch.drop_constraint("fk_speech_attempt_item_form", type_="foreignkey")
-        batch.drop_constraint("fk_speech_attempt_language", type_="foreignkey")
     for column in (
         "scoring_version",
         "prosody_scores",
@@ -563,23 +518,18 @@ def downgrade():
 
     op.drop_index("ix_item_language_level_type", table_name="item")
     op.drop_index("ix_item_language_id", table_name="item")
-    with op.batch_alter_table("item") as batch:
-        for name, column in (
-            ("fk_item_superseded_by", "superseded_by_id"),
-            ("fk_item_level_scale", "level_scale_id"),
-            ("fk_item_dictionary_entry", "dictionary_entry_id"),
-            ("fk_item_deck", "primary_deck_id"),
-            ("fk_item_language", "language_id"),
-        ):
-            batch.drop_constraint(name, type_="foreignkey")
-            batch.drop_column(column)
     for column in (
+        "superseded_by_id",
         "deleted_at",
         "version",
         "content_hash",
         "sense_key",
         "key_normalized",
         "status",
+        "level_scale_id",
+        "dictionary_entry_id",
+        "primary_deck_id",
+        "language_id",
     ):
         op.drop_column("item", column)
 
@@ -589,10 +539,12 @@ def downgrade():
     op.drop_index("ix_conversation_language_id", table_name="conversation")
     op.drop_column("conversation", "language_id")
 
-    with op.batch_alter_table("phrase") as batch:
-        batch.drop_constraint("fk_phrase_target_language", type_="foreignkey")
-        batch.drop_constraint("fk_phrase_source_language", type_="foreignkey")
-    for column in ("target_text", "source_text", "target_language_id", "source_language_id"):
+    for column in (
+        "target_text",
+        "source_text",
+        "target_language_id",
+        "source_language_id",
+    ):
         op.drop_column("phrase", column)
 
     op.drop_index("uq_term_card_user_entry", table_name="term_card")

@@ -312,10 +312,12 @@ def create_app(config_name=None, overrides=None):
     from app.learning.routes import learn as learn_blueprint
     from app.onboarding.routes import onboarding as onboarding_blueprint
     from app.routes import main as main_blueprint
+    from app.teacher.routes import teacher as teacher_blueprint
 
     app.register_blueprint(main_blueprint)
     app.register_blueprint(learn_blueprint)
     app.register_blueprint(onboarding_blueprint)
+    app.register_blueprint(teacher_blueprint)
     register_learning_cli(app)
 
     from app.errors import register_error_handlers

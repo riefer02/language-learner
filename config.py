@@ -66,11 +66,25 @@ class Config:
     SPEECH_SCORING_ENABLED = _env_bool("SPEECH_SCORING_ENABLED", True)
     SPEECH_PROVIDER = os.environ.get("SPEECH_PROVIDER", "openai")
     SPEECH_TRANSCRIBE_MODEL = os.environ.get(
-        "SPEECH_TRANSCRIBE_MODEL", "gpt-4o-transcribe"
+        "SPEECH_TRANSCRIBE_MODEL", "gpt-transcribe"
     )
     SPEECH_MAX_BYTES = _env_int("SPEECH_MAX_BYTES", 5 * 1024 * 1024)
     SPEECH_ACCEPT_THRESHOLD = 0.72
     SCENE_MATCH_THRESHOLD = 0.78
+
+    # Real-time speaking teacher. Uses the OpenAI key above.
+    TEACHER_ENABLED = _env_bool("TEACHER_ENABLED", True)
+    TEACHER_PROVIDER = os.environ.get("TEACHER_PROVIDER", "openai_realtime")
+    TEACHER_MODEL = os.environ.get("TEACHER_MODEL", "gpt-realtime-2.1-mini")
+    TEACHER_VOICE = os.environ.get("TEACHER_VOICE", "marin")
+    TEACHER_TRANSCRIBE_MODEL = os.environ.get(
+        "TEACHER_TRANSCRIBE_MODEL", "gpt-transcribe"
+    )
+    TEACHER_MAX_SESSION_MINUTES = _env_int("TEACHER_MAX_SESSION_MINUTES", 15)
+    TEACHER_DAILY_MINUTES = _env_int("TEACHER_DAILY_MINUTES", 20)
+    TEACHER_TIMEOUT_SECONDS = float(
+        os.environ.get("TEACHER_TIMEOUT_SECONDS", "20")
+    )
 
     # PWA push reminders. Generate keys with `flask generate-vapid-keys`.
     VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY")

@@ -68,7 +68,7 @@ def transcribe_audio(audio_bytes, filename="answer.webm", content_type="audio/we
         raise ValueError("Audio file is too large")
 
     model = current_app.config.get(
-        "SPEECH_TRANSCRIBE_MODEL", "gpt-4o-transcribe"
+        "SPEECH_TRANSCRIBE_MODEL", "gpt-transcribe"
     )
     try:
         client = get_openai_client()
@@ -103,6 +103,6 @@ def score_audio(target_text, audio_bytes, filename, content_type):
     result["transcript"] = transcript
     result["provider"] = current_app.config.get("SPEECH_PROVIDER", "openai")
     result["model"] = current_app.config.get(
-        "SPEECH_TRANSCRIBE_MODEL", "gpt-4o-transcribe"
+        "SPEECH_TRANSCRIBE_MODEL", "gpt-transcribe"
     )
     return result

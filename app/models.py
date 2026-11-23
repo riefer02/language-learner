@@ -482,3 +482,9 @@ from app.models_language import (  # noqa: F401
     TermCard,
     Translation,
 )
+from app.models_teacher import (  # noqa: F401
+    Drill,
+    DrillAttempt,
+    TeacherSession,
+    TeacherTurn,
+)
