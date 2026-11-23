@@ -1,242 +1,110 @@
-# Korean Language Learner
+# Kiku
 
-> **Status: functional alpha prototype.** This repository provides translation, text-to-speech, a phrase library, short generated conversations, a working FSRS review loop with a 30-item starter deck, Hangul bootcamp, mission scenes, progress proof, an installable PWA, and a one-per-day push reminder. It does **not** yet include real per-user accounts, phoneme-level pronunciation feedback, native-reviewed seed audio, or a full offline review queue. See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the honest current state, [`docs/ROADMAP.md`](docs/ROADMAP.md) for execution status, and [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) for the product redesign.
+A local-first language-learning app for **Korean** and **Amharic**, built around
+retrieval, spaced repetition, and a real-time speaking teacher.
 
-An application for learning Korean that includes both a command-line interface and a web application. Translate English phrases to Korean, generate pronunciation audio, and browse saved phrases and conversations.
+Kiku is not a translation demo. The loop is: review what is due → speak or
+write a real answer → get one correction → save the term → see it again later.
 
-## Features
+## What works today
 
-### CLI Tool
+| Area | Korean | Amharic |
+|---|---|---|
+| Daily FSRS review | 30-item starter deck | 64-item survival deck |
+| Script course | Hangul bootcamp (7 lessons) | Fidel bootcamp (6 lessons) |
+| Dictionary + saved terms | yes | yes |
+| Pre-generated audio | partial | all 64 items |
+| Live voice teacher | yes (OpenAI Realtime) | no — OpenAI has no Amharic speech |
+| Scenes / roleplay | 4 scripted scenes | no |
+| Speech checks | transcript-based | disabled |
 
-- Translates English text to Korean using OpenAI's `gpt-5.6-luna` model
-- Generates natural-sounding Korean speech using OpenAI's Text-to-Speech (TTS) API
-- Saves audio output as MP3 files in the `audio_output/` directory
-- Accepts input either interactively or as a command-line argument
+The teacher runs a 7-minute spoken lesson with a plan, recasts mistakes, and can
+call app tools: look up a word, create drills, save a term, grade an attempt,
+and end with a debrief. Drill answers become FSRS review cards. The API key
+never reaches the browser, raw audio is never stored, and daily/session minute
+limits are enforced server-side.
 
-### Web Application
+## Stack and models
 
-- **Onboarding:** `/welcome` captures goal, daily time, experience, and timezone, then teaches a first spoken 안녕하세요 with local-only recording
-- **Hangul bootcamp:** `/learn/hangul` has seven lessons (letters, vowels/blocks, batchim, double batchim, real-world text, connected speech, and a final reading check) with 88 interactive drills
-- **Learn loop:** `/learn` shows what is due, `/learn/review` presents a retrieval card and grades it with FSRS-6 in a 3/10/25-minute session, and `/learn/progress` shows practiced cards and recent reviews
-- **Mission scenes:** `/learn/scenes` has four scripted Korean roleplays (café, directions, pharmacy, workplace intro) with tolerant answer matching, hints, resumable progress, voice or typed answers, and a debrief that adds three chunks to the review deck
-- **Can-do proof:** completing a scene creates a dated “I can…” artifact on `/learn/progress` and surfaces the next mission on Today
-- **Weekly recap:** `/learn/progress` shows 7-day review activity, new cards, can-dos, active days, a 30-day Good/Easy recall signal, and 7+/30+ day delayed-retention rates
-- **Resources:** `/resources` searches Korean, English, romanization, and notes, with type/level filters and quick links to every reference surface
-- **Sound Gym:** `/learn/sound-gym` has minimal-pair perception drills and production prompts with local recording and transcript-based speech checks (not an accent grade; raw audio is not stored)
-- **Installable PWA:** web manifest, icons, install metadata, an app-shell service worker, and a cached offline fallback
-- **Gentle reminders:** `/settings` stores goal, daily time, timezone, reminder on/off, and reminder time; the browser subscribes to push, and `flask send-reminders` sends at most one due-card reminder per learner per local day
-- **Alpha metrics:** `flask metrics` prints activation, users with reviews, speech attempts, and D1/D7
-- **Starter deck:** `flask seed-content` adds 30 Korean items and creates review cards for the local learner
-- **Daily guardrail:** 10 new cards per day by default; review cards come first
-- User-friendly interface for English-to-Korean translation
-- Audio playback of Korean pronunciations
-- Paginated phrase library
-- Generated conversation scenarios with per-line and merged audio
-- SQLite storage for phrases, conversations, lines, items, and review state
+- Python 3.12, Flask 2.0, SQLAlchemy 1.4, Alembic, SQLite (Postgres-ready)
+- Server-rendered Jinja + dependency-free vanilla JS
+- Chat/translation: `gpt-5.6-luna`
+- Speech-to-text: `gpt-transcribe`
+- Audio generation: `gpt-audio-1.5` through Chat Completions
+- Real-time voice: `gpt-realtime-2.1-mini` over WebRTC
 
-**Still planned:** real per-user accounts, placement testing, phoneme-level pronunciation feedback, native-reviewed seed audio, and a full offline review queue. See [`docs/KIKU_BLUEPRINT.md`](docs/KIKU_BLUEPRINT.md) and [`docs/ROADMAP.md`](docs/ROADMAP.md).
-
-### Conversational Scenarios
-
-- Generate short, realistic Korean conversations (2–4 lines, 2 speakers) from a scenario prompt
-- Each line is spoken by a different voice and saved as an individual audio file
-- All lines are merged into a single audio file for playback as a full conversation
-- Accessible via the web interface: create, list, and view conversations
-- Conversations and their lines are stored in the database (see `Conversation` and `ConversationLine` models)
-
-## Prerequisites
-
-- Python 3.11 or newer (3.12 recommended)
-- An OpenAI API key
-- `ffmpeg` for conversation audio merging
-- Flask and related packages (see `requirements.txt`)
+OpenAI is the only AI provider. No Gemini or other vendor is wired in.
 
 ## Setup
 
-1. **Clone the repository:**
-
-   ```bash
-   git clone <repository-url>
-   cd korean-language-learner
-   ```
-
-2. **Create a `.env` file:**
-   Create a file named `.env` in the project root directory and add your OpenAI API key:
-
-   ```
-   OPENAI_API_KEY='your_openai_api_key_here'
-   ```
-
-   _(This file is ignored by Git via `.gitignore`)_
-
-3. **Set up the environment and install dependencies:**
-   It's recommended to use a virtual environment.
-
-   ```bash
-   make install
-   ```
-
-   This command will:
-
-   - Create a Python virtual environment named `venv`
-   - Activate the environment
-   - Install the required packages listed in `requirements.txt`
-
-   _Alternatively, you can set up the virtual environment and install packages manually:_
-
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   pip install -r requirements.txt
-   ```
-
-4. **Initialize the database:**
-   ```bash
-   flask init-db
-   ```
-   Or using the Makefile:
-   ```bash
-   make init-db
-   ```
-
-   `flask init-db` applies Alembic migrations. The app no longer creates tables
-   automatically at startup, so a fresh checkout needs this step (or
-   `flask db upgrade`) before the first request.
-
-## Usage
-
-### CLI Tool
-
-Make sure your virtual environment is active (`source venv/bin/activate` or use the `make` commands).
-
-- **Interactive Mode:**
-
-  ```bash
-  make run
-  ```
-
-  The script will prompt you to enter an English phrase.
-
-- **With a Phrase Argument:**
-
-  ```bash
-  make runp phrase="I want to learn Korean"
-  ```
-
-  Replace "I want to learn Korean" with your desired phrase.
-
-- **Directly with Python:**
-  ```bash
-  python hangul.py  # Interactive mode
-  python hangul.py "Where is the library?"  # With argument
-  ```
-
-### Web Application
-
-To run the web application:
-
-1. Ensure your virtual environment is active
-2. Start the Flask development server:
-   ```bash
-   python run.py
-   ```
-3. Seed the starter review deck (idempotent):
-   ```bash
-   flask seed-content
-   ```
-4. Optional: pre-generate audio for the review deck. This spends API credits,
-   so check the dry run first:
-   ```bash
-   flask generate-item-audio --dry-run
-   flask generate-item-audio
-   ```
-5. Optional: enable browser push reminders. Generate a VAPID key pair,
-   add both values to `.env`, and restart:
-   ```bash
-   flask generate-vapid-keys
-   # paste VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY into .env
-   flask send-reminders --dry-run
-   ```
-   Then open **Settings** from Today or Resources and choose **Enable
-   notifications**. Push requires HTTPS in production; `localhost` works for
-   development. Run `flask send-reminders` from cron (every 5–15 minutes) to
-   deliver the daily reminder. The job only sends when the learner has cards
-   due, has not already received a reminder that local day, and has an active
-   subscription.
-6. Open your web browser and navigate to `http://localhost:5000`
-7. Start at **Learn**. The first visit opens a two-minute onboarding flow and a first spoken sentence; after that, the daily review loop is ready. Use **Hangul** for the reading bootcamp, or **Conversations** to create and study conversational scenarios.
-
-## Project Structure
-
-- `/app` - Web application components
-  - `/services` - Backend services for translation, audio, conversation generation
-  - `/static` - Static assets (CSS, JS, audio files)
-  - `/templates` - HTML templates (including conversations UI)
-  - `/utils` - Utility functions (including audio merging)
-- `/audio_output` - Generated audio files from the CLI tool
-- `hangul.py` - CLI tool entry point
-- `run.py` - Web application entry point
-- `config.py` - Configuration settings
-- `korean_learner.db` - SQLite database
-
-## Development Checks
+Requires Python 3.11+ (3.12 recommended), an OpenAI API key, and `ffmpeg` for
+conversation audio merging.
 
 ```bash
-make install-dev   # runtime + test/lint dependencies
-make test          # pytest
-make lint          # ruff
-flask metrics      # alpha activation/retention summary
-flask send-reminders --dry-run  # who is eligible for a reminder now
+make install-dev                      # venv + runtime + test dependencies
+cp env.example .env                   # then set OPENAI_API_KEY
+FLASK_APP=run.py venv/bin/python -m flask db upgrade
+FLASK_APP=run.py venv/bin/python -m flask seed-content
+FLASK_APP=run.py venv/bin/python -m flask seed-amharic
+venv/bin/python run.py                # http://127.0.0.1:5000
 ```
 
-The test suite does not call OpenAI and does not need a real API key. It uses a
-temporary SQLite database and a fake OpenAI client.
+The `.env` file is read when the process starts; restart after changing it.
+Microphone access requires `localhost` or HTTPS.
 
-## Security Notes
+## Routes
 
-- The app binds to `127.0.0.1` by default. Do not expose it publicly without
-  authentication and HTTPS.
-- For a non-local deployment, set `REQUIRE_AUTH=true`, `APP_PASSWORD`, and
-  `SECRET_KEY`, and put the app behind a TLS-terminating proxy.
-- Set `TRUST_PROXY=true` only behind a trusted proxy so client IPs and rate
-  limits are correct.
-- Rotate any API key that has ever been committed or shared. Keys belong in
-  `.env` (ignored by git) or the deployment secret manager.
-- Audio is stored under `app/static/audio` for local development. The
-  `flask media-audit` command reports orphans and missing files;
-  `flask media-gc --delete` removes orphans older than a day.
+| Route | Purpose |
+|---|---|
+| `/learn` | Today: what is due, streak, next action |
+| `/learn/review` | FSRS retrieval card and grading |
+| `/learn/teacher` | Live voice lesson, transcript, debrief |
+| `/learn/fidel` | Amharic fidel bootcamp |
+| `/learn/hangul` | Korean Hangul bootcamp |
+| `/dictionary` | Search the active deck, save a term |
+| `/library` | Saved terms and translations |
+| `/resources` | Browse/filter the active deck |
+| `/settings` | Language, goal, timezone, reminders |
 
-## Cleaning Up
-
-To remove the virtual environment, audio output directory, and compiled Python files:
+## Commands
 
 ```bash
-make clean
+make test                              # full test suite
+venv/bin/ruff check app config.py run.py tests
+FLASK_APP=run.py venv/bin/python -m flask db upgrade
+FLASK_APP=run.py venv/bin/python -m flask seed-content
+FLASK_APP=run.py venv/bin/python -m flask seed-amharic
+FLASK_APP=run.py venv/bin/python -m flask generate-item-audio --language am
+FLASK_APP=run.py venv/bin/python -m flask metrics
 ```
 
-## Contributing
+`flask metrics`, `flask language-audit`, `flask media-audit`, and
+`flask send-reminders` are also available.
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Documentation
 
-## Troubleshooting
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — module map, data model, flows, invariants
+- [`AGENTS.md`](AGENTS.md) — how coding agents should work in this repo
+- [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — honest current state
+- [`docs/architecture/00-decision-2026-11-23.md`](docs/architecture/00-decision-2026-11-23.md) — product and architecture decisions
+- [`docs/architecture/06-multilingual-refactor.md`](docs/architecture/06-multilingual-refactor.md) — coupling audit and 8-phase refactor plan
+- [`docs/research/`](docs/research/) — learning science, Korean pedagogy, competitors, real-time vendors, Ethiopian languages
 
-### Push reminders
+`docs/KIKU_BLUEPRINT.md` and `docs/ROADMAP.md` are historical design documents
+from October 2026. Use the decision record and project status for current truth.
 
-- `flask generate-vapid-keys` prints a public/private VAPID pair; add both to `.env`.
-- Browser push requires HTTPS except on `localhost`.
-- `flask send-reminders --dry-run` is safe and does not send. Run without `--dry-run` from cron every 5–15 minutes.
-- The job sends at most one notification per learner per local day and skips learners with no cards due or no active subscription.
+## Known limitations
 
-### Audio Merging (ffmpeg)
+- Single local user; no accounts or per-user isolation.
+- Pronunciation checks compare transcripts, not phonemes or prosody.
+- Amharic speech (ASR/TTS/tutor) is not usable with OpenAI today.
+- Amharic content is starter-depth and not native-reviewed; scenes are Korean-only.
+- No full offline review queue; the PWA caches the shell and an offline fallback.
+- Pre-generated Korean audio is partial; browser speech synthesis is a fallback.
 
-The conversation feature requires [ffmpeg](https://ffmpeg.org/) to be installed and available in your system PATH for audio merging. If you see errors related to audio file reading or merging, ensure ffmpeg is installed:
+## Tests
 
-- **macOS:**
-  ```sh
-  brew install ffmpeg
-  ```
-- **Ubuntu/Debian:**
-  ```sh
-  sudo apt-get install ffmpeg
-  ```
-- **Windows:** Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to your PATH.
+The suite uses a throwaway SQLite database and a fake OpenAI client: no network
+and no key are required. Migrations are tested against an old database with real
+referencing rows, then downgraded. CI lints, migrates an empty database, checks
+the expected table set, and runs the suite.

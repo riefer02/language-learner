@@ -1,9 +1,7 @@
 """Scripted mission scenes: tolerant matching, progress, and card creation."""
 
 import json
-import re
 from datetime import UTC, datetime
-from difflib import SequenceMatcher
 
 from flask import current_app
 
@@ -11,10 +9,11 @@ from app import db
 from app.learning.scene_data import SCENES
 from app.learning.service import ensure_review_cards
 from app.models import CanDoArtifact, Item, SceneSession
+from app.utils.text import normalize_text, similarity
 
 
 def _normalize(text):
-    return re.sub(r"[^0-9A-Za-z\uac00-\ud7a3]", "", (text or "").lower())
+    return normalize_text(text)
 
 
 def get_scene(slug):
@@ -113,7 +112,7 @@ def match_answer(expected_answers, answer, threshold=None):
         target = _normalize(expected)
         if normalized == target:
             return True, expected, 1.0
-        score = SequenceMatcher(None, target, normalized).ratio()
+        score = similarity(target, normalized)
         if score > best_score:
             best_score = score
             best_expected = expected

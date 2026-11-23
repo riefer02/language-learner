@@ -71,7 +71,12 @@ from app.utils.schemas import contains_hangul
 learn = Blueprint("learn", __name__, url_prefix="/learn")
 
 
-def _user():
+def _current_user():
+    """Resolve the local learner and keep their cards in sync.
+
+    The Korean seed runs only for a genuinely empty database, so adding an
+    Amharic deck cannot silently stop Korean seeding later.
+    """
     if Item.query.count() == 0:
         user, _items, _cards = seed_content()
         return user
@@ -79,6 +84,11 @@ def _user():
     language = current_language(user)
     ensure_review_cards(user.id, language.id if language else None)
     return user
+
+
+def _korean_only():
+    language = current_language()
+    return language is not None and language.code != "ko"
 
 
 def _needs_onboarding(user):
@@ -120,7 +130,7 @@ def _format_next_due(value):
 
 @learn.route("/", strict_slashes=False)
 def today():
-    user = _user()
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     language = current_language(user)
@@ -143,7 +153,9 @@ def today():
 
 @learn.route("/scenes")
 def scenes():
-    user = _user()
+    if _korean_only():
+        return redirect(url_for("learn.today"))
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     return render_template(
@@ -153,7 +165,9 @@ def scenes():
 
 @learn.route("/scenes/<slug>")
 def scene_detail(slug):
-    user = _user()
+    if _korean_only():
+        return redirect(url_for("learn.today"))
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     scene = get_scene(slug)
@@ -184,7 +198,9 @@ def scene_detail(slug):
 
 @learn.route("/scenes/<slug>/answer", methods=["POST"])
 def scene_answer(slug):
-    user = _user()
+    if _korean_only():
+        return redirect(url_for("learn.today"))
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     scene = get_scene(slug)
@@ -250,7 +266,9 @@ def scene_answer(slug):
     scope="scene_speech",
 )
 def scene_speak(slug):
-    user = _user()
+    if _korean_only():
+        return jsonify({"error": "Scene speech is Korean-only"}), 404
+    user = _current_user()
     if _needs_onboarding(user):
         return jsonify({"error": "Finish onboarding first"}), 403
     scene = get_scene(slug)
@@ -360,7 +378,9 @@ def scene_speak(slug):
 
 @learn.route("/scenes/<slug>/reset", methods=["POST"])
 def scene_reset(slug):
-    user = _user()
+    if _korean_only():
+        return redirect(url_for("learn.today"))
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     scene = get_scene(slug)
@@ -379,7 +399,9 @@ def scene_reset(slug):
 
 @learn.route("/sound-gym")
 def sound_gym():
-    user = _user()
+    if _korean_only():
+        return redirect(url_for("learn.today"))
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     record_event(user.id, "sound_gym_opened")
@@ -400,7 +422,7 @@ def sound_gym():
     scope="speech",
 )
 def api_speech_score():
-    user = _user()
+    user = _current_user()
     if _needs_onboarding(user):
         return jsonify({"error": "Finish onboarding first"}), 403
 
@@ -508,11 +530,15 @@ def fidel_lesson(slug):
 
 @learn.route("/hangul")
 def hangul():
+    if _korean_only():
+        return redirect(url_for("learn.today"))
     return render_template("hangul_index.html", lessons=HANGUL_LESSONS)
 
 
 @learn.route("/hangul/<slug>")
 def hangul_lesson(slug):
+    if _korean_only():
+        return redirect(url_for("learn.today"))
     lesson = next(
         (item for item in HANGUL_LESSONS if item["slug"] == slug), None
     )
@@ -533,7 +559,7 @@ def hangul_lesson(slug):
 
 @learn.route("/progress")
 def progress():
-    user = _user()
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     language = current_language(user)
@@ -559,7 +585,7 @@ def progress():
 
 @learn.route("/review")
 def review():
-    user = _user()
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
 
@@ -631,7 +657,7 @@ def review():
 
 @learn.route("/review/<int:card_id>", methods=["POST"])
 def submit_review(card_id):
-    user = _user()
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     card = db.session.get(ReviewCard, card_id)
@@ -703,7 +729,7 @@ def submit_review(card_id):
 
 @learn.route("/review/complete")
 def review_complete():
-    user = _user()
+    user = _current_user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
     language = current_language(user)

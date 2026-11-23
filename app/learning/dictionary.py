@@ -87,8 +87,8 @@ def list_terms(user_id, language_id=None, limit=200):
 def serialize_item(item):
     return {
         "id": item.id,
-        "text": item.korean,
-        "gloss": item.english,
+        "text": item.target_text,
+        "gloss": item.gloss,
         "romanization": item.romanization,
         "item_type": item.item_type,
         "level": item.level,

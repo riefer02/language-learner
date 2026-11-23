@@ -476,6 +476,9 @@ def _conversation_voices():
     scope="conversation",
 )
 def api_conversation():
+    language = current_language()
+    if language is not None and language.code != "ko":
+        return _error("Conversations are Korean-only for now", 400)
     payload, error = _parse_json(ConversationRequest)
     if error:
         return error
@@ -647,4 +650,7 @@ def conversation_detail(conversation_id):
 
 @main.route("/conversations/new")
 def new_conversation():
+    language = current_language()
+    if language is not None and language.code != "ko":
+        return redirect(url_for("learn.today"))
     return render_template("new_conversation.html")

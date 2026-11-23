@@ -1,7 +1,19 @@
-# Project Status — 20 October 2026
+# Project Status — 23 November 2026
+
+**Verdict:** a working single-user alpha with a real-time Korean voice teacher,
+a Korean + Amharic review core, a dictionary and personal term library, and a
+fidel bootcamp. Not ready for public use: no accounts, no pronunciation scoring,
+and Amharic speech is unsupported by the current provider.
+
+Current architecture: [`ARCHITECTURE.md`](ARCHITECTURE.md). Decisions:
+[`architecture/00-decision-2026-11-23.md`](architecture/00-decision-2026-11-23.md).
+
+---
+
+## Historical detail — 20 October 2026
 
 **Repository:** Korean Language Learner (working product name: **Kiku**)
-**Verdict:** Phase 0 (stabilize) is complete except user key rotation. The first Phase 1 vertical slice — a real FSRS review loop — is working.
+**Verdict at the time:** Phase 0 (stabilize) complete; the first FSRS review loop working.
 
 ## What works today
 
@@ -191,3 +203,18 @@ then.
   scoped per language.
 - Remaining: browser WebRTC SDP test, Amharic speech (unsupported by OpenAI),
   accounts, pronunciation scoring, and content depth.
+
+### Documentation and agent guidance (same day)
+
+- Added root `AGENTS.md`: commands, invariants, decision table, workflows, and
+  definition of done for coding agents.
+- Added `docs/ARCHITECTURE.md`: current module map, data model, request flows,
+  legacy-column mapping, language support matrix, and structural debt.
+- Rewrote `README.md` to match the product (teacher, Amharic, dictionary,
+  current models).
+- Marked `KIKU_BLUEPRINT.md` and `ROADMAP.md` as historical and pointed them at
+  the current decision record.
+- Consolidated text normalization into `app/utils/text.py`; added
+  `Item.target_text` / `Item.gloss` accessors for the legacy columns.
+- Korean-only scenes, Hangul, Sound Gym, and conversations now redirect or
+  reject for Amharic instead of silently serving Korean content.

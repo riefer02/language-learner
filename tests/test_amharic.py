@@ -80,3 +80,21 @@ def test_settings_switches_target_language(app, client):
     with app.app_context():
         user = get_or_create_local_user()
         assert user.target_language_id == language_id
+
+
+def test_korean_only_pages_redirect_for_amharic(app, client):
+    from app.learning.service import get_or_create_local_user
+
+    with app.app_context():
+        seed_amharic()
+        user = get_or_create_local_user()
+        amharic = Language.query.filter_by(code="am").one()
+        user.target_language_id = amharic.id
+        db.session.commit()
+
+    scenes = client.get("/learn/scenes")
+    assert scenes.status_code == 302
+    assert scenes.headers["Location"].endswith("/learn/")
+
+    conversations = client.get("/conversations/new")
+    assert conversations.status_code == 302

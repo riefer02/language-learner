@@ -1,5 +1,9 @@
 # Kiku Execution Roadmap
 
+> **Historical plan (October 2026).** The current sequencing lives in
+> [`architecture/00-decision-2026-11-23.md`](architecture/00-decision-2026-11-23.md).
+> This file is kept for the original phase definitions and exit criteria.
+
 **Status:** Active · started 19 October 2026
 **Source of truth for scope:** [`KIKU_BLUEPRINT.md`](KIKU_BLUEPRINT.md)
 **Current focus:** Phase 0 (stabilize) + Phase 1 review loop + installable PWA reminders

@@ -5,14 +5,13 @@ transcript contain the target words?" and shows what the model heard. A real
 phoneme/prosody scorer arrives behind the same interface in Phase 2.
 """
 
-import re
-from difflib import SequenceMatcher
 
 from flask import current_app
 from openai import OpenAIError
 
 from app.services.ai import OpenAIConfigError, get_openai_client
 from app.utils.retries import call_with_retries
+from app.utils.text import normalize_text, similarity
 
 
 class SpeechError(RuntimeError):
@@ -24,8 +23,7 @@ class SpeechConfigError(SpeechError):
 
 
 def _normalize(text):
-    """Keep Hangul, Latin letters, and digits; remove spacing and punctuation."""
-    return re.sub(r"[^0-9A-Za-z\uac00-\ud7a3]", "", (text or "").lower())
+    return normalize_text(text)
 
 
 def score_transcript(target_text, transcript, threshold=None):
@@ -38,7 +36,7 @@ def score_transcript(target_text, transcript, threshold=None):
     if not target:
         raise ValueError("Target text must contain Korean characters")
 
-    match = SequenceMatcher(None, target, heard).ratio()
+    match = similarity(target, heard)
     acceptable = bool(heard) and match >= threshold
     if match >= 0.9:
         band = "clear"

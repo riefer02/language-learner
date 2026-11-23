@@ -1,5 +1,11 @@
 # Kiku — Product & Learning Blueprint
 
+> **Historical document (19 October 2026).** This is the original product and
+> learning design. The implementation has since added a multilingual core, a
+> real-time voice teacher, Amharic, and a dictionary. For current decisions use
+> [`architecture/00-decision-2026-11-23.md`](architecture/00-decision-2026-11-23.md)
+> and [`PROJECT_STATUS.md`](PROJECT_STATUS.md).
+
 **The Korean tutor that remembers you.**
 
 Version 1.0 · 19 October 2026 · Working name: **Kiku** (聞く, "to listen")

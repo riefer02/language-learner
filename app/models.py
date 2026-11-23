@@ -109,7 +109,12 @@ class User(db.Model):
 
 
 class Item(db.Model):
-    """A single learnable unit: word, chunk, grammar point, or sentence."""
+    """A single learnable unit: word, chunk, grammar point, or sentence.
+
+    ``korean`` is the legacy column name for the target-language text and
+    ``english`` for its English gloss. Both hold any language now; use the
+    ``target_text`` and ``gloss`` properties in new code.
+    """
 
     __table_args__ = (
         db.UniqueConstraint(
@@ -153,6 +158,14 @@ class Item(db.Model):
     superseded_by_id = db.Column(
         db.Integer, db.ForeignKey("item.id", use_alter=True), nullable=True
     )
+
+    @property
+    def target_text(self):
+        return self.korean
+
+    @property
+    def gloss(self):
+        return self.english
 
     def __repr__(self):
         return f"<Item {self.korean}>"

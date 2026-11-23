@@ -8,10 +8,8 @@ with the SDP answer; the API key never leaves this process.
 import hashlib
 import json
 import os
-import re
 import uuid
 from datetime import UTC, datetime
-from difflib import SequenceMatcher
 
 import httpx
 from flask import current_app
@@ -28,6 +26,7 @@ from app.learning.service import (
 from app.models import Item, ReviewCard
 from app.models_language import TermCard
 from app.models_teacher import Drill, DrillAttempt, TeacherSession, TeacherTurn
+from app.utils.text import normalize_text, similarity
 
 REALTIME_CALLS_URL = "https://api.openai.com/v1/realtime/calls"
 
@@ -75,15 +74,13 @@ def teacher_enabled():
     return bool(current_app.config.get("TEACHER_ENABLED", True))
 
 
-def normalize_text(value):
-    return re.sub(r"[^0-9A-Za-z\uac00-\ud7a3]", "", (value or "").lower())
 
 
 def _item_payload(item):
     return {
         "item_id": item.id,
-        "target": item.korean,
-        "gloss": item.english,
+        "target": item.target_text,
+        "gloss": item.gloss,
         "romanization": item.romanization,
         "level": item.level,
         "audio_url": item.audio_path,
@@ -505,11 +502,7 @@ def grade_drill(user_id, drill, response, score=None, client_attempt_id=None,
         return existing
 
     if score is None:
-        score = SequenceMatcher(
-            None,
-            normalize_text(drill.expected),
-            normalize_text(response),
-        ).ratio()
+        score = similarity(drill.expected, response)
     threshold = current_app.config.get("SCENE_MATCH_THRESHOLD", 0.78)
     acceptable = bool(normalize_text(response)) and score >= threshold
 
