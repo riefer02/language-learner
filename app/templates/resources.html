@@ -5,18 +5,18 @@
   <p class="learn-eyebrow">Resources</p>
   <h2>Look it up. Then use it.</h2>
   <p class="learn-sub">
-    Search your Korean deck, check a grammar note, or jump back into a
+    Search your {{ language.name if language else 'Korean' }} deck, check a grammar note, or jump back into a
     reference. Definitions are short on purpose.
   </p>
 
   <form class="resource-search" method="get" action="{{ url_for('main.resources') }}">
-    <label class="sr-only" for="resource-q">Search Korean or English</label>
+    <label class="sr-only" for="resource-q">Search {{ language.name if language else "Korean" }} or English</label>
     <input
       id="resource-q"
       type="search"
       name="q"
       value="{{ q }}"
-      placeholder="Search Korean, English, or romanization"
+      placeholder="Search {{ language.name if language else 'Korean' }}, English, or romanization"
       autocomplete="off"
     />
     <select name="type" aria-label="Filter by type">
@@ -45,7 +45,7 @@
     <article class="resource-card">
       <div class="resource-card-top">
         <div>
-          <div class="resource-korean" lang="ko">{{ item.korean }}</div>
+          <div class="resource-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ item.korean }}</div>
           <div class="resource-english" lang="en">{{ item.english }}</div>
           {% if item.romanization %}
           <div class="resource-romanization">{{ item.romanization }}</div>

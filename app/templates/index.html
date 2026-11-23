@@ -15,7 +15,7 @@
         maxlength="500"
       />
       <small id="phrase-help"
-        >Enter an English phrase to translate to Korean (max 500
+        >Enter an English phrase to translate to {{ language.name if language else 'Korean' }} (max 500
         characters)</small
       >
     </div>
@@ -36,7 +36,7 @@
 <div id="result" class="result hidden" aria-live="polite">
   <div class="phrase-card">
     <div class="phrase-english" lang="en"></div>
-    <div class="phrase-korean" lang="ko"></div>
+    <div class="phrase-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}"></div>
     <div class="audio-player">
       <audio
         controls

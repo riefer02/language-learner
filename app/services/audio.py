@@ -8,6 +8,7 @@ base64 audio in ``choices[0].message.audio.data``.
 
 import base64
 import os
+from difflib import SequenceMatcher
 
 from flask import current_app
 
@@ -34,7 +35,7 @@ def _remove_partial_file(filepath):
         )
 
 
-def _audio_bytes(response):
+def _audio_result(response):
     try:
         message = response.choices[0].message
     except (AttributeError, IndexError, TypeError) as error:
@@ -42,13 +43,35 @@ def _audio_bytes(response):
 
     audio = getattr(message, "audio", None)
     data = getattr(audio, "data", None)
+    transcript = getattr(audio, "transcript", None)
     if data is None and isinstance(audio, dict):
         data = audio.get("data")
+        transcript = transcript or audio.get("transcript")
     if not isinstance(data, str):
         raise ValueError(  # noqa: TRY004 - model output, not caller input
             "Audio response did not contain audio data"
         )
-    return base64.b64decode(data)
+    return base64.b64decode(data), transcript
+
+
+def _normalize(value):
+    return "".join(char.lower() for char in value if char.isalnum())
+
+
+def _read_literally(payload, transcript, original):
+    """Reject conversational answers masquerading as a read-aloud."""
+    if not transcript:
+        return
+    source = _normalize(original)
+    heard = _normalize(transcript)
+    if not source:
+        return
+    similarity = SequenceMatcher(None, source, heard).ratio()
+    if similarity < 0.5:
+        raise ValueError(
+            "The audio model answered instead of reading the text "
+            f"(similarity {similarity:.2f})"
+        )
 
 
 def generate_audio(text, filepath, voice=None, language_code="ko"):
@@ -82,16 +105,18 @@ def generate_audio(text, filepath, voice=None, language_code="ko"):
                 {
                     "role": "system",
                     "content": (
-                        f"You are a {language} pronunciation model. Read the "
-                        "user's text aloud exactly as written, at a natural, "
-                        "learner-friendly pace. Do not add, translate, or "
-                        "explain anything."
+                        f"You are a text-to-speech engine for {language}. Read "
+                        "only the text inside <read> tags, verbatim. Never "
+                        "answer, translate, or add words."
                     ),
                 },
-                {"role": "user", "content": text},
+                {"role": "user", "content": f"<read>{text}</read>"},
             ],
+            max_completion_tokens=200,
         )
-        return _audio_bytes(response)
+        payload, transcript = _audio_result(response)
+        _read_literally(payload, transcript, text)
+        return payload
 
     try:
         payload = call_with_retries(_generate)

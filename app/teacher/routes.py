@@ -15,7 +15,7 @@ from werkzeug.exceptions import BadRequest
 from app import db
 from app.learning.service import current_language, get_or_create_local_user
 from app.models_language import Language
-from app.models_teacher import TeacherSession
+from app.models_teacher import Drill, TeacherSession
 from app.services import teacher as teacher_service
 from app.utils.rate_limit import rate_limit
 
@@ -140,6 +140,36 @@ def end_session(session_id):
 
     result = teacher_service.end_session(session, payload.get("summary"))
     return jsonify(result)
+
+
+@teacher.route("/api/teacher/drills/<int:drill_id>/attempt", methods=["POST"])
+def grade_drill(drill_id):
+    """Practice a drill from the debrief, after the call has ended."""
+    _csrf()
+    payload = request.get_json(silent=True) or {}
+    user = get_or_create_local_user()
+    drill = Drill.query.filter_by(id=drill_id, user_id=user.id).first()
+    if drill is None:
+        return _error("Drill not found", 404)
+    response_text = (payload.get("response") or "").strip()
+    if not response_text:
+        return _error("An answer is required", 400)
+
+    args = teacher_service.LogAttemptArgs(
+        drill_id=drill.id,
+        response=response_text[:500],
+        client_attempt_id=(
+            payload.get("client_attempt_id") or f"debrief-{drill.id}-{user.id}"
+        )[:64],
+    )
+    attempt = teacher_service.grade_drill(
+        user.id,
+        drill,
+        args.response,
+        client_attempt_id=args.client_attempt_id,
+    )
+    db.session.commit()
+    return jsonify(attempt.to_dict())
 
 
 @teacher.route("/api/teacher/sessions/<int:session_id>")

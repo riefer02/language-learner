@@ -130,7 +130,11 @@ def today():
         "learn_today.html",
         summary=summary,
         user=user,
-        next_mission=next_scene(user.id),
+        next_mission=(
+            None
+            if language and language.code == "am"
+            else next_scene(user.id)
+        ),
         weekly=weekly_recap(user.id),
         session_modes=sorted(_session_limits()),
         language=language,
@@ -538,9 +542,15 @@ def progress():
     return render_template(
         "learn_progress.html",
         summary=summary,
-        skills=skill_breakdown(user.id),
-        reviews=recent_reviews(user.id),
-        can_dos=can_do_artifacts(user.id),
+        skills=skill_breakdown(
+            user.id, language.id if language else None
+        ),
+        reviews=recent_reviews(
+            user.id, language_id=language.id if language else None
+        ),
+        can_dos=can_do_artifacts(
+            user.id, language_id=language.id if language else None
+        ),
         weekly=weekly_recap(user.id),
         retention=retention_signal(user.id),
         language=language,

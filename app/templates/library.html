@@ -2,14 +2,44 @@
 {% block title %} - Phrase Library{% endblock %}
 {% block content %}
 <div class="library">
-  <h2>Your Phrase Library</h2>
+  <h2>Your Library</h2>
+
+  <section class="term-library">
+    <h3>My terms</h3>
+    {% if terms %}
+    <ul class="term-list">
+      {% for term in terms %}
+      <li class="term-card">
+        <div>
+          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.korean }}</strong>
+          <span class="learn-meta">{{ term.item.romanization }}</span>
+          <p>{{ term.item.english }}</p>
+          {% if term.context_sentence %}
+          <p class="learn-meta">“{{ term.context_sentence }}”</p>
+          {% endif %}
+        </div>
+        <span class="learn-meta">{{ term.source }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <p><a class="btn btn-primary" href="{{ url_for('learn.review') }}">Practice terms</a></p>
+    {% else %}
+    <p class="learn-meta">
+      No saved terms yet. Use the
+      <a href="{{ url_for('main.dictionary') }}">dictionary</a> or ask the
+      teacher to save one.
+    </p>
+    {% endif %}
+  </section>
+
+  <h3>Saved translations</h3>
 
   {% if phrases.items %}
   <div id="phrases-container">
     {% for phrase in phrases.items %}
     <div class="phrase-card" data-id="{{ phrase.id }}">
       <div class="phrase-english" lang="en">{{ phrase.english_text }}</div>
-      <div class="phrase-korean" lang="ko">{{ phrase.korean_text }}</div>
+      <div class="phrase-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ phrase.target_text or phrase.korean_text }}</div>
       <div class="audio-player">
         <audio
           src="{{ phrase.audio_path }}"

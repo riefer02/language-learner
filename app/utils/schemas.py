@@ -69,6 +69,17 @@ class TranslationResponse(BaseModel):
         return value
 
 
+class GenericTranslationResponse(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
+
+    translation: str = Field(min_length=1, max_length=500)
+
+    @field_validator("translation", mode="before")
+    @classmethod
+    def _strip_translation(cls, value):
+        return _required_text(value, "translation")
+
+
 class ConversationRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 

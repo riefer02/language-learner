@@ -253,7 +253,7 @@ def test_translate_invalid_json_raises_after_bounded_retries(app):
 
 
 def test_translate_missing_key_in_response_raises(app):
-    fake = FakeOpenAIClient([chat_response('{"translation": "안녕"}')])
+    fake = FakeOpenAIClient([chat_response('{"wrong_key": "안녕"}')])
     app.extensions["openai_client"] = fake
 
     with (
@@ -450,7 +450,7 @@ def test_generate_audio_success_uses_config_model(app, tmp_path):
     assert path.read_bytes() == b"ID3-fake-audio"
     assert fake.calls[0]["model"] == "gpt-audio-test"
     assert fake.calls[0]["audio"]["voice"] == "nova"
-    assert fake.calls[0]["messages"][-1]["content"] == "안녕하세요"
+    assert fake.calls[0]["messages"][-1]["content"] == "<read>안녕하세요</read>"
 
 
 def test_generate_audio_defaults_to_gpt_audio(app, tmp_path):
@@ -490,3 +490,16 @@ def test_generate_audio_empty_file_is_removed(app, tmp_path):
 def test_generate_audio_rejects_blank_text(app):
     with app.app_context(), pytest.raises(ValueError):
         audio_service.generate_audio("   ", "/tmp/never-written.mp3")
+
+
+def test_translate_text_targets_amharic(app):
+    fake = FakeOpenAIClient([chat_response('{"translation": "ቡናው የት አለ?"}')])
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        result = translation_service.translate_text("Where is the coffee?", "am")
+
+    assert result == "ቡናው የት አለ?"
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "Amharic" in system
+    assert "Korean" not in system

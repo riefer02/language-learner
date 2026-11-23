@@ -358,10 +358,53 @@
         card.className = "teacher-drill";
         const prompt = document.createElement("p");
         prompt.textContent = drill.prompt;
-        const answer = document.createElement("p");
-        answer.className = "teacher-answer";
-        answer.textContent = drill.expected;
-        card.append(prompt, answer);
+
+        const form = document.createElement("form");
+        form.className = "teacher-drill-form";
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = "Type your answer";
+        input.setAttribute("aria-label", "Your answer");
+        const check = document.createElement("button");
+        check.type = "submit";
+        check.className = "btn";
+        check.textContent = "Check";
+        form.append(input, check);
+
+        const feedback = document.createElement("p");
+        feedback.className = "teacher-answer";
+        feedback.setAttribute("role", "status");
+
+        form.addEventListener("submit", async function (event) {
+          event.preventDefault();
+          if (!input.value.trim()) return;
+          check.disabled = true;
+          try {
+            const result = await api(
+              "/api/teacher/drills/" + drill.id + "/attempt",
+              {
+                response: input.value.trim(),
+                client_attempt_id:
+                  "debrief-" + drill.id + "-" + Date.now(),
+              }
+            );
+            feedback.textContent =
+              (result.acceptable ? "Correct. " : "Not yet. ") +
+              (result.feedback || "");
+            feedback.classList.toggle("is-correct", result.acceptable);
+            if (result.acceptable) {
+              input.disabled = true;
+              check.textContent = "Added to review";
+            } else {
+              check.disabled = false;
+            }
+          } catch (error) {
+            feedback.textContent = error.message;
+            check.disabled = false;
+          }
+        });
+
+        card.append(prompt, form, feedback);
         drillsEl.appendChild(card);
       });
       if (!(data.drills || []).length) {

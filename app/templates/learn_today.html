@@ -93,6 +93,15 @@
   {% endif %}
 
   <div class="learn-library-link">
+    {% if language and language.code == 'am' %}
+    <a href="{{ url_for('learn.fidel') }}">Fidel bootcamp</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ url_for('main.dictionary') }}">Dictionary</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ url_for('main.resources') }}">Resources</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ url_for('main.settings') }}">Settings</a>
+    {% else %}
     <a href="{{ url_for('learn.scenes') }}">Mission scenes</a>
     <span aria-hidden="true">·</span>
     <a href="{{ url_for('learn.hangul') }}">Hangul</a>
@@ -102,6 +111,7 @@
     <a href="{{ url_for('main.resources') }}">Resources</a>
     <span aria-hidden="true">·</span>
     <a href="{{ url_for('main.settings') }}">Settings</a>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

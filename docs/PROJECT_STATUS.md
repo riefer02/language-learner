@@ -177,3 +177,17 @@ then.
 - The voice teacher remains Korean-only because OpenAI Realtime does not
   support Amharic speech; the UI states this.
 - Amharic content is starter material pending native review.
+
+### Live verification and completion pass (same day)
+
+- Verified with a valid key: all four models accessible; EN→KO and EN→AM
+  translation; KO and AM TTS; KO ASR; realtime WebSocket audio, transcript,
+  and a real tool call; exact teacher config accepted by the realtime API.
+- TTS now rejects conversational drift instead of saving the wrong audio.
+- Added a language-scoped dictionary with save-to-library, a “My terms”
+  library section, and post-call drill grading that schedules FSRS cards.
+- Translation is generic by target language with script validation.
+- Generated audio for all 64 Amharic items; resources, progress, and review are
+  scoped per language.
+- Remaining: browser WebRTC SDP test, Amharic speech (unsupported by OpenAI),
+  accounts, pronunciation scoring, and content depth.

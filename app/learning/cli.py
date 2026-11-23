@@ -10,6 +10,7 @@ from app import db
 from app.learning.analytics import metrics_summary
 from app.learning.seed_data import seed_content
 from app.models import Item
+from app.models_language import Language
 from app.services.audio import generate_audio
 from app.utils.media import AudioBatch, remove_files, safe_audio_filename
 
@@ -93,15 +94,29 @@ def register_learning_cli(app):
         is_flag=True,
         help="List what would be generated without calling the API.",
     )
-    def generate_item_audio(limit, voice, force, dry_run):
+    @click.option(
+        "--language",
+        "language_code",
+        default=None,
+        help="Only items in this language code (e.g. ko, am).",
+    )
+    def generate_item_audio(limit, voice, force, dry_run, language_code):
         """Pre-generate cached audio for review items.
 
         This is intentionally a separate, explicit command: it spends API
         credits, so it never runs as part of seeding or app startup.
         """
+        query = Item.query
+        if language_code:
+            language = Language.query.filter_by(code=language_code).first()
+            if language is None:
+                raise click.ClickException(
+                    f"Unknown language code: {language_code}"
+                )
+            query = query.filter(Item.language_id == language.id)
         items = [
             item
-            for item in Item.query.order_by(Item.id.asc()).all()
+            for item in query.order_by(Item.id.asc()).all()
             if force or not item.audio_path
         ]
         if limit and limit > 0:
@@ -133,7 +148,17 @@ def register_learning_cli(app):
                     f"{uuid.uuid4().hex[:6]}.mp3"
                 )
                 staged = batch.path(filename)
-                generate_audio(item.korean, staged, voice=voice)
+                language = (
+                    db.session.get(Language, item.language_id)
+                    if item.language_id
+                    else None
+                )
+                generate_audio(
+                    item.korean,
+                    staged,
+                    voice=voice,
+                    language_code=language.code if language else "ko",
+                )
                 pending = batch.commit_to(
                     audio_dir, [(staged, filename)]
                 )

@@ -21,7 +21,14 @@ from sqlalchemy.orm import selectinload
 from werkzeug.exceptions import BadRequest
 
 from app import db
-from app.learning.service import get_or_create_local_user
+from app.learning.dictionary import (
+    list_terms,
+    save_term,
+    search_items,
+    serialize_item,
+    serialize_term,
+)
+from app.learning.service import current_language, get_or_create_local_user
 from app.models import Conversation, ConversationLine, Item, Phrase
 from app.models_language import Language
 from app.services.ai import OpenAIConfigError
@@ -33,7 +40,7 @@ from app.services.push import (
 )
 from app.services.translation import (
     generate_conversation_scenario,
-    translate_to_korean,
+    translate_text,
 )
 from app.utils.audio_merge import merge_audio_files
 from app.utils.media import (
@@ -85,17 +92,96 @@ def _parse_json(schema):
 
 @main.route("/")
 def index():
-    return render_template("index.html")
+    language = current_language()
+    return render_template("index.html", language=language)
 
 
 @main.route("/library")
 def library():
     page = request.args.get("page", 1, type=int)
     per_page = 10
+    user = get_or_create_local_user()
+    language = current_language(user)
     phrases = Phrase.query.order_by(
         Phrase.created_at.desc(), Phrase.id.desc()
     ).paginate(page=page, per_page=per_page, error_out=False)
-    return render_template("library.html", phrases=phrases)
+    terms = list_terms(
+        user.id, language_id=language.id if language else None
+    )
+    return render_template(
+        "library.html",
+        phrases=phrases,
+        terms=terms,
+        language=language,
+    )
+
+
+@main.route("/dictionary")
+def dictionary():
+    query_text = (request.args.get("q") or "").strip()[:100]
+    item_type = request.args.get("type", "")
+    level = request.args.get("level", type=int)
+    user = get_or_create_local_user()
+    language = current_language(user)
+    items = search_items(
+        language_id=language.id if language else None,
+        query_text=query_text,
+        item_type=item_type,
+        level=level,
+    )
+    return render_template(
+        "dictionary.html",
+        items=items,
+        q=query_text,
+        item_type=item_type,
+        level=level,
+        language=language,
+        saved=request.args.get("saved") == "1",
+    )
+
+
+@main.route("/api/dictionary")
+def api_dictionary():
+    query_text = (request.args.get("q") or "").strip()[:100]
+    user = get_or_create_local_user()
+    language = current_language(user)
+    items = search_items(
+        language_id=language.id if language else None,
+        query_text=query_text,
+        limit=20,
+    )
+    return jsonify({"items": [serialize_item(item) for item in items]})
+
+
+@main.route("/dictionary/<int:item_id>/save", methods=["POST"])
+def save_dictionary_item(item_id):
+    _check_csrf()
+    user = get_or_create_local_user()
+    language = current_language(user)
+    context = (request.form.get("context_sentence") or "").strip()[:500] or None
+    try:
+        save_term(
+            user.id,
+            language.id if language else None,
+            item_id,
+            context_sentence=context,
+            source="dictionary",
+        )
+        db.session.commit()
+    except ValueError as error:
+        db.session.rollback()
+        abort(400, description=str(error))
+    return redirect(url_for("main.dictionary", q=request.form.get("q", ""), saved=1))
+
+
+@main.route("/api/terms")
+def api_terms():
+    user = get_or_create_local_user()
+    language = current_language(user)
+    terms = list_terms(
+        user.id, language_id=language.id if language else None
+    )
+    return jsonify({"terms": [serialize_term(card) for card in terms]})
 
 
 @main.route("/resources")
@@ -103,8 +189,11 @@ def resources():
     query_text = (request.args.get("q") or "").strip()[:100]
     item_type = request.args.get("type", "")
     level = request.args.get("level", type=int)
+    language = current_language()
 
     query = Item.query
+    if language is not None:
+        query = query.filter(Item.language_id == language.id)
     if query_text:
         like = f"%{query_text}%"
         query = query.filter(
@@ -121,11 +210,14 @@ def resources():
         query = query.filter(Item.level == level)
 
     items = query.order_by(Item.level.asc(), Item.id.asc()).limit(100).all()
+    scope = Item.query
+    if language is not None:
+        scope = scope.filter(Item.language_id == language.id)
     counts = {
-        "total": Item.query.count(),
-        "grammar": Item.query.filter_by(item_type="grammar").count(),
-        "chunks": Item.query.filter_by(item_type="chunk").count(),
-        "words": Item.query.filter_by(item_type="lexeme").count(),
+        "total": scope.count(),
+        "grammar": scope.filter_by(item_type="grammar").count(),
+        "chunks": scope.filter_by(item_type="chunk").count(),
+        "words": scope.filter_by(item_type="lexeme").count(),
     }
 
     return render_template(
@@ -135,6 +227,7 @@ def resources():
         item_type=item_type,
         level=level,
         counts=counts,
+        language=language,
     )
 
 
@@ -287,8 +380,10 @@ def api_translate():
     if error:
         return error
 
+    language = current_language()
+    target_code = language.code if language else "ko"
     try:
-        korean_text = translate_to_korean(payload.text)
+        target_text = translate_text(payload.text, target_code)
     except ValueError as exc:
         return _error(str(exc), 400)
     except OpenAIConfigError as exc:
@@ -303,15 +398,20 @@ def api_translate():
     moved = []
     try:
         staged = batch.path(filename)
-        generate_audio(korean_text, staged)
+        generate_audio(target_text, staged, language_code=target_code)
         moved = batch.commit_to(
             current_app.config["AUDIO_DIR"], [(staged, filename)]
         )
 
+        source_language = Language.query.filter_by(code="en").first()
         phrase = Phrase(
             english_text=payload.text,
-            korean_text=korean_text,
+            korean_text=target_text,
             audio_path=f"/static/audio/{filename}",
+            source_language_id=source_language.id if source_language else None,
+            target_language_id=language.id if language else None,
+            source_text=payload.text,
+            target_text=target_text,
         )
         db.session.add(phrase)
         db.session.commit()
@@ -330,7 +430,15 @@ def api_translate():
 
     # Serialize after the commit so a response-formatting error cannot trigger
     # the media cleanup and leave committed rows pointing at deleted files.
-    return jsonify(phrase.to_dict())
+    data = phrase.to_dict()
+    data.update(
+        {
+            "target_text": target_text,
+            "target_lang": target_code,
+            "target_language": language.name if language else "Korean",
+        }
+    )
+    return jsonify(data)
 
 
 @main.route("/api/phrases", methods=["GET"])

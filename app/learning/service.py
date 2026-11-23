@@ -225,9 +225,11 @@ def streak_days(user_id, now=None):
     return streak
 
 
-def skill_breakdown(user_id):
+def skill_breakdown(user_id, language_id=None):
     """Return per-skill totals and practiced counts for the progress screen."""
-    cards = ReviewCard.query.filter_by(user_id=user_id).all()
+    cards = _for_language(
+        ReviewCard.query.filter_by(user_id=user_id), language_id
+    ).all()
     buckets = {}
     for card in cards:
         bucket = buckets.setdefault(
@@ -239,14 +241,19 @@ def skill_breakdown(user_id):
     return sorted(buckets.values(), key=lambda row: row["skill"])
 
 
-def recent_reviews(user_id, limit=10):
-    return (
+def recent_reviews(user_id, limit=10, language_id=None):
+    query = (
         ReviewLog.query.options(selectinload(ReviewLog.card))
         .filter(ReviewLog.user_id == user_id)
         .order_by(ReviewLog.reviewed_at.desc(), ReviewLog.id.desc())
-        .limit(limit)
-        .all()
     )
+    if language_id is not None:
+        query = query.filter(
+            ReviewLog.card.has(
+                ReviewCard.item.has(Item.language_id == language_id)
+            )
+        )
+    return query.limit(limit).all()
 
 
 def ensure_review_cards(user_id, language_id=None):

@@ -11,12 +11,20 @@ from app.utils.retries import call_with_retries
 from app.utils.schemas import (
     ConversationRequest,
     ConversationScenario,
+    GenericTranslationResponse,
     TranslationRequest,
-    TranslationResponse,
+    contains_hangul,
 )
 
 TRANSLATION_MODEL = "gpt-5.6-luna"
-TRANSLATION_CACHE_VERSION = "translation-prompt-v3"
+TRANSLATION_CACHE_VERSION = "translation-prompt-v4"
+TARGET_LANGUAGES = {
+    "ko": "Korean",
+    "am": "Amharic",
+    "es": "Spanish",
+    "ja": "Japanese",
+    "en": "English",
+}
 CONVERSATION_MODEL = "gpt-5.6-luna"
 MAX_OUTPUT_ATTEMPTS = 3
 
@@ -51,7 +59,15 @@ def _message_content(response):
     return content
 
 
-def _parse_translation_response(response):
+def _script_ok(value, target_code):
+    if target_code == "ko":
+        return contains_hangul(value)
+    if target_code == "am":
+        return any("\u1200" <= char <= "\u137f" for char in value)
+    return True
+
+
+def _parse_translation_response(response, target_code="ko"):
     content = _message_content(response)
 
     try:
@@ -64,12 +80,20 @@ def _parse_translation_response(response):
             "OpenAI translation response must be a JSON object"
         )
 
+    value = payload.get("translation") or payload.get("korean_translation")
     try:
-        return TranslationResponse.model_validate(payload).korean_translation
+        translated = GenericTranslationResponse.model_validate(
+            {"translation": value}
+        ).translation
     except ValidationError as error:
         raise ValueError(
             "OpenAI translation response did not match the expected schema"
         ) from error
+    if not _script_ok(translated, target_code):
+        raise ValueError(
+            f"Translation was not written in the target script ({target_code})"
+        )
+    return translated
 
 
 def _translation_model():
@@ -80,7 +104,8 @@ def _conversation_model():
     return current_app.config.get("CONVERSATION_MODEL", CONVERSATION_MODEL)
 
 
-def _request_translation(text):
+def _request_translation(text, target_code="ko"):
+    language = TARGET_LANGUAGES.get(target_code, "Korean")
     client = get_openai_client()
     model = _translation_model()
     response = call_with_retries(
@@ -91,10 +116,10 @@ def _request_translation(text):
                 {
                     "role": "system",
                     "content": (
-                        "You are a helpful translator. Translate the given English "
-                        "text to Korean. Respond with a JSON object containing a "
-                        "single key 'korean_translation' whose value is the Korean "
-                        "translation."
+                        f"You are a helpful translator. Translate the given "
+                        f"English text to {language}. Respond with a JSON object "
+                        "containing a single key 'translation' whose value is the "
+                        f"{language} translation in its native script."
                     ),
                 },
                 {"role": "user", "content": text},
@@ -102,15 +127,15 @@ def _request_translation(text):
             **_chat_options(model, max_tokens=150, temperature=0.3),
         )
     )
-    return _parse_translation_response(response)
+    return _parse_translation_response(response, target_code)
 
 
-def _translate_with_output_retries(text):
+def _translate_with_output_retries(text, target_code="ko"):
     last_error = None
 
     for attempt in range(MAX_OUTPUT_ATTEMPTS):
         try:
-            return _request_translation(text)
+            return _request_translation(text, target_code)
         except ValueError as error:
             last_error = error
             current_app.logger.warning(
@@ -127,14 +152,14 @@ def _translate_with_output_retries(text):
 
 
 @cache_result(expire_seconds=86400)
-def _translate_cached(cache_version, text):
+def _translate_cached(cache_version, target_code, text):
     # The version is part of the cache key, so prompt/schema changes do not
     # serve stale translations for 24 hours.
-    return _translate_with_output_retries(text)
+    return _translate_with_output_retries(text, target_code)
 
 
-def translate_to_korean(text):
-    """Translate English text to Korean, returning validated Korean text."""
+def translate_text(text, target_code="ko"):
+    """Translate English text into the target language."""
     try:
         request = TranslationRequest.model_validate({"text": text})
     except ValidationError as error:
@@ -142,8 +167,15 @@ def translate_to_korean(text):
             "Text must be a non-empty string of at most 500 characters"
         ) from error
 
-    cache_version = f"{TRANSLATION_CACHE_VERSION}:{_translation_model()}"
-    return _translate_cached(cache_version, request.text)
+    cache_version = (
+        f"{TRANSLATION_CACHE_VERSION}:{_translation_model()}:{target_code}"
+    )
+    return _translate_cached(cache_version, target_code, request.text)
+
+
+def translate_to_korean(text):
+    """Backward-compatible Korean wrapper."""
+    return translate_text(text, "ko")
 
 
 def _conversation_system_prompt(min_lines, max_lines):

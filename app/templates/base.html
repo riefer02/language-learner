@@ -42,6 +42,7 @@
               >Learn</a
             >
           </li>
+          {% if not (active_language and active_language.code == 'am') %}
           <li>
             <a
               href="{{ url_for('learn.scenes') }}"
@@ -49,6 +50,7 @@
               >Scenes</a
             >
           </li>
+          {% endif %}
           {% if active_language and active_language.code == 'am' %}
           <li>
             <a
@@ -78,6 +80,13 @@
               href="{{ url_for('learn.progress') }}"
               aria-current="{{ 'page' if request.endpoint == 'learn.progress' else 'false' }}"
               >Progress</a
+            >
+          </li>
+          <li>
+            <a
+              href="{{ url_for('main.dictionary') }}"
+              aria-current="{{ 'page' if request.endpoint in ['main.dictionary'] else 'false' }}"
+              >Dictionary</a
             >
           </li>
           <li>

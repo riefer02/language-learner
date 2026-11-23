@@ -56,7 +56,11 @@ document.addEventListener("DOMContentLoaded", function () {
       // Update the result div
       resultDiv.querySelector(".phrase-english").textContent =
         data.english_text || "";
-      resultDiv.querySelector(".phrase-korean").textContent = koreanText;
+      const targetEl = resultDiv.querySelector(".phrase-korean");
+      targetEl.textContent = data.target_text || koreanText;
+      if (data.target_lang) {
+        targetEl.setAttribute("lang", data.target_lang);
+      }
 
       const audio = resultDiv.querySelector("audio");
       const repeatBtn = resultDiv.querySelector(".repeat-btn");

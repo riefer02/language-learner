@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %} - Dictionary{% endblock %}
+{% block content %}
+<div class="library dictionary">
+  <div class="learn-header">
+    <p class="learn-eyebrow">Dictionary</p>
+    <h2>Look it up. Keep it.</h2>
+    <p class="learn-sub">
+      Search your {{ language.name if language else "target" }} deck, listen,
+      and save a term with the sentence where you met it.
+    </p>
+  </div>
+
+  {% if saved %}
+  <div class="settings-saved" role="status">Saved to your term library.</div>
+  {% endif %}
+
+  <form class="dictionary-search" method="get" action="{{ url_for('main.dictionary') }}">
+    <label class="sr-only" for="dictionary-q">Search</label>
+    <input
+      id="dictionary-q"
+      name="q"
+      type="search"
+      value="{{ q }}"
+      placeholder="Search {{ language.name if language else 'the deck' }}, English, or romanization"
+      autocomplete="off"
+    />
+    <select name="type" aria-label="Type">
+      <option value="">Any type</option>
+      {% for value, label in [("lexeme", "Word"), ("chunk", "Phrase"), ("grammar", "Grammar"), ("sentence", "Sentence")] %}
+      <option value="{{ value }}" {% if item_type == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  {% if items %}
+  <div class="dictionary-results">
+    {% for item in items %}
+    <article class="dictionary-entry">
+      <div class="dictionary-head">
+        <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ item.korean }}</strong>
+        {% if item.romanization %}<span class="learn-meta">{{ item.romanization }}</span>{% endif %}
+      </div>
+      <p>{{ item.english }}</p>
+      {% if item.notes %}<p class="learn-meta">{{ item.notes }}</p>{% endif %}
+      <div class="dictionary-actions">
+        {% if item.audio_path %}
+        <audio src="{{ item.audio_path }}" controls preload="none" aria-label="Play {{ item.korean }}"></audio>
+        {% else %}
+        <button
+          type="button"
+          class="btn"
+          data-speak="{{ item.korean }}"
+          data-lang="{{ 'am-ET' if language and language.code == 'am' else 'ko-KR' }}"
+        >
+          Hear it
+        </button>
+        {% endif %}
+        <form method="post" action="{{ url_for('main.save_dictionary_item', item_id=item.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="q" value="{{ q }}" />
+          <label class="sr-only" for="context-{{ item.id }}">Where you saw it</label>
+          <input
+            id="context-{{ item.id }}"
+            name="context_sentence"
+            type="text"
+            placeholder="Sentence you heard it in (optional)"
+            maxlength="500"
+          />
+          <button type="submit" class="btn">Save term</button>
+        </form>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="learn-meta">
+    {% if q %}No matches for “{{ q }}”.{% else %}Start typing to search your deck.{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dictionary.js') }}"></script>
+{% endblock %}

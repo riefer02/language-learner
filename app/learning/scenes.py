@@ -46,10 +46,12 @@ def list_scenes_with_status(user_id):
     return result
 
 
-def can_do_artifacts(user_id, limit=None):
-    query = (
-        CanDoArtifact.query.filter_by(user_id=user_id)
-        .order_by(CanDoArtifact.created_at.desc(), CanDoArtifact.id.desc())
+def can_do_artifacts(user_id, limit=None, language_id=None):
+    query = CanDoArtifact.query.filter_by(user_id=user_id)
+    if language_id is not None:
+        query = query.filter(CanDoArtifact.language_id == language_id)
+    query = query.order_by(
+        CanDoArtifact.created_at.desc(), CanDoArtifact.id.desc()
     )
     if limit:
         query = query.limit(limit)

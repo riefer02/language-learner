@@ -282,3 +282,23 @@ def test_session_is_ended_after_the_maximum(app, client):
     payload = response.get_json()
     assert payload["status"] == "ended"
     assert "15-minute limit" in payload["summary"]
+
+
+def test_debrief_drill_attempt_works_after_the_call_ends(app, client):
+    with app.app_context():
+        item = _item(app)
+        session = _session(app)
+        drill = teacher_service.dispatch_tool(
+            session, "create_drill", {"item_ids": [item.id], "count": 1}
+        )["drills"][0]
+        teacher_service.end_session(session)
+        drill_id = drill["drill_id"]
+
+    response = client.post(
+        f"/api/teacher/drills/{drill_id}/attempt",
+        json={"response": "커피", "client_attempt_id": "debrief-1"},
+    )
+    assert response.status_code == 200, response.get_data(as_text=True)
+    payload = response.get_json()
+    assert payload["acceptable"] is True
+    assert payload["review_card_id"] is not None

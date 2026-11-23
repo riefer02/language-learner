@@ -18,6 +18,7 @@ from flask import current_app
 from pydantic import BaseModel, Field, ValidationError
 
 from app import db
+from app.learning.dictionary import save_term
 from app.learning.scheduler import ensure_utc, new_review_card
 from app.learning.service import (
     available_cards,
@@ -479,63 +480,54 @@ def tool_add_term_to_library(session, args):
     if args.item_id is None:
         raise TeacherToolError("item_id_required")
     item = _find_item(session, args.item_id)
-    card = TermCard.query.filter_by(
-        user_id=session.user_id, item_id=item.id
-    ).first()
-    if card is None:
-        language_id = session.language_id or item.language_id
-        if language_id is None:
-            raise TeacherToolError("language_required")
-        card = TermCard(
-        user_id=session.user_id,
-        language_id=language_id,
-        item_id=item.id,
-        source="teacher",
-        context_sentence=args.context_sentence,
-        note=args.note,
-        tags=json.dumps(["teacher"]),
-    )
-    db.session.add(card)
-    db.session.flush()
+    try:
+        card = save_term(
+            session.user_id,
+            session.language_id or item.language_id,
+            item.id,
+            context_sentence=args.context_sentence,
+            source="teacher",
+        )
+    except ValueError as error:
+        raise TeacherToolError("language_required") from error
+    if args.note:
+        card.note = args.note
     return {"term_card_id": card.id, "item_id": item.id, "target": item.korean}
 
 
-def tool_log_attempt(session, args):
-    drill = db.session.get(Drill, args.drill_id)
-    if drill is None or drill.user_id != session.user_id:
-        raise TeacherToolError("drill_not_found")
-
+def grade_drill(user_id, drill, response, score=None, client_attempt_id=None,
+                duration_ms=None):
+    """Grade one drill attempt and schedule an FSRS card when it is accepted."""
     existing = DrillAttempt.query.filter_by(
-        drill_id=drill.id, client_attempt_id=args.client_attempt_id
+        drill_id=drill.id, client_attempt_id=client_attempt_id
     ).first()
     if existing is not None:
-        return existing.to_dict()
+        return existing
 
-    score = args.score
     if score is None:
         score = SequenceMatcher(
             None,
             normalize_text(drill.expected),
-            normalize_text(args.response),
+            normalize_text(response),
         ).ratio()
     threshold = current_app.config.get("SCENE_MATCH_THRESHOLD", 0.78)
-    acceptable = bool(normalize_text(args.response)) and score >= threshold
+    acceptable = bool(normalize_text(response)) and score >= threshold
 
     card_id = None
     if acceptable and drill.item_id:
         card = ReviewCard.query.filter_by(
-            user_id=session.user_id, item_id=drill.item_id, skill="produce"
+            user_id=user_id, item_id=drill.item_id, skill="produce"
         ).first()
         if card is None:
-            card = new_review_card(session.user_id, drill.item_id, "produce")
+            card = new_review_card(user_id, drill.item_id, "produce")
             db.session.add(card)
             db.session.flush()
         card_id = card.id
 
     attempt = DrillAttempt(
         drill_id=drill.id,
-        user_id=session.user_id,
-        response=args.response,
+        user_id=user_id,
+        response=response,
         score=score,
         acceptable=acceptable,
         feedback=(
@@ -543,12 +535,27 @@ def tool_log_attempt(session, args):
             if acceptable
             else f"Expected: {drill.expected}"
         ),
-        client_attempt_id=args.client_attempt_id,
+        client_attempt_id=client_attempt_id,
         review_card_id=card_id,
-        duration_ms=args.duration_ms,
+        duration_ms=duration_ms,
     )
     db.session.add(attempt)
     db.session.flush()
+    return attempt
+
+
+def tool_log_attempt(session, args):
+    drill = db.session.get(Drill, args.drill_id)
+    if drill is None or drill.user_id != session.user_id:
+        raise TeacherToolError("drill_not_found")
+    attempt = grade_drill(
+        session.user_id,
+        drill,
+        args.response,
+        score=args.score,
+        client_attempt_id=args.client_attempt_id,
+        duration_ms=args.duration_ms,
+    )
     return attempt.to_dict()
 
 
