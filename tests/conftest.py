@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for the Korean Language Learner test suite.
+"""Shared pytest fixtures for the Kiku test suite.
 
 Design notes
 ------------

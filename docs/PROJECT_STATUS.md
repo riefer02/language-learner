@@ -12,7 +12,7 @@ Current architecture: [`ARCHITECTURE.md`](ARCHITECTURE.md). Decisions:
 
 ## Historical detail — 20 October 2026
 
-**Repository:** Korean Language Learner (working product name: **Kiku**)
+**Repository:** [language-learner](https://github.com/riefer02/language-learner) (product name: **Kiku**)
 **Verdict at the time:** Phase 0 (stabilize) complete; the first FSRS review loop working.
 
 ## What works today

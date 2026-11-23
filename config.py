@@ -171,7 +171,7 @@ class ProductionConfig(Config):
         file_handler.addFilter(RequestIdFilter())
         app.logger.addHandler(file_handler)
         app.logger.setLevel(logging.INFO)
-        app.logger.info("Korean Language Learner startup")
+        app.logger.info("Kiku startup")
 
 
 class TestingConfig(Config):

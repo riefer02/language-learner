@@ -1,1 +1,1 @@
-# Services package for Korean Language Learner
+# Services package for Kiku

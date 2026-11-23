@@ -7,7 +7,7 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// Common utility functions for Korean Language Learner
+// Common utility functions for Kiku
 
 // Safely play audio with error handling
 function playAudioWithFallback(audioElement) {

@@ -1,1 +1,1 @@
-# Utilities package for Korean Language Learner
+# Utilities package for Kiku
