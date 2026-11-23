@@ -17,6 +17,18 @@ class Phrase(db.Model):
     audio_path = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
+    # Multilingual expand-phase columns. ``english_text``/``korean_text`` remain
+    # the read/write path until the contract phase; these are backfilled and
+    # dual-written first.
+    source_language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True
+    )
+    target_language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True
+    )
+    source_text = db.Column(db.String(500), nullable=True)
+    target_text = db.Column(db.String(500), nullable=True)
+
     def __repr__(self):
         return f"<Phrase {self.english_text}>"
 
@@ -37,6 +49,9 @@ class Conversation(db.Model):
     description = db.Column(db.Text, nullable=True)
     audio_path = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True, index=True
+    )
     lines = db.relationship(
         "ConversationLine",
         backref="conversation",
@@ -84,6 +99,10 @@ class User(db.Model):
     reminder_enabled = db.Column(db.Boolean, nullable=False, default=False)
     reminder_time = db.Column(db.String(5), nullable=False, default="19:00")
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    target_language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True
+    )
+    ui_locale = db.Column(db.String(16), nullable=False, default="en")
 
     def __repr__(self):
         return f"<User {self.id} {self.display_name}>"
@@ -97,6 +116,7 @@ class Item(db.Model):
             "korean", "english", "item_type", name="uq_item_content"
         ),
         db.Index("ix_item_level_type", "level", "item_type"),
+        db.Index("ix_item_language_level_type", "language_id", "level", "item_type"),
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -110,6 +130,29 @@ class Item(db.Model):
     notes = db.Column(db.Text, nullable=True)
     default_skill = db.Column(db.String(20), nullable=False, default="recognize")
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    # Multilingual expand-phase columns (nullable until the contract phase).
+    language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True, index=True
+    )
+    primary_deck_id = db.Column(db.Integer, db.ForeignKey("deck.id"), nullable=True)
+    dictionary_entry_id = db.Column(
+        db.Integer,
+        db.ForeignKey("dictionary_entry.id", use_alter=True),
+        nullable=True,
+    )
+    level_scale_id = db.Column(
+        db.Integer, db.ForeignKey("level_scale.id"), nullable=True
+    )
+    status = db.Column(db.String(16), nullable=False, default="published")
+    key_normalized = db.Column(db.String(300), nullable=True)
+    sense_key = db.Column(db.String(300), nullable=True, default="")
+    content_hash = db.Column(db.String(64), nullable=True)
+    version = db.Column(db.Integer, nullable=False, default=1)
+    deleted_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    superseded_by_id = db.Column(
+        db.Integer, db.ForeignKey("item.id", use_alter=True), nullable=True
+    )
 
     def __repr__(self):
         return f"<Item {self.korean}>"
@@ -217,6 +260,9 @@ class CanDoArtifact(db.Model):
     )
     scene_slug = db.Column(db.String(60), nullable=False)
     label = db.Column(db.String(300), nullable=False)
+    language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True, index=True
+    )
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
@@ -255,6 +301,9 @@ class SceneSession(db.Model):
     step_index = db.Column(db.Integer, nullable=False, default=0)
     completed = db.Column(db.Boolean, nullable=False, default=False)
     transcript = db.Column(db.Text, nullable=True)
+    language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True, index=True
+    )
     started_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
@@ -292,6 +341,18 @@ class SpeechAttempt(db.Model):
         default=lambda: datetime.now(UTC),
         index=True,
     )
+
+    # Multilingual expand-phase columns.
+    language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True, index=True
+    )
+    item_form_id = db.Column(
+        db.Integer, db.ForeignKey("item_form.id"), nullable=True
+    )
+    overall_score = db.Column(db.Float, nullable=True)
+    phoneme_scores = db.Column(db.Text, nullable=True)  # JSON
+    prosody_scores = db.Column(db.Text, nullable=True)  # JSON
+    scoring_version = db.Column(db.String(24), nullable=True)
 
     def to_dict(self):
         return {
@@ -346,6 +407,9 @@ class Event(db.Model):
     )
     name = db.Column(db.String(60), nullable=False, index=True)
     props = db.Column(db.Text, nullable=True)
+    language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id"), nullable=True, index=True
+    )
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
@@ -399,3 +463,22 @@ class ConversationLine(db.Model):
             "order": self.order,
             "phrase": self.phrase.to_dict() if self.phrase else None,
         }
+
+
+# Imported for its side effect: registering the language-neutral tables on
+# ``db.metadata`` so ``create_all`` and Alembic autogenerate see them.
+from app.models_language import (  # noqa: F401
+    Course,
+    Deck,
+    DeckItem,
+    DictionaryEntry,
+    DictionarySense,
+    ItemForm,
+    ItemGloss,
+    Language,
+    LanguageScript,
+    LevelScale,
+    Script,
+    TermCard,
+    Translation,
+)

@@ -117,3 +117,33 @@
 - **Architecture and AI:** [`research/05-tech-and-ai.md`](research/05-tech-and-ai.md)
 
 **Immediate next sprint:** rotate the exposed key and run `flask generate-item-audio` → add phoneme evidence (Azure/SpeechSuper) behind the existing speech interface → real accounts + Postgres → 20 alpha users and a `flask metrics` review. Deploy `flask send-reminders` on a 5–15 minute cron once HTTPS is available.
+
+---
+
+## Update — 23 November 2026: multilingual foundation
+
+Phase 1 of the language-neutral refactor is shipped. It is additive and has no
+user-visible effect yet.
+
+- **New tables:** `language`, `script`, `language_script`, `level_scale`,
+  `course`, `deck`, `deck_item`, `item_form`, `item_gloss`,
+  `dictionary_entry`, `dictionary_sense`, `translation`, `term_card`.
+- **Language columns** added (nullable) to `item`, `phrase`, `conversation`,
+  `user`, `speech_attempt`, `scene_session`, `can_do_artifact`, `event`.
+- **Backfill:** all Korean items now have a Hangul citation form, an English
+  gloss, `language_id=ko`, and `ko-core` deck membership; phrases carry
+  `en→ko` source/target IDs and text.
+- **Migrations:** `20261123_0011` (expand) and `20261123_0012` (backfill).
+  Verified up from `20261019_0010` with live rows, down again with no data loss.
+- **Ops:** `flask language-audit` reports coverage.
+- **P0 fix:** `gpt-4.1-nano` was shut down on 23 Oct 2026; defaults moved to
+  `gpt-5.6-luna`, with correct handling for reasoning-tier chat models.
+- **Tests:** 202 pass; ruff clean; CI migration gate updated.
+
+The plan, the Amharic recommendation, the teacher design, and the real-time
+vendor decision are in
+[`architecture/00-decision-2026-11-23.md`](architecture/00-decision-2026-11-23.md).
+
+**Expiring models to migrate next:** `tts-1` shuts down 6 Jan 2027 and
+`gpt-4o-transcribe` on 26 Feb 2027; both need the provider boundary before
+then.

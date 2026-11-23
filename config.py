@@ -40,8 +40,8 @@ class Config:
     # AI providers. Clients are created lazily; a missing key does not prevent
     # the app from booting, running migrations, or executing tests.
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-    TRANSLATION_MODEL = os.environ.get("TRANSLATION_MODEL", "gpt-4.1-nano")
-    CONVERSATION_MODEL = os.environ.get("CONVERSATION_MODEL", "gpt-4.1-nano")
+    TRANSLATION_MODEL = os.environ.get("TRANSLATION_MODEL", "gpt-5.6-luna")
+    CONVERSATION_MODEL = os.environ.get("CONVERSATION_MODEL", "gpt-5.6-luna")
     TTS_MODEL = os.environ.get("TTS_MODEL", "tts-1")
     TTS_VOICE_1 = os.environ.get("TTS_VOICE_1", "onyx")
     TTS_VOICE_2 = os.environ.get("TTS_VOICE_2", "nova")

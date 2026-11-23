@@ -15,10 +15,29 @@ from app.utils.schemas import (
     TranslationResponse,
 )
 
-TRANSLATION_MODEL = "gpt-4.1-nano"
-TRANSLATION_CACHE_VERSION = "translation-prompt-v2"
-CONVERSATION_MODEL = "gpt-4.1-nano"
+TRANSLATION_MODEL = "gpt-5.6-luna"
+TRANSLATION_CACHE_VERSION = "translation-prompt-v3"
+CONVERSATION_MODEL = "gpt-5.6-luna"
 MAX_OUTPUT_ATTEMPTS = 3
+
+# Reasoning-tier chat models (GPT-5/6, o-series) reject ``temperature`` and use
+# ``max_completion_tokens`` instead of ``max_tokens``. ``gpt-5.6-luna`` replaces
+# the retired ``gpt-4.1-nano`` default from October 2026.
+_REASONING_PREFIXES = ("gpt-5", "gpt-6", "o1", "o3", "o4")
+
+
+def _is_reasoning_model(model):
+    return isinstance(model, str) and model.startswith(_REASONING_PREFIXES)
+
+
+def _chat_options(model, max_tokens, temperature):
+    """Build chat-completions options that work for classic and reasoning models."""
+    if _is_reasoning_model(model):
+        return {
+            "max_completion_tokens": max_tokens,
+            "reasoning_effort": "none",
+        }
+    return {"max_tokens": max_tokens, "temperature": temperature}
 
 
 def _message_content(response):
@@ -63,9 +82,10 @@ def _conversation_model():
 
 def _request_translation(text):
     client = get_openai_client()
+    model = _translation_model()
     response = call_with_retries(
         lambda: client.chat.completions.create(
-            model=_translation_model(),
+            model=model,
             response_format={"type": "json_object"},
             messages=[
                 {
@@ -79,8 +99,7 @@ def _request_translation(text):
                 },
                 {"role": "user", "content": text},
             ],
-            temperature=0.3,
-            max_tokens=150,
+            **_chat_options(model, max_tokens=150, temperature=0.3),
         )
     )
     return _parse_translation_response(response)
@@ -176,9 +195,10 @@ def _parse_conversation_response(response, min_lines, max_lines):
 
 def _request_conversation(prompt, min_lines, max_lines):
     client = get_openai_client()
+    model = _conversation_model()
     response = call_with_retries(
         lambda: client.chat.completions.create(
-            model=_conversation_model(),
+            model=model,
             response_format={"type": "json_object"},
             messages=[
                 {
@@ -187,8 +207,7 @@ def _request_conversation(prompt, min_lines, max_lines):
                 },
                 {"role": "user", "content": prompt},
             ],
-            temperature=0.4,
-            max_tokens=600,
+            **_chat_options(model, max_tokens=600, temperature=0.4),
         )
     )
     return _parse_conversation_response(response, min_lines, max_lines)

@@ -199,6 +199,39 @@ def test_translate_success(app):
     assert call["response_format"] == {"type": "json_object"}
 
 
+def test_reasoning_model_omits_temperature_and_uses_completion_tokens(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"korean_translation": "안녕하세요"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        app.config["TRANSLATION_MODEL"] = "gpt-5.6-luna"
+        translation_service.translate_to_korean("Hello")
+
+    call = fake.completions.calls[0]
+    assert call["max_completion_tokens"] == 150
+    assert call["reasoning_effort"] == "none"
+    assert "max_tokens" not in call
+    assert "temperature" not in call
+
+
+def test_classic_model_keeps_temperature_and_max_tokens(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"korean_translation": "안녕하세요"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        app.config["TRANSLATION_MODEL"] = "gpt-4.1-nano"
+        translation_service.translate_to_korean("Hello")
+
+    call = fake.completions.calls[0]
+    assert call["max_tokens"] == 150
+    assert call["temperature"] == 0.3
+    assert "max_completion_tokens" not in call
+
+
 def test_translate_invalid_json_raises_after_bounded_retries(app):
     fake = FakeOpenAIClient([chat_response("this is not JSON")])
     app.extensions["openai_client"] = fake

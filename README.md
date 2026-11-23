@@ -8,7 +8,7 @@ An application for learning Korean that includes both a command-line interface a
 
 ### CLI Tool
 
-- Translates English text to Korean using OpenAI's `gpt-4.1-nano` model
+- Translates English text to Korean using OpenAI's `gpt-5.6-luna` model
 - Generates natural-sounding Korean speech using OpenAI's Text-to-Speech (TTS) API
 - Saves audio output as MP3 files in the `audio_output/` directory
 - Accepts input either interactively or as a command-line argument

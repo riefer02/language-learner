@@ -29,6 +29,44 @@ def register_learning_cli(app):
         """Print the alpha activation and retention summary."""
         click.echo(json.dumps(metrics_summary(), indent=2))
 
+    @app.cli.command("language-audit")
+    def language_audit_command():
+        """Report legacy-to-language-core backfill coverage."""
+        from app.models import Conversation, Event, Item, Phrase, User
+        from app.models_language import ItemForm, ItemGloss, Language
+
+        languages = Language.query.order_by(Language.code.asc()).all()
+        items = Item.query.all()
+        untagged_items = sum(1 for item in items if item.language_id is None)
+        items_without_form = sum(1 for item in items if not item.forms)
+        items_without_gloss = sum(1 for item in items if not item.glosses)
+
+        payload = {
+            "languages": [
+                {"code": language.code, "active": language.is_active}
+                for language in languages
+            ],
+            "items": len(items),
+            "items_untagged": untagged_items,
+            "items_without_primary_form": items_without_form,
+            "items_without_gloss": items_without_gloss,
+            "item_forms": ItemForm.query.count(),
+            "item_glosses": ItemGloss.query.count(),
+            "phrases_untagged": Phrase.query.filter(
+                Phrase.target_language_id.is_(None)
+            ).count(),
+            "conversations_untagged": Conversation.query.filter(
+                Conversation.language_id.is_(None)
+            ).count(),
+            "users_untagged": User.query.filter(
+                User.target_language_id.is_(None)
+            ).count(),
+            "events_untagged": Event.query.filter(
+                Event.language_id.is_(None)
+            ).count(),
+        }
+        click.echo(json.dumps(payload, indent=2))
+
     @app.cli.command("generate-item-audio")
     @click.option("--limit", default=0, type=int, help="Only process N items.")
     @click.option("--voice", default=None, help="Override the configured TTS voice.")
