@@ -7,6 +7,7 @@ will replace it with a frequency-ordered, native-reviewed database.
 from app import db
 from app.learning.service import ensure_review_cards, get_or_create_local_user
 from app.models import Item
+from app.models_language import Language
 
 # fmt: off
 SEED_ITEMS = [
@@ -48,8 +49,14 @@ SEED_ITEMS = [
 
 
 def seed_content():
-    """Idempotently insert seed items and create the learner's cards."""
+    """Idempotently insert tagged Korean seed items and their cards."""
     user = get_or_create_local_user()
+    language = Language.query.filter_by(code="ko").first()
+    if language is None:
+        language = Language(code="ko", name="Korean", native_name="한국어")
+        db.session.add(language)
+        db.session.flush()
+
     created_items = 0
     for entry in SEED_ITEMS:
         existing = Item.query.filter_by(
@@ -58,10 +65,12 @@ def seed_content():
             item_type=entry["item_type"],
         ).first()
         if existing:
+            if existing.language_id is None:
+                existing.language_id = language.id
             continue
-        db.session.add(Item(**entry))
+        db.session.add(Item(**entry, language_id=language.id))
         created_items += 1
     if created_items:
         db.session.commit()
-    created_cards = ensure_review_cards(user.id)
+    created_cards = ensure_review_cards(user.id, language.id)
     return user, created_items, created_cards

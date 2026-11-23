@@ -9,6 +9,7 @@ import click
 from flask import Flask, Response, abort, current_app, g, jsonify, request
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
@@ -16,6 +17,7 @@ from config import config
 
 db = SQLAlchemy()
 migrate = Migrate()
+csrf = CSRFProtect()
 
 
 @event.listens_for(Engine, "connect")
@@ -280,7 +282,7 @@ def _register_cli(app):
 
 
 def create_app(config_name=None, overrides=None):
-    config_name = config_name or os.environ.get("FLASK_ENV", "development")
+    config_name = config_name or os.environ.get("FLASK_ENV", "production")
     if config_name not in config:
         raise ValueError(
             f"Unknown config '{config_name}'. Choose one of: {', '.join(sorted(config))}"
@@ -296,6 +298,14 @@ def create_app(config_name=None, overrides=None):
 
     db.init_app(app)
     migrate.init_app(app, db)
+    csrf.init_app(app)
+
+    secret = app.config.get("SECRET_KEY") or ""
+    if not app.config.get("TESTING") and len(secret) < 32:
+        app.logger.warning(
+            "SECRET_KEY is shorter than 32 characters; set a strong value before "
+            "exposing this app."
+        )
 
     from app.utils.rate_limit import RateLimiter
 
@@ -342,9 +352,14 @@ def create_app(config_name=None, overrides=None):
         code = values.pop("lang_code")
         from app.models_language import Language
 
-        language = Language.query.filter_by(code=code).first()
-        if language is None and code not in {"ko", "en", "am", "es", "ja"}:
-            abort(404)
+        language = Language.query.filter_by(code=code, is_active=True).first()
+        if language is None:
+            # Reject a known-but-inactive language; allow a missing row only in
+            # a schema that has no language seed (tests/bootstrap).
+            known = {"ko", "en", "am", "es", "ja"}
+            existing = Language.query.filter_by(code=code).first()
+            if existing is not None or code not in known:
+                abort(404)
         g.lang_code = code
         g.language = language
 

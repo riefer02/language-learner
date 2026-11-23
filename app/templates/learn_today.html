@@ -43,15 +43,16 @@
         “save that” to the teacher.
       </li>
     </ol>
-    <details class="help-tip">
-      <summary>What does “due” mean?</summary>
-      <p>
-        A card is due when its next review time arrives. Kiku schedules that
-        time with FSRS based on how you graded it last time. New cards are
-        capped per day so the queue stays small.
-      </p>
-    </details>
   </section>
+
+  <details class="help-tip">
+    <summary>What does “due” mean?</summary>
+    <p>
+      A card is due when its next review time arrives. Kiku schedules that time
+      with spaced repetition (FSRS) based on how you graded it last time. New
+      cards are capped per day so the queue stays small.
+    </p>
+  </details>
 
   <div class="learn-stats" aria-label="Learning summary">
     <div class="learn-stat">
@@ -76,7 +77,7 @@
   <p class="learn-meta">
     This week: {{ weekly.reviews }}
     review{% if weekly.reviews != 1 %}s{% endif %} · {{ weekly.can_dos }}
-    can-do{% if weekly.can_dos != 1 %}s{% endif %} ·
+    real-world task{% if weekly.can_dos != 1 %}s{% endif %} completed ·
     {{ weekly.active_days }}/7 active days.
   </p>
   {% endif %}
@@ -149,7 +150,7 @@
   {% if next_mission %}
   <div class="next-mission">
     <div>
-      <p class="learn-eyebrow">Next can-do</p>
+      <p class="learn-eyebrow">Next mission</p>
       <strong>{{ next_mission.scene.can_do }}</strong>
       <p class="learn-meta">{{ next_mission.scene.title }} · {{ next_mission.scene.persona }}</p>
     </div>

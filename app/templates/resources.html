@@ -2,12 +2,14 @@
 {% block title %} - Resources{% endblock %}
 {% block content %}
 <div class="resources">
-  <p class="learn-eyebrow">Resources</p>
-  <h2>Look it up. Then use it.</h2>
-  <p class="learn-sub">
-    Search your {{ language.name if language else 'Korean' }} deck, check a grammar note, or jump back into a
-    reference. Definitions are short on purpose.
-  </p>
+  <div class="page-hero">
+    <p class="learn-eyebrow">Resources</p>
+    <h2>Browse your {{ language.name if language else 'Korean' }} deck.</h2>
+    <p>
+      Search a term, check a note, or jump into a reference. Definitions are
+      short on purpose.
+    </p>
+  </div>
 
   <form class="resource-search" method="get" action="{{ url_for('main.resources') }}">
     <label class="sr-only" for="resource-q">Search {{ language.name if language else "Korean" }} or English</label>
@@ -78,6 +80,12 @@
   </div>
   {% else %}
   <div class="resource-quick">
+    {% if active_language and active_language.code == 'am' %}
+    <a class="resource-quick-card" href="{{ url_for('learn.fidel') }}">
+      <strong>Fidel bootcamp</strong>
+      <span>Learn the Ge'ez grid, family by family</span>
+    </a>
+    {% else %}
     <a class="resource-quick-card" href="{{ url_for('learn.hangul') }}">
       <strong>Hangul bootcamp</strong>
       <span>Letters, batchim, liaison, and 88 reading drills</span>
@@ -90,21 +98,28 @@
       <strong>Sound Gym</strong>
       <span>Minimal pairs and voice checks</span>
     </a>
+    {% endif %}
     <a class="resource-quick-card" href="{{ url_for('main.library') }}">
-      <strong>Phrase library</strong>
-      <span>{{ counts.total }} saved items and generated phrases</span>
+      <strong>My terms</strong>
+      <span>Words you saved, with the sentence you met them in</span>
     </a>
+    {% if not (active_language and active_language.code == 'am') %}
     <a class="resource-quick-card" href="{{ url_for('main.conversations') }}">
       <strong>Conversation scenarios</strong>
-      <span>Generated dialogues with full audio</span>
+      <span>Generated Korean dialogues with full audio</span>
     </a>
+    {% endif %}
     <a class="resource-quick-card" href="{{ url_for('main.index') }}">
       <strong>Translate a phrase</strong>
-      <span>English → Korean with pronunciation audio</span>
+      <span>English → {{ language.name if language else 'Korean' }} with audio</span>
+    </a>
+    <a class="resource-quick-card" href="{{ url_for('main.dictionary') }}">
+      <strong>Dictionary</strong>
+      <span>Search and save a term</span>
     </a>
     <a class="resource-quick-card" href="{{ url_for('main.settings') }}">
       <strong>Settings &amp; reminders</strong>
-      <span>Daily goal, timezone, and one gentle reminder</span>
+      <span>Language, daily goal, timezone, and one reminder</span>
     </a>
   </div>
 
@@ -115,9 +130,15 @@
       {{ counts.grammar }} grammar notes · {{ counts.total }} total items
     </p>
     <p>
+      {% if active_language and active_language.code == 'am' %}
+      Try searching for a word like <a href="{{ url_for('main.resources', q='ቡና') }}">ቡና</a>,
+      a greeting like <a href="{{ url_for('main.resources', q='ሰላም') }}">ሰላም</a>,
+      or an English meaning like <a href="{{ url_for('main.resources', q='water') }}">water</a>.
+      {% else %}
       Try searching for a particle like <a href="{{ url_for('main.resources', q='은/는') }}">은/는</a>,
       a phrase like <a href="{{ url_for('main.resources', q='주세요') }}">주세요</a>,
       or an English meaning like <a href="{{ url_for('main.resources', q='bathroom') }}">bathroom</a>.
+      {% endif %}
     </p>
   </div>
   {% endif %}

@@ -41,7 +41,7 @@
   --dark: var(--ink-700);
   --muted: var(--ink-500);
   --grey: #eeeeee;
-  --error: #d9534f;
+  --error: var(--red-700);
   --success: var(--green-700);
   --success-bg: var(--green-100);
   --danger: var(--red-700);
@@ -85,7 +85,7 @@
 
   /* Legacy aliases kept while older rules migrate. */
   --font-ui: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  --content-max: 1100px;
+  --content-max: 1000px;
   --content-narrow: 800px;
 }
 
@@ -96,7 +96,7 @@
 }
 
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-ui);
   margin: 0;
   padding: 0;
   background-color: var(--light);
@@ -137,7 +137,7 @@ nav a:focus-visible {
 }
 
 .container {
-  max-width: 800px;
+  max-width: var(--content-max);
   margin: 0 auto;
   padding: 20px;
 }
@@ -503,7 +503,8 @@ audio {
 }
 
 .learn-header {
-  margin-bottom: 22px;
+  max-width: 760px;
+  margin-bottom: var(--space-5);
 }
 
 .learn-eyebrow {
@@ -517,9 +518,10 @@ audio {
 
 .learn-header h2,
 .learn-done h2 {
-  margin: 0 0 8px;
-  font-size: 1.9rem;
-  line-height: 1.2;
+  margin: 0 0 var(--space-2);
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
 }
 
 .learn-sub {
@@ -2354,18 +2356,6 @@ progress {
   font-family: "Noto Sans Ethiopic", "Abyssinica SIL", serif;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 /* Dictionary and term library */
 .dictionary-search {
   display: flex;
@@ -2534,8 +2524,13 @@ progress {
     margin-left: auto;
   }
 
-  #primary-nav {
+  html:not(.no-js) #primary-nav:not(.is-open) {
     display: none;
+  }
+
+  #primary-nav,
+  html:not(.no-js) #primary-nav.is-open {
+    display: flex;
     width: 100%;
     flex-direction: column;
     gap: 2px;
@@ -2543,7 +2538,11 @@ progress {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
   }
 
-  #primary-nav.is-open {
+  html.no-js .nav-toggle {
+    display: none;
+  }
+
+  html.no-js #primary-nav {
     display: flex;
   }
 
@@ -2646,13 +2645,13 @@ nav button:focus-visible {
   border-radius: var(--radius-lg);
   padding: 1rem 1.1rem;
   margin: 1rem 0 1.25rem;
-  box-shadow: 0 var(--radius-sm) 24px var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .tutorial-head {
   display: flex;
   justify-content: space-between;
-  gap: var(--text-xs);
+  gap: var(--space-3);
   align-items: flex-start;
 }
 
@@ -2674,7 +2673,7 @@ nav button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--text-xs);
+  margin-top: var(--space-3);
 }
 
 .link-button {
@@ -2684,7 +2683,8 @@ nav button:focus-visible {
   font: inherit;
   text-decoration: underline;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: var(--space-2);
+  min-height: 44px;
 }
 
 .empty-state {
@@ -2744,7 +2744,7 @@ abbr[title] {
   display: block;
   width: 100%;
   height: 0.55rem;
-  margin: var(--text-xs) 0 0.25rem;
+  margin: var(--space-3) 0 var(--space-1);
   accent-color: var(--primary);
 }
 
@@ -2864,7 +2864,7 @@ abbr[title] {
 
 @media (max-width: 900px) {
   .language-switch {
-    margin-left: var(--space-3);
+    margin-left: auto;
   }
 
   .language-switch select {

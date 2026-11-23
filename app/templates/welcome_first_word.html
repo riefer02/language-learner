@@ -52,10 +52,15 @@
   </p>
 
   <p class="onboarding-link">
-    Want a head start? <a href="{{ url_for('learn.hangul') }}">Preview the Hangul bootcamp</a>.
+    Want a head start?
+    {% if active_language and active_language.code == 'am' %}
+    <a href="{{ url_for('learn.fidel') }}">Preview the Fidel bootcamp</a>.
+    {% else %}
+    <a href="{{ url_for('learn.hangul') }}">Preview the Hangul bootcamp</a>.
+    {% endif %}
   </p>
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
+<script src="{{ url_for('static', filename='js/onboarding.js') }}?v=20261123"></script>
 {% endblock %}

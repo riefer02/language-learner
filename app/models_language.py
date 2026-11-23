@@ -486,6 +486,12 @@ class TermCard(db.Model):
         db.ForeignKey("dictionary_entry.id", ondelete="SET NULL"),
         nullable=True,
     )
+    session_id = db.Column(
+        db.Integer,
+        db.ForeignKey("teacher_session.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     # transcript | scene | teacher | dictionary | import | manual
     source = db.Column(db.String(24), nullable=False, default="manual")
     context_sentence = db.Column(db.Text, nullable=True)

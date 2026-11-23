@@ -119,12 +119,12 @@ def test_progress_and_today_show_can_do(client, app):
 
     progress = client.get("/ko/learn/progress")
     assert progress.status_code == 200
-    assert b"Can-do proof" in progress.data
+    assert b"What you can do" in progress.data
     assert scene["can_do"].split(".")[0].encode() in progress.data
 
     today = client.get("/ko/learn")
     assert today.status_code == 200
-    assert b"Next can-do" in today.data
+    assert b"Next mission" in today.data
 
 
 def test_reset_scene_starts_over(client, app):

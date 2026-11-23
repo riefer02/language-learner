@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %} - Review{% endblock %}
 {% block content %}
+<h2 class="sr-only">Review</h2>
 <div
   class="review-shell"
   data-card-id="{{ card.id }}"
@@ -121,5 +122,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/review.js') }}"></script>
+<script src="{{ url_for('static', filename='js/review.js') }}?v=20261123"></script>
 {% endblock %}

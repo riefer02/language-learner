@@ -519,11 +519,15 @@ def api_speech_score():
 
 @learn.route("/fidel")
 def fidel():
+    if current_language() and current_language().code != "am":
+        return redirect(url_for("learn.today"))
     return render_template("fidel_index.html", lessons=fidel_lessons())
 
 
 @learn.route("/fidel/<slug>")
 def fidel_lesson(slug):
+    if current_language() and current_language().code != "am":
+        return redirect(url_for("learn.today"))
     lesson = next(
         (row for row in fidel_lessons() if row["slug"] == slug), None
     )

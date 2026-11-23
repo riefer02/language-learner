@@ -298,3 +298,31 @@ Tested in Chrome against `127.0.0.1:5000`:
 - **Live style guide** at `/design` documents tokens and components.
 - Browser-tested desktop and 390px mobile: grouped menus, language switch
   KO↔AM, My terms navigation, no overflow, no console errors.
+
+### Adversarial review pass (same day)
+
+Three parallel reviews (code, design/accessibility, security/deployment) ran
+read-only. Fixes shipped:
+
+- **Safety:** production config is now the default for WSGI entrypoints; strong
+  secret validation; global CSRF protection; CSRF headers on the AI APIs;
+  upload cap raised to match the speech budget; push endpoints must be public
+  HTTPS; CI read-only permissions; `.env` mode 600 and `backups/` ignored.
+- **Language correctness:** Korean seed items, scene debrief cards, scene
+  sessions, and can-do artifacts are explicitly tagged `ko`; teacher tools
+  (`get_due_items`, `lookup_dictionary`, drill fallback) are scoped to the
+  session language; teacher terms link to their session (`0015`); debriefs no
+  longer list terms from other lessons.
+- **Data integrity:** turn indices retry on the unique constraint; ending a
+  session twice preserves the model summary; review/new-card counts are
+  language-scoped; the learner’s timezone is honored; concurrent term saves
+  recover instead of returning 500; migration `0014` backfills before dropping.
+- **Design/UX:** Amharic resources and onboarding no longer link to Hangul-only
+  surfaces; conversations are language-scoped; My terms naming is consistent;
+  review has a real heading and keyboard grading works after reveal; the
+  dictionary no-match copy is correct; duplicate empty states removed; all page
+  scripts are cache-busted.
+- **Progressive enhancement:** the nav and language switch work without JS.
+
+Documented debt: Flask 2.0 / Werkzeug 2.0 / SQLAlchemy 1.4 upgrades, single
+process rate limiting, no license yet, and the remaining legacy CSS rules.

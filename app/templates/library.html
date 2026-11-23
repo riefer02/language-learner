@@ -21,9 +21,14 @@
       {% for term in terms %}
       <li class="term-card">
         <div>
+          {% if term.item %}
           <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text }}</strong>
           <span class="learn-meta">{{ term.item.transliteration }}</span>
           <p>{{ term.item.gloss }}</p>
+          {% else %}
+          <strong>Removed term</strong>
+          <p class="learn-meta">The item is no longer in this deck.</p>
+          {% endif %}
           {% if term.context_sentence %}
           <p class="learn-meta">“{{ term.context_sentence }}”</p>
           {% endif %}
@@ -43,9 +48,8 @@
     {% endif %}
   </section>
 
-  <h3>Saved translations</h3>
-
   {% if phrases.items %}
+  <h3>Phrases you translated</h3>
   <div id="phrases-container">
     {% for phrase in phrases.items %}
     <div class="phrase-card" data-id="{{ phrase.id }}">
@@ -89,14 +93,7 @@
     >
     {% endif %}
   </div>
-  {% endif %} {% else %}
-  <div class="empty-library">
-    <p>
-      Your library is empty.
-      <a href="{{ url_for('main.index') }}">Translate a phrase</a> to get
-      started.
-    </p>
-  </div>
+  {% endif %}
   {% endif %}
 </div>
 {% endblock %}

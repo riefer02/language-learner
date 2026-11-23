@@ -35,7 +35,8 @@ class Config:
 
     AUDIO_DIR = os.path.join(basedir, "app/static/audio")
     MEDIA_TMP_DIR = os.path.join(basedir, "instance", "media_tmp")
-    MAX_CONTENT_LENGTH = 1 * 1024 * 1024  # 1 MB is ample for JSON prompts.
+    # Speech uploads allow up to 5 MB; leave headroom for multipart framing.
+    MAX_CONTENT_LENGTH = 6 * 1024 * 1024
 
     # AI providers. Clients are created lazily; a missing key does not prevent
     # the app from booting, running migrations, or executing tests.
@@ -141,10 +142,17 @@ class ProductionConfig(Config):
         import logging
         from logging.handlers import RotatingFileHandler
 
-        if not app.config.get("SECRET_KEY") or app.config["SECRET_KEY"] == (
-            "dev-key-change-in-production"
+        secret = app.config.get("SECRET_KEY") or ""
+        if (
+            len(secret) < 32
+            or secret == "dev-key-change-in-production"
+            or secret.lower().startswith("your")
+            or "change" in secret.lower()
         ):
-            raise RuntimeError("SECRET_KEY must be set to a strong value in production")
+            raise RuntimeError(
+                "SECRET_KEY must be a random value of at least 32 characters "
+                "in production"
+            )
 
         log_path = os.environ.get("LOG_PATH", "app.log")
         file_handler = RotatingFileHandler(
@@ -190,5 +198,5 @@ config = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
     "testing": TestingConfig,
-    "default": DevelopmentConfig,
+    "default": ProductionConfig,
 }

@@ -1,6 +1,7 @@
 """Dictionary search and the learner's personal term library."""
 
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 
 from app import db
 from app.learning.scheduler import new_review_card
@@ -73,7 +74,19 @@ def save_term(user_id, language_id, item_id, context_sentence=None, source="dict
     elif context_sentence and not card.context_sentence:
         card.context_sentence = context_sentence
     ensure_item_card(user_id, item)
-    db.session.flush()
+    try:
+        db.session.flush()
+    except IntegrityError:
+        # Two saves (UI + teacher, or a double click) can race the unique
+        # constraints. Roll back and return the winner's row.
+        db.session.rollback()
+        card = TermCard.query.filter_by(
+            user_id=user_id, item_id=item.id
+        ).first()
+        if card is None:
+            raise
+        ensure_item_card(user_id, item)
+        db.session.flush()
     return card
 
 

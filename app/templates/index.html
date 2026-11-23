@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %} - New Phrase{% endblock %}
+{% block title %} - Translate{% endblock %}
 {% block content %}
 <div class="page-hero">
   <span class="language-badge">
@@ -12,12 +12,17 @@
   </p>
 </div>
 
-<section class="tutorial-card" aria-labelledby="translate-how">
+<section
+  class="tutorial-card"
+  data-dismissible="kiku-tutorial-translate"
+  aria-labelledby="translate-how"
+>
   <div class="tutorial-head">
     <div>
       <h3 id="translate-how">How this page works</h3>
       <p class="learn-meta">Three steps, about ten seconds.</p>
     </div>
+    <button type="button" class="link-button" data-dismiss>Dismiss</button>
   </div>
   <ol class="tutorial-steps">
     <li>Type the English phrase you want to say.</li>

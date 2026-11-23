@@ -141,3 +141,5 @@ audio_output/
 *.db-wal
 *.db-shm
 korean_learner.db
+# Local database backups
+backups/

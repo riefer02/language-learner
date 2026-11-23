@@ -6,9 +6,9 @@ def test_resources_page_renders(client):
     response = client.get("/ko/resources")
 
     assert response.status_code == 200
-    assert b"Look it up. Then use it." in response.data
+    assert b"Browse your" in response.data
     assert b"Hangul bootcamp" in response.data
-    assert b"Phrase library" in response.data
+    assert b"My terms" in response.data
 
 
 def test_resources_searches_korean_and_english(client, app):

@@ -344,10 +344,11 @@
     }
   }
 
-  async function loadDebrief() {
-    if (!sessionId) return;
+  async function loadDebrief(sessionIdArg) {
+    const id = sessionIdArg || sessionId;
+    if (!id) return;
     try {
-      const response = await fetch("/api/teacher/sessions/" + sessionId);
+      const response = await fetch("/api/teacher/sessions/" + id);
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not load debrief");
 
@@ -444,6 +445,8 @@
       teardown();
       return;
     }
+    const finishedId = sessionId;
+    sessionId = null;
     ending = true;
     userEnded = true;
     stopBtn.disabled = true;
@@ -456,11 +459,11 @@
       }
     }
     try {
-      await api("/api/teacher/sessions/" + sessionId + "/end", {});
+      await api("/api/teacher/sessions/" + finishedId + "/end", {});
     } catch (_error) {
       /* The local close endpoint is a fallback below. */
       try {
-        await api("/api/teacher/sessions/" + sessionId + "/close", {});
+        await api("/api/teacher/sessions/" + finishedId + "/close", {});
       } catch (_ignored) {
         /* nothing else to do */
       }
@@ -468,8 +471,7 @@
     teardown();
     ending = false;
     setStatus("Lesson finished.");
-    await loadDebrief();
-    sessionId = null;
+    await loadDebrief(finishedId);
   }
 
   startBtn.addEventListener("click", startSession);

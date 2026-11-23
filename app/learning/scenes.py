@@ -9,6 +9,7 @@ from app import db
 from app.learning.scene_data import SCENES
 from app.learning.service import ensure_review_cards
 from app.models import CanDoArtifact, Item, SceneSession
+from app.models_language import Language
 from app.utils.text import normalize_text, similarity
 
 
@@ -64,12 +65,21 @@ def next_scene(user_id):
     return None
 
 
+def _korean_language():
+    return Language.query.filter_by(code="ko").first()
+
+
 def get_or_create_session(user_id, slug):
     session = SceneSession.query.filter_by(
         user_id=user_id, scene_slug=slug
     ).first()
     if session is None:
-        session = SceneSession(user_id=user_id, scene_slug=slug)
+        language = _korean_language()
+        session = SceneSession(
+            user_id=user_id,
+            scene_slug=slug,
+            language_id=language.id if language else None,
+        )
         db.session.add(session)
         db.session.commit()
     return session
@@ -120,6 +130,8 @@ def match_answer(expected_answers, answer, threshold=None):
 
 
 def _create_debrief_cards(user, scene):
+    language = _korean_language()
+    language_id = language.id if language else None
     created_items = 0
     for card in scene["debrief"]["cards"]:
         existing = Item.query.filter_by(
@@ -128,6 +140,8 @@ def _create_debrief_cards(user, scene):
             item_type="chunk",
         ).first()
         if existing:
+            if existing.language_id is None:
+                existing.language_id = language_id
             continue
         db.session.add(
             Item(
@@ -138,11 +152,12 @@ def _create_debrief_cards(user, scene):
                 level=scene["level"],
                 notes=card.get("notes"),
                 default_skill="produce",
+                language_id=language_id,
             )
         )
         created_items += 1
     db.session.commit()
-    created_cards = ensure_review_cards(user.id)
+    created_cards = ensure_review_cards(user.id, language_id)
     return created_items, created_cards
 
 
@@ -197,6 +212,9 @@ def submit_answer(user, session, scene, answer):
                     user_id=user.id,
                     scene_slug=scene["slug"],
                     label=scene["can_do"],
+                    language_id=(
+                        _korean_language().id if _korean_language() else None
+                    ),
                 )
             )
             artifact_created = True

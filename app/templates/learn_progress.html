@@ -52,7 +52,7 @@
     <div class="week-stats">
       <div><b>{{ weekly.reviews }}</b><span>reviews</span></div>
       <div><b>{{ weekly.new_cards }}</b><span>new cards</span></div>
-      <div><b>{{ weekly.can_dos }}</b><span>can-dos</span></div>
+      <div><b>{{ weekly.can_dos }}</b><span>tasks completed</span></div>
       <div><b>{{ weekly.active_days }}/7</b><span>active days</span></div>
     </div>
     <div class="activity-chart" aria-label="Reviews per day over the last seven days">
@@ -104,7 +104,7 @@
   </section>
 
   <section class="learn-how" aria-labelledby="can-do-heading">
-    <h3 id="can-do-heading">Can-do proof</h3>
+    <h3 id="can-do-heading">What you can do</h3>
     {% if can_dos %}
     <ul class="can-do-list">
       {% for artifact in can_dos %}
@@ -118,7 +118,7 @@
     </ul>
     {% else %}
     <p>
-      Complete a mission scene to earn your first can-do proof.
+      Complete a mission scene to earn your first proof of what you can do.
       <a href="{{ url_for('learn.scenes') }}">Open scenes</a>.
     </p>
     {% endif %}

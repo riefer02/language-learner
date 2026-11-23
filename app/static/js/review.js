@@ -31,7 +31,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.addEventListener("keydown", function (event) {
       if (
-        event.target.matches("input, textarea, select, button, summary") ||
+        event.target.matches("input, textarea, select, button") ||
+        (event.target.matches("summary") && event.code === "Space") ||
         event.metaKey ||
         event.ctrlKey ||
         event.altKey

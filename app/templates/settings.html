@@ -2,11 +2,11 @@
 {% block title %} - Settings{% endblock %}
 {% block content %}
 <div class="settings">
-  <p class="learn-eyebrow">Settings</p>
-  <h2>Make the loop fit your life.</h2>
-  <p class="learn-sub">
-    Your goal, your time, and at most one gentle reminder a day.
-  </p>
+  <div class="page-hero">
+    <p class="learn-eyebrow">Settings</p>
+    <h2>Make the loop fit your life.</h2>
+    <p>Your goal, your time, and at most one gentle reminder a day.</p>
+  </div>
 
   {% if saved %}
   <div class="settings-saved" role="status">Settings saved.</div>
@@ -150,5 +150,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+<script src="{{ url_for('static', filename='js/settings.js') }}?v=20261123"></script>
 {% endblock %}

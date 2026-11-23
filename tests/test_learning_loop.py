@@ -206,3 +206,17 @@ def test_today_shows_my_terms_card(client):
     assert page.status_code == 200
     assert b"My terms" in page.data
     assert b"Open My terms" in page.data
+
+
+def test_seed_content_tags_korean_items_and_cards(app):
+    from app.learning.seed_data import seed_content
+    from app.models_language import Language
+
+    with app.app_context():
+        seed_content()
+        korean = Language.query.filter_by(code="ko").one()
+        untagged = Item.query.filter(Item.language_id.is_(None)).count()
+        assert untagged == 0
+        cards = ReviewCard.query.filter_by(user_id=1).all()
+        assert cards
+        assert all(card.item.language_id == korean.id for card in cards)

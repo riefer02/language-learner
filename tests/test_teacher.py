@@ -211,6 +211,7 @@ def test_add_to_library_deduplicates_with_context(app):
         assert TermCard.query.count() == 1
         card = TermCard.query.one()
         assert card.source == "teacher"
+        assert card.session_id == session.id
         assert card.context_sentence == "커피 한 잔 주세요."
 
 
@@ -309,3 +310,42 @@ def test_teacher_page_has_first_run_guidance_and_empty_transcript(client):
     assert page.status_code == 200
     assert b"Before your first call" in page.data
     assert b"Your words will appear here after you start." in page.data
+
+
+def test_get_due_items_is_scoped_to_the_session_language(app):
+    from datetime import UTC, datetime
+
+    from app.learning.scheduler import new_review_card
+
+    with app.app_context():
+        korean = _korean(app)
+        amharic = Language.query.filter_by(code="am").first()
+        if amharic is None:
+            amharic = Language(code="am", name="Amharic", native_name="አማርኛ")
+            db.session.add(amharic)
+            db.session.commit()
+        ko_item = _item(app, "커피", "coffee", korean.id)
+        am_item = _item(app, "ቡና", "coffee", amharic.id)
+        session = _session(app, korean.id)
+        for item in (ko_item, am_item):
+            card = new_review_card(session.user_id, item.id, "recognize")
+            card.due_at = datetime.now(UTC)
+            db.session.add(card)
+        db.session.commit()
+
+        result = teacher_service.dispatch_tool(
+            session, "get_due_items", {"limit": 10}
+        )
+        ids = {row["item_id"] for row in result["items"]}
+        assert ko_item.id in ids
+        assert am_item.id not in ids
+
+
+def test_ending_twice_preserves_the_model_summary(app):
+    with app.app_context():
+        session = _session(app)
+        teacher_service.end_session(session, "Great job today.")
+        teacher_service.end_session(session, None)
+        assert db.session.get(TeacherSession, session.id).summary_text == (
+            "Great job today."
+        )

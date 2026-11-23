@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  const csrfToken =
+    (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
   const form = document.getElementById("phrase-form");
   const resultDiv = document.getElementById("result");
   const loadingDiv = document.getElementById("loading");
@@ -42,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
         },
         body: JSON.stringify({ text: englishText }),
       });

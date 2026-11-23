@@ -2,12 +2,14 @@
 
 from datetime import UTC, datetime
 
+import pytest
+
 from app import db
 from app.learning.analytics import record_event
 from app.learning.scheduler import new_review_card
 from app.learning.service import get_or_create_local_user
 from app.models import Event, Item, PushSubscription, User
-from app.services.push import send_due_reminders
+from app.services.push import send_due_reminders, subscribe
 
 
 def test_settings_page_renders(client):
@@ -237,3 +239,20 @@ def test_push_subscription_is_upserted_by_endpoint(app, client):
     with app.app_context():
         assert PushSubscription.query.count() == 1
         assert PushSubscription.query.first().p256dh == "rotated"
+
+
+def test_push_endpoint_rejects_http_and_private_hosts(app, client):
+    with app.app_context():
+        user = get_or_create_local_user()
+        for endpoint in (
+            "http://push.example/endpoint",
+            "https://127.0.0.1/endpoint",
+            "https://localhost/endpoint",
+        ):
+            with pytest.raises(ValueError):
+                subscribe(
+                    user,
+                    endpoint=endpoint,
+                    p256dh="key",
+                    auth="auth",
+                )

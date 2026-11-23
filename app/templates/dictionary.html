@@ -93,7 +93,7 @@
   </div>
   {% elif q or item_type or level or browsing %}
   <p class="empty-state">
-    No matches for “{{ q }}”. Try a shorter word, the English meaning, or
+    No matches{% if q %} for “{{ q }}”{% endif %}. Try a shorter word, the English meaning, or
     <a href="{{ url_for('main.dictionary', browse=1) }}">browse the deck</a>.
   </p>
   {% else %}
@@ -114,7 +114,7 @@
     </div>
     {% endif %}
     <p>
-      <a class="btn" href="{{ url_for('main.dictionary', browse=1) }}">Browse the whole deck</a>
+      <a class="btn" href="{{ url_for('main.dictionary', browse=1) }}">See all entries</a>
     </p>
   </div>
   {% endif %}
@@ -122,5 +122,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/dictionary.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dictionary.js') }}?v=20261123"></script>
 {% endblock %}

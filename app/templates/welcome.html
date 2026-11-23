@@ -2,11 +2,14 @@
 {% block title %} - Welcome{% endblock %}
 {% block content %}
 <div class="onboarding">
-  <p class="learn-eyebrow">Welcome to Kiku</p>
-  <h2>What do you want {{ language.name if language else 'Korean' }} to do for you?</h2>
-  <p class="learn-sub">
-    Three choices. Then you will say your first {{ language.name if language else 'Korean' }} sentence.
-  </p>
+  <div class="page-hero">
+    <p class="learn-eyebrow">Welcome to Kiku</p>
+    <h2>What do you want {{ language.name if language else 'Korean' }} to do for you?</h2>
+    <p>
+      Three choices. Then you will say your first
+      {{ language.name if language else 'Korean' }} sentence.
+    </p>
+  </div>
 
   {% if error %}
   <div class="error-message" role="alert">{{ error }}</div>
@@ -98,5 +101,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
+<script src="{{ url_for('static', filename='js/onboarding.js') }}?v=20261123"></script>
 {% endblock %}

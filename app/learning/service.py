@@ -14,7 +14,11 @@ from app.models_language import Language
 
 
 def learner_timezone():
-    name = current_app.config.get("LEARNER_TIMEZONE", "UTC")
+    user = User.query.filter_by(is_local=True).first()
+    name = (
+        (user.timezone if user and user.timezone else None)
+        or current_app.config.get("LEARNER_TIMEZONE", "UTC")
+    )
     try:
         return ZoneInfo(name)
     except (KeyError, ValueError, ZoneInfoNotFoundError):
@@ -53,7 +57,7 @@ def request_language():
         payload = request.get_json(silent=True) or {}
         code = payload.get("lang")
     if code:
-        language = Language.query.filter_by(code=code).first()
+        language = Language.query.filter_by(code=code, is_active=True).first()
         if language is not None:
             return language
     return current_language()
@@ -78,14 +82,21 @@ def get_or_create_local_user():
         return user
 
 
-def new_cards_seen_today(user_id, now=None):
+def new_cards_seen_today(user_id, now=None, language_id=None):
     start_of_day, end_of_day, _local_date = local_day_bounds(now)
-    return ReviewLog.query.filter(
+    query = ReviewLog.query.filter(
         ReviewLog.user_id == user_id,
         ReviewLog.was_new.is_(True),
         ReviewLog.reviewed_at >= start_of_day,
         ReviewLog.reviewed_at < end_of_day,
-    ).count()
+    )
+    if language_id is not None:
+        query = query.filter(
+            ReviewLog.card.has(
+                ReviewCard.item.has(Item.language_id == language_id)
+            )
+        )
+    return query.count()
 
 
 def _for_language(query, language_id):
@@ -118,7 +129,9 @@ def available_cards(user_id, now=None, new_limit=None, language_id=None):
     )
 
     remaining_new = max(
-        0, int(new_limit) - new_cards_seen_today(user_id, now)
+        0,
+        int(new_limit)
+        - new_cards_seen_today(user_id, now, language_id),
     )
     new_due = []
     if remaining_new:
@@ -171,14 +184,21 @@ def stats(user_id, now=None, language_id=None):
     ).count()
 
     start_of_day, end_of_day, _local_date = local_day_bounds(now)
-    reviews_today = ReviewLog.query.filter(
+    reviews_query = ReviewLog.query.filter(
         ReviewLog.user_id == user_id,
         ReviewLog.reviewed_at >= start_of_day,
         ReviewLog.reviewed_at < end_of_day,
-    ).count()
+    )
+    if language_id is not None:
+        reviews_query = reviews_query.filter(
+            ReviewLog.card.has(
+                ReviewCard.item.has(Item.language_id == language_id)
+            )
+        )
+    reviews_today = reviews_query.count()
 
     new_limit = current_app.config.get("NEW_CARDS_PER_DAY", 10)
-    new_seen = new_cards_seen_today(user_id, now)
+    new_seen = new_cards_seen_today(user_id, now, language_id)
     new_due_total = _for_language(
         ReviewCard.query.filter(
             ReviewCard.user_id == user_id,

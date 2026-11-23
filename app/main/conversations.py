@@ -18,6 +18,7 @@ from app.learning.service import current_language, request_language
 from app.main import main
 from app.main.helpers import _error, _parse_json
 from app.models import Conversation, ConversationLine, Phrase
+from app.models_language import Language
 from app.services.ai import OpenAIConfigError
 from app.services.audio import generate_audio
 from app.services.translation import generate_conversation_scenario
@@ -80,6 +81,7 @@ def api_conversation():
                 line.target_text,
                 staged,
                 voice=voices.get(line.speaker, voices[1]),
+                language_code=language.code if language else "ko",
             )
             staging.append((staged, filename, line, index))
 
@@ -94,11 +96,16 @@ def api_conversation():
         mapping.append((merged_staged, merged_filename))
         moved = batch.commit_to(audio_dir, mapping)
 
+        source_language = Language.query.filter_by(code="en").first()
         phrases = [
             Phrase(
-                english_text=line.source_text,
-                korean_text=line.target_text,
+                source_text=line.source_text,
+                target_text=line.target_text,
                 audio_path=f"/static/audio/{filename}",
+                source_language_id=(
+                    source_language.id if source_language else None
+                ),
+                target_language_id=language.id if language else None,
             )
             for _, filename, line, _ in staging
         ]
@@ -109,6 +116,7 @@ def api_conversation():
             title=scenario.title,
             description=scenario.description or "",
             audio_path=f"/static/audio/{merged_filename}",
+            language_id=language.id if language else None,
         )
         db.session.add(conversation)
         db.session.flush()
@@ -146,8 +154,12 @@ def api_conversation():
 def api_conversations():
     page = request.args.get("page", 1, type=int)
     per_page = min(max(request.args.get("per_page", 10, type=int), 1), 50)
+    language = request_language()
+    query = Conversation.query
+    if language is not None:
+        query = query.filter(Conversation.language_id == language.id)
     pagination = (
-        Conversation.query.options(
+        query.options(
             selectinload(Conversation.lines).selectinload(
                 ConversationLine.phrase
             )
@@ -171,15 +183,13 @@ def api_conversations():
 
 @main.route("/api/conversations/<int:conversation_id>", methods=["GET"])
 def api_conversation_detail(conversation_id):
-    conversation = (
-        Conversation.query.options(
-            selectinload(Conversation.lines).selectinload(
-                ConversationLine.phrase
-            )
-        )
-        .filter(Conversation.id == conversation_id)
-        .first()
-    )
+    language = request_language()
+    query = Conversation.query.options(
+        selectinload(Conversation.lines).selectinload(ConversationLine.phrase)
+    ).filter(Conversation.id == conversation_id)
+    if language is not None:
+        query = query.filter(Conversation.language_id == language.id)
+    conversation = query.first()
     if conversation is None:
         return _error("Conversation not found", 404)
     return jsonify(conversation.to_dict())
@@ -187,9 +197,15 @@ def api_conversation_detail(conversation_id):
 
 @main.route("/<lang_code>/conversations")
 def conversations():
+    language = current_language()
+    if language is not None and language.code != "ko":
+        return redirect(url_for("learn.today"))
     page = request.args.get("page", 1, type=int)
     per_page = 10
-    conversations_page = Conversation.query.order_by(
+    query = Conversation.query
+    if language is not None:
+        query = query.filter(Conversation.language_id == language.id)
+    conversations_page = query.order_by(
         Conversation.created_at.desc(), Conversation.id.desc()
     ).paginate(page=page, per_page=per_page, error_out=False)
     return render_template(
@@ -199,15 +215,15 @@ def conversations():
 
 @main.route("/<lang_code>/conversations/<int:conversation_id>")
 def conversation_detail(conversation_id):
-    conversation = (
-        Conversation.query.options(
-            selectinload(Conversation.lines).selectinload(
-                ConversationLine.phrase
-            )
-        )
-        .filter(Conversation.id == conversation_id)
-        .first()
-    )
+    language = current_language()
+    if language is not None and language.code != "ko":
+        return redirect(url_for("learn.today"))
+    query = Conversation.query.options(
+        selectinload(Conversation.lines).selectinload(ConversationLine.phrase)
+    ).filter(Conversation.id == conversation_id)
+    if language is not None:
+        query = query.filter(Conversation.language_id == language.id)
+    conversation = query.first()
     if conversation is None:
         abort(404)
     return render_template(

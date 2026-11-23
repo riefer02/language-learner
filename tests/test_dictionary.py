@@ -144,5 +144,5 @@ def test_empty_dictionary_prompts_instead_of_dumping_the_deck(client):
     page = client.get("/ko/dictionary")
     assert page.status_code == 200
     assert b"Search your" in page.data
-    assert b"Browse the whole deck" in page.data
+    assert b"See all entries" in page.data
     assert b'class="dictionary-entry"' not in page.data

@@ -14,6 +14,8 @@ from datetime import UTC, datetime
 import httpx
 from flask import current_app
 from pydantic import BaseModel, Field, ValidationError
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from app import db
 from app.learning.dictionary import save_term
@@ -320,9 +322,18 @@ def record_turn(session, role, text=None, tool_name=None, tool_args=None,
                 tool_result=None, latency_ms=None):
     if role not in {"teacher", "learner", "tool", "system"}:
         raise ValueError("Unknown turn role")
+
+    def _next_index():
+        current = (
+            db.session.query(func.max(TeacherTurn.turn_index))
+            .filter(TeacherTurn.session_id == session.id)
+            .scalar()
+        )
+        return (current or 0) + 1
+
     turn = TeacherTurn(
         session_id=session.id,
-        turn_index=next_turn_index(session),
+        turn_index=_next_index(),
         role=role,
         text=(text or "")[:8000] or None,
         tool_name=tool_name,
@@ -334,7 +345,13 @@ def record_turn(session, role, text=None, tool_name=None, tool_args=None,
     if role == "learner":
         session.learner_turn_count = (session.learner_turn_count or 0) + 1
     db.session.add(turn)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        turn.turn_index = _next_index()
+        db.session.add(turn)
+        db.session.commit()
     return turn
 
 
@@ -390,7 +407,7 @@ def _find_item(session, item_id):
 
 
 def tool_get_due_items(session, args):
-    cards = available_cards(session.user_id)
+    cards = available_cards(session.user_id, language_id=session.language_id)
     seen = set()
     payload = []
     for card in cards:
@@ -485,6 +502,7 @@ def tool_add_term_to_library(session, args):
             context_sentence=args.context_sentence,
             source="teacher",
         )
+        card.session_id = session.id
     except ValueError as error:
         raise TeacherToolError("language_required") from error
     if args.note:
@@ -555,9 +573,9 @@ def tool_log_attempt(session, args):
 def tool_end_session_summary(session, args):
     drills = Drill.query.filter_by(session_id=session.id).count()
     terms = TermCard.query.filter_by(
-        user_id=session.user_id, source="teacher"
+        user_id=session.user_id, session_id=session.id
     ).count()
-    summary = args.summary or (
+    summary = args.summary or session.summary_text or (
         f"{session.plan_title}: {session.learner_turn_count} learner turns, "
         f"{drills} drill(s) created, {terms} saved term(s)."
     )
@@ -706,7 +724,7 @@ def session_to_dict(session):
             "context_sentence": card.context_sentence,
         }
         for card in TermCard.query.filter_by(
-            user_id=session.user_id, source="teacher"
+            user_id=session.user_id, session_id=session.id
         ).all()
     ]
     return data

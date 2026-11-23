@@ -1,7 +1,9 @@
 """Web Push subscriptions and the daily reminder job."""
 
+import ipaddress
 import json
 from datetime import time
+from urllib.parse import urlparse
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import current_app
@@ -42,9 +44,26 @@ def push_configured():
     )
 
 
+def _validate_endpoint(endpoint):
+    """Reject non-HTTPS and local/private push endpoints (SSRF guard)."""
+    parsed = urlparse(endpoint)
+    if parsed.scheme != "https" or not parsed.hostname:
+        raise ValueError("Push endpoint must be an HTTPS URL")
+    host = parsed.hostname.lower()
+    if host in {"localhost", "localhost.localdomain"} or host.endswith(".local"):
+        raise ValueError("Push endpoint must not be local")
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return
+    if not address.is_global:
+        raise ValueError("Push endpoint must not be a private address")
+
+
 def subscribe(user, endpoint, p256dh, auth, user_agent=None):
     if not endpoint or not p256dh or not auth:
         raise ValueError("A complete push subscription is required")
+    _validate_endpoint(endpoint)
 
     subscription = PushSubscription.query.filter_by(endpoint=endpoint).first()
     if subscription is None:

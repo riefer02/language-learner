@@ -33,6 +33,10 @@ def upgrade():
     op.execute("ALTER TABLE item RENAME COLUMN romanization TO transliteration")
     op.create_index("ix_item_target_text", "item", ["target_text"])
 
+    op.execute(
+        "UPDATE phrase SET source_text = COALESCE(source_text, english_text), "
+        "target_text = COALESCE(target_text, korean_text)"
+    )
     op.drop_index("ix_phrase_english_text", table_name="phrase")
     op.drop_column("phrase", "english_text")
     op.drop_column("phrase", "korean_text")

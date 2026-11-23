@@ -38,9 +38,13 @@
   </div>
 
   <p class="learn-library-link">
-    <a href="{{ url_for('main.library') }}">Browse the phrase library</a>
+    <a href="{{ url_for('main.library') }}">Open My terms</a>
     <span aria-hidden="true">·</span>
+    {% if active_language and active_language.code == 'am' %}
+    <a href="{{ url_for('main.dictionary') }}">Dictionary</a>
+    {% else %}
     <a href="{{ url_for('main.conversations') }}">Conversation scenarios</a>
+    {% endif %}
   </p>
 </div>
 {% endblock %}

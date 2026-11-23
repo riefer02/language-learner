@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  const csrfToken =
+    (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
   const form = document.getElementById("conversation-form");
   const resultDiv = document.getElementById("result");
   const loadingDiv = document.getElementById("loading");
@@ -22,7 +24,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const lang = (form && form.dataset.lang) || "ko";
       const response = await fetch("/api/conversation", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
         body: JSON.stringify({ prompt, lang }),
       });
       const data = await response.json();
