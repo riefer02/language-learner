@@ -5,7 +5,8 @@
   const root = document.getElementById("fidel-lesson");
   if (!root) return;
 
-  const drills = JSON.parse(root.dataset.drills || "[]");
+  const dataEl = document.getElementById("fidel-data");
+  const drills = JSON.parse((dataEl && dataEl.textContent) || "[]");
   const glyphEl = document.getElementById("fidel-glyph");
   const form = document.getElementById("fidel-form");
   const input = document.getElementById("fidel-answer");
@@ -19,7 +20,12 @@
   let answered = false;
 
   function normalize(value) {
-    return (value || "").trim().toLowerCase().replace(/[^a-z]/g, "");
+    return (value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/ə/g, "e")
+      .replace(/[^a-z]/g, "");
   }
 
   function render() {

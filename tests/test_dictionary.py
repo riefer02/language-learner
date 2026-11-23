@@ -106,3 +106,35 @@ def test_api_terms_returns_saved_terms(app, client):
     terms = response.get_json()["terms"]
     assert terms[0]["text"] == "물"
     assert terms[0]["context_sentence"] == "물 주세요."
+
+
+def test_library_only_shows_phrases_for_the_active_language(app, client):
+    from app.models import Phrase
+
+    with app.app_context():
+        korean = _language(app)
+        amharic = _language(app, "am", "Amharic", "አማርኛ")
+        user = get_or_create_local_user()
+        user.target_language_id = korean.id
+        db.session.add_all(
+            [
+                Phrase(
+                    source_text="Hello",
+                    target_text="안녕하세요",
+                    target_language_id=korean.id,
+                    audio_path="/static/audio/ko.mp3",
+                ),
+                Phrase(
+                    source_text="Hello",
+                    target_text="ሰላም",
+                    target_language_id=amharic.id,
+                    audio_path="/static/audio/am.mp3",
+                ),
+            ]
+        )
+        db.session.commit()
+
+    page = client.get("/ko/library")
+    assert page.status_code == 200
+    assert "안녕하세요".encode() in page.data
+    assert "ሰላም".encode() not in page.data

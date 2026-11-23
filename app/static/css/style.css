@@ -253,7 +253,7 @@ button:disabled {
 
 /* Utility classes */
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 [hidden] {
@@ -2387,4 +2387,19 @@ progress {
 
 .teacher-answer.is-correct {
   color: #2f6b4f;
+}
+
+
+/* Ethiopic text: bundle Noto so every OS renders the fidel correctly. */
+@font-face {
+  font-family: "Kiku Ethiopic";
+  src: url("../fonts/NotoSansEthiopic-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+[lang="am"],
+.fidel-glyph,
+.fidel-family span {
+  font-family: "Kiku Ethiopic", "Kefa III", "Kefa", "Noto Sans Ethiopic",
+    "Abyssinica SIL", serif;
 }

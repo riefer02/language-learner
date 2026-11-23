@@ -23,6 +23,7 @@
   let mic = null;
   let sessionId = null;
   let ending = false;
+  let userEnded = false;
   const handledCalls = new Set();
   const transcriptBuffer = { teacher: "", learner: "" };
 
@@ -284,6 +285,7 @@
     transcriptEl.innerHTML = "";
     debriefEl.hidden = true;
     handledCalls.clear();
+    userEnded = false;
 
     try {
       peer = new RTCPeerConnection();
@@ -315,7 +317,7 @@
         }
       });
       channel.addEventListener("close", function () {
-        if (!ending) {
+        if (!ending && !userEnded) {
           setStatus("The call disconnected.");
           teardown();
         }
@@ -443,6 +445,7 @@
       return;
     }
     ending = true;
+    userEnded = true;
     stopBtn.disabled = true;
     setStatus("Finishing the lesson…");
     if (channel && channel.readyState === "open") {

@@ -55,7 +55,7 @@ def test_fidel_pages_render(client):
     lesson = client.get("/ko/learn/fidel/fidel-1")
     assert lesson.status_code == 200
     assert b"Meet the fidel" in lesson.data
-    assert b'data-drills=' in lesson.data
+    assert b'id="fidel-data"' in lesson.data
 
 
 def test_settings_switches_target_language(app, client):
@@ -117,3 +117,21 @@ def test_legacy_learn_url_redirects_to_ko(client):
     response = client.get("/learn")
     assert response.status_code == 301
     assert response.headers["Location"].endswith("/ko/learn")
+
+
+def test_fidel_drills_use_the_full_syllable(app):
+    from app.languages.am_content import fidel_lessons
+
+    first = fidel_lessons()[0]["drills"][0]
+    assert first["glyph"] == "ሀ"
+    assert first["roman"] == "hä"
+
+
+def test_amharic_settings_hide_topik(app, client):
+    with app.app_context():
+        seed_amharic()
+
+    page = client.get("/am/settings")
+    assert page.status_code == 200
+    assert b"TOPIK" not in page.data
+    assert b"Everyday language" in page.data

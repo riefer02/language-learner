@@ -240,3 +240,24 @@ then.
   wording, goal filtering).
 - Full suite and ruff pass; `/`, `/ko/*`, `/am/*`, translation, dictionary, and
   teacher pages all render against the migrated live database.
+
+### Browser end-to-end pass (same day)
+
+Tested in Chrome against `127.0.0.1:5000`:
+
+- Home translation (EN→KO) with generated audio; Learn → review → grade; dictionary
+  search → save term → library; resources search; settings language switch
+  (KO→AM→KO) with correct URL redirect; Amharic review, dictionary, and fidel
+  drill (typing, feedback, progress); scenes (café step 1→2); Hangul lesson;
+  Sound Gym; progress; legacy path redirects; 404 page; mobile viewport.
+- **Live teacher verified in the browser**: mic permission, WebRTC connected in
+  under a second, real audio and two-way transcript, clean end, and debrief.
+- Fixed during the pass: hidden loading spinner was visible; fidel JSON was
+  double-escaped so the drill never started; Ethiopic text needed a bundled
+  Noto font; fidel answers asked for a bare vowel instead of the full syllable;
+  `/ko/library` leaked Amharic saved translations; settings still said
+  “Everyday Korean” and showed TOPIK for Amharic; teacher end status raced to
+  “disconnected” after a clean end.
+- Browser console clean on all pages; no server 500/502s. Teacher tool calls
+  were already verified over the realtime WebSocket; the browser call verifies
+  the WebRTC transport, audio, transcripts, and lifecycle.

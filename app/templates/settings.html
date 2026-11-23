@@ -32,14 +32,16 @@
       <label for="settings-goal">Goal</label>
       <select id="settings-goal" name="goal">
         {% for value, label in [
-          ("everyday", "Everyday Korean"),
+          ("everyday", "Everyday language"),
           ("travel", "Travel"),
           ("work", "Work"),
-          ("culture", "K-drama & music"),
+          ("culture", "Culture & media"),
           ("topik", "TOPIK"),
           ("family", "Family & heritage")
         ] %}
+        {% if value != "topik" or (language and language.code == "ko") %}
         <option value="{{ value }}" {% if user.goal == value %}selected{% endif %}>{{ label }}</option>
+        {% endif %}
         {% endfor %}
       </select>
 
@@ -54,7 +56,7 @@
       <select id="settings-experience" name="experience">
         {% for value, label in [
           ("new", "Completely new"),
-          ("hangul", "I know some Hangul"),
+          ("hangul", "I can read the script"),
           ("some", "I can handle some conversation"),
           ("intermediate", "Intermediate")
         ] %}

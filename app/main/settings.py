@@ -89,6 +89,7 @@ def settings():
     return render_template(
         "settings.html",
         user=user,
+        language=current_language(user),
         languages=languages,
         push_enabled=push_configured(),
         vapid_public_key=current_app.config.get("VAPID_PUBLIC_KEY"),

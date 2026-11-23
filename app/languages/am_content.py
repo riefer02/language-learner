@@ -172,8 +172,11 @@ def fidel_lessons():
     for lesson in FIDEL_LESSONS:
         families = [FIDEL_FAMILIES[index] for index in lesson["families"]]
         drills = [
-            {"glyph": forms[order], "roman": VOWEL_ORDERS[order][1]}
-            for _base, forms, _label in families
+            {
+                "glyph": forms[order],
+                "roman": f"{label}{VOWEL_ORDERS[order][1]}",
+            }
+            for _base, forms, label in families
             for order in range(7)
         ]
         lessons.append({**lesson, "families": families, "drills": drills})

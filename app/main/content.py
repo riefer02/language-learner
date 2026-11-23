@@ -27,7 +27,15 @@ def library():
     per_page = 10
     user = get_or_create_local_user()
     language = current_language(user)
-    phrases = Phrase.query.order_by(
+    phrase_query = Phrase.query
+    if language is not None:
+        phrase_query = phrase_query.filter(
+            or_(
+                Phrase.target_language_id == language.id,
+                Phrase.target_language_id.is_(None),
+            )
+        )
+    phrases = phrase_query.order_by(
         Phrase.created_at.desc(), Phrase.id.desc()
     ).paginate(page=page, per_page=per_page, error_out=False)
     terms = list_terms(
