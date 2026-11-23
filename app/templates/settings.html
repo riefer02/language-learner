@@ -17,7 +17,7 @@
 
     <fieldset>
       <legend>Your path</legend>
-      <label for="settings-language">Learning</label>
+      <label for="settings-language">Learning language</label>
       <select id="settings-language" name="language">
         {% for language in languages %}
         <option
@@ -28,6 +28,10 @@
         </option>
         {% endfor %}
       </select>
+      <p class="learn-meta">
+        This changes the review deck, dictionary, script course, and where
+        navigation links point. Your saved terms stay in their own language.
+      </p>
 
       <label for="settings-goal">Goal</label>
       <select id="settings-goal" name="goal">

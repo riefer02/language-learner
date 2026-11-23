@@ -135,3 +135,10 @@ def test_amharic_settings_hide_topik(app, client):
     assert page.status_code == 200
     assert b"TOPIK" not in page.data
     assert b"Everyday language" in page.data
+
+
+def test_fidel_page_explains_the_grid(client):
+    page = client.get("/am/learn/fidel/fidel-1")
+    assert page.status_code == 200
+    assert b"How to read the fidel grid" in page.data
+    assert b'id="fidel-bar"' in page.data

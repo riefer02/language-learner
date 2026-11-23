@@ -26,6 +26,34 @@
   </div>
   {% endif %}
 
+  <section
+    class="tutorial-card"
+    data-dismissible="kiku-tutorial-teacher"
+    aria-labelledby="teacher-start-help"
+  >
+    <div class="tutorial-head">
+      <div>
+        <h3 id="teacher-start-help">Before your first call</h3>
+        <p class="learn-meta">Seven minutes. Microphone only. No raw audio stored.</p>
+      </div>
+      <button type="button" class="link-button" data-dismiss>Dismiss</button>
+    </div>
+    <ol class="tutorial-steps">
+      <li>Allow the microphone when Chrome asks; the call uses it directly.</li>
+      <li>Say “안녕하세요” and let Kiku lead. Ask for a drill when you want one.</li>
+      <li>At the end, check the debrief and add drills to your review queue.</li>
+    </ol>
+    <details class="help-tip">
+      <summary>What can I ask the teacher?</summary>
+      <ul>
+        <li>“What does this word mean?” — it searches your dictionary.</li>
+        <li>“Give me two drills for these words.” — it creates short drills.</li>
+        <li>“Save that.” — it adds the term with your sentence.</li>
+        <li>“Slower, please.” — it changes pace without leaving Korean.</li>
+      </ul>
+    </details>
+  </section>
+
   <section class="teacher-panel" aria-label="Teacher call">
     <div class="teacher-controls">
       <label for="teacher-plan">Today's plan</label>
@@ -56,8 +84,22 @@
     <audio id="teacher-audio" autoplay controls hidden></audio>
 
     <div class="teacher-transcript-wrap">
-      <h3>Live transcript</h3>
-      <ol class="teacher-transcript" id="teacher-transcript"></ol>
+      <h3 id="teacher-transcript-heading">Live transcript</h3>
+      <p class="learn-meta">
+        You and Kiku appear here as you speak. Nothing is spoken until you
+        start the call.
+      </p>
+      <ol
+        class="teacher-transcript"
+        id="teacher-transcript"
+        aria-labelledby="teacher-transcript-heading"
+        aria-live="polite"
+        aria-relevant="additions text"
+      >
+        <li class="teacher-empty learn-meta">
+          Your words will appear here after you start.
+        </li>
+      </ol>
     </div>
   </section>
 

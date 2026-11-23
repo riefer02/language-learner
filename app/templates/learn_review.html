@@ -45,6 +45,16 @@
       {% endif %}
     {% else %}
     <div class="review-prompt" lang="en">{{ item.gloss }}</div>
+    <details class="help-tip">
+      <summary>What do the four ratings mean?</summary>
+      <ul>
+        <li><strong>Again</strong> — you could not recall it. It comes back soon.</li>
+        <li><strong>Hard</strong> — you recalled it with effort.</li>
+        <li><strong>Good</strong> — you recalled it correctly.</li>
+        <li><strong>Easy</strong> — it was immediate and confident.</li>
+      </ul>
+    </details>
+
     <p class="review-hint">Say it in {{ language.name if language else "Korean" }}, then reveal the answer.</p>
     {% endif %}
 

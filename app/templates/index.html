@@ -1,11 +1,47 @@
 {% extends "base.html" %}
 {% block title %} - New Phrase{% endblock %}
 {% block content %}
-<div class="phrase-input">
-  <h2>Learn a new phrase</h2>
-  <form id="phrase-form" data-lang="{{ language.code if language else 'ko' }}">
+<div class="page-hero">
+  <span class="language-badge">
+    {{ language.name if language else "Korean" }}
+  </span>
+  <h2>Learn the phrase you need right now.</h2>
+  <p>
+    Type English, get a natural {{ language.name if language else "Korean" }}
+    phrase with audio, then keep it in your library.
+  </p>
+</div>
+
+<section class="tutorial-card" aria-labelledby="translate-how">
+  <div class="tutorial-head">
+    <div>
+      <h3 id="translate-how">How this page works</h3>
+      <p class="learn-meta">Three steps, about ten seconds.</p>
+    </div>
+  </div>
+  <ol class="tutorial-steps">
+    <li>Type the English phrase you want to say.</li>
+    <li>Listen to the generated audio before you repeat it.</li>
+    <li>Open your library to replay it later, or review it in Learn.</li>
+  </ol>
+  <details class="help-tip">
+    <summary>Why can the translation be different from a dictionary?</summary>
+    <p>
+      Kiku translates the whole phrase for the situation, not word by word.
+      Slang, honorifics, and politeness can change the result. Check the
+      dictionary if you need a single term.
+    </p>
+  </details>
+</section>
+
+<section class="phrase-input" aria-labelledby="phrase-heading">
+  <h3 id="phrase-heading">Translate a phrase</h3>
+  <form
+    id="phrase-form"
+    data-lang="{{ language.code if language else 'ko' }}"
+  >
     <div class="form-group">
-      <label for="english-text">Enter English phrase:</label>
+      <label for="english-text">English phrase</label>
       <input
         type="text"
         id="english-text"
@@ -13,13 +49,17 @@
         required
         aria-describedby="phrase-help"
         maxlength="500"
+        autocomplete="off"
+        enterkeyhint="go"
       />
-      <small id="phrase-help"
-        >Enter an English phrase to translate to {{ language.name if language else 'Korean' }} (max 500
-        characters)</small
-      >
+      <small id="phrase-help" class="learn-meta">
+        Up to 500 characters. The audio is generated in
+        {{ language.name if language else "Korean" }}.
+      </small>
     </div>
-    <button type="submit" id="translate-btn">Translate & Generate Audio</button>
+    <button type="submit" id="translate-btn" class="btn btn-primary">
+      Translate &amp; generate audio
+    </button>
   </form>
 
   <div
@@ -29,14 +69,18 @@
     aria-live="polite"
   >
     <div class="spinner" aria-hidden="true"></div>
-    <p>Translating and generating audio...</p>
+    <p>Translating and generating audio…</p>
   </div>
-</div>
+</section>
 
-<div id="result" class="result hidden" aria-live="polite">
+<section id="result" class="result hidden" aria-live="polite">
   <div class="phrase-card">
+    <p class="review-label">Your phrase</p>
     <div class="phrase-english" lang="en"></div>
-    <div class="phrase-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}"></div>
+    <div
+      class="phrase-korean"
+      lang="{{ 'am' if language and language.code == 'am' else 'ko' }}"
+    ></div>
     <div class="audio-player">
       <audio
         controls
@@ -51,8 +95,12 @@
         Repeat
       </button>
     </div>
+    <div class="tutorial-actions">
+      <a class="btn" href="{{ url_for('main.library') }}">Open library</a>
+      <a class="btn" href="{{ url_for('learn.today') }}">Open Learn</a>
+    </div>
   </div>
-</div>
+</section>
 
 <div
   id="error-message"
@@ -63,5 +111,5 @@
 ></div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/translate.js') }}"></script>
+<script src="{{ url_for('static', filename='js/translate.js') }}?v=20261123"></script>
 {% endblock %}

@@ -79,3 +79,58 @@ document.addEventListener("keydown", function (e) {
     document.activeElement.click();
   }
 });
+
+// Responsive navigation disclosure.
+(function () {
+  const toggle = document.getElementById("nav-toggle");
+  const menu = document.getElementById("primary-nav");
+  if (!toggle || !menu) return;
+
+  function setOpen(open) {
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    menu.classList.toggle("is-open", open);
+  }
+
+  toggle.addEventListener("click", function () {
+    setOpen(toggle.getAttribute("aria-expanded") !== "true");
+  });
+
+  menu.querySelectorAll("a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      setOpen(false);
+    });
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+})();
+
+// Dismissible first-run guidance. State is local to the browser.
+(function () {
+  document.querySelectorAll("[data-dismissible]").forEach(function (card) {
+    const key = card.getAttribute("data-dismissible");
+    try {
+      if (key && window.localStorage.getItem(key) === "1") {
+        card.hidden = true;
+        return;
+      }
+    } catch (_error) {
+      /* localStorage can be unavailable in private mode. */
+    }
+    const button = card.querySelector("[data-dismiss]");
+    if (button) {
+      button.addEventListener("click", function () {
+        card.hidden = true;
+        try {
+          if (key) window.localStorage.setItem(key, "1");
+        } catch (_error) {
+          /* ignore */
+        }
+      });
+    }
+  });
+})();

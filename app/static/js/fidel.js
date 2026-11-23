@@ -12,6 +12,7 @@
   const input = document.getElementById("fidel-answer");
   const feedback = document.getElementById("fidel-feedback");
   const progress = document.getElementById("fidel-progress");
+  const progressBar = document.getElementById("fidel-bar");
   const revealBtn = document.getElementById("fidel-reveal");
   const nextBtn = document.getElementById("fidel-next");
 
@@ -46,7 +47,9 @@
     input.hidden = false;
     form.querySelector("button").hidden = false;
     feedback.textContent = "";
-    progress.textContent = index + " / " + drills.length;
+    progress.textContent =
+      index + " / " + drills.length + " · " + correct + " correct";
+    if (progressBar) progressBar.value = index;
     answered = false;
     input.focus();
   }

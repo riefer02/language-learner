@@ -83,6 +83,20 @@ load-bearing decision because FSRS is keyed by `(user, item, skill)`.
 | New table | matching `models_*.py`, import in `app/models.py`, migration, CI table list |
 | New prompt/model | `app/services/translation.py` or `teacher.py`; keep provider/model in config |
 
+## UI conventions
+
+- `base.html` owns the single `<h1>` (brand) and the `<main>` landmark. Page
+  titles are `<h2>`; sections are `<h3>`.
+- Reuse the existing classes: `page-hero`, `language-badge`, `tutorial-card`
+  (with `data-dismissible` + `[data-dismiss]`), `help-tip` (native
+  `<details>`), `empty-state`, `chip-row`, `learn-meta`.
+- Every control needs a visible `<label>` or `aria-label`; every icon button
+  needs a name. Keep the skip link and the global focus-visible ring.
+- The primary nav collapses at 900px via `#nav-toggle`; test a new nav item at
+  390px before shipping.
+- Bump the `?v=` query on changed CSS/JS includes so Chrome does not test a
+  stale asset.
+
 ## Workflows
 
 **Add a language**

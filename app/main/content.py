@@ -56,19 +56,34 @@ def dictionary():
     level = request.args.get("level", type=int)
     user = get_or_create_local_user()
     language = current_language(user)
-    items = search_items(
-        language_id=language.id if language else None,
-        query_text=query_text,
-        item_type=item_type,
-        level=level,
+    language_id = language.id if language else None
+    browsing = request.args.get("browse") == "1"
+    show_results = bool(query_text or item_type or level or browsing)
+    items = (
+        search_items(
+            language_id=language_id,
+            query_text=query_text,
+            item_type=item_type,
+            level=level,
+            limit=200 if browsing else 50,
+        )
+        if show_results
+        else []
+    )
+    suggestions = (
+        []
+        if show_results
+        else search_items(language_id=language_id, limit=6)
     )
     return render_template(
         "dictionary.html",
         items=items,
+        suggestions=suggestions,
         q=query_text,
         item_type=item_type,
         level=level,
         language=language,
+        browsing=browsing,
         saved=request.args.get("saved") == "1",
     )
 

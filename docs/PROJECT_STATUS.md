@@ -261,3 +261,22 @@ Tested in Chrome against `127.0.0.1:5000`:
 - Browser console clean on all pages; no server 500/502s. Teacher tool calls
   were already verified over the realtime WebSocket; the browser call verifies
   the WebRTC transport, audio, transcripts, and lifecycle.
+
+
+### UI, guidance, and accessibility pass (same day)
+
+- Responsive navigation: brand link, disclosure menu under 900px with
+  `aria-expanded`/`aria-controls`, Escape to close, Settings exposed in the
+  nav, and `aria-current` on every item.
+- Page framing: `page-hero`, language badge, consistent cards, footer with
+  privacy note, and one `<h1>` per page.
+- First-run guidance: dismissible three-step cards on Learn and Teacher,
+  accessible `<details>` help for “due”, the four ratings, saving terms, fidel
+  vowel orders, and what to ask the teacher. Dismissal is stored locally.
+- Dictionary: no longer dumps the whole deck on load. It shows suggested
+  searches, “Browse the whole deck”, a result count, and a clear empty state.
+- Fidel: progress bar, live feedback, and a grid explanation.
+- Accessibility audit in-browser: every page has one h1 and one main, no
+  duplicate IDs, no unlabelled form controls, no unnamed buttons/links, no
+  images without alt text, no horizontal overflow at 390px.
+- Mobile and desktop screenshots verified in Chrome; console clean.

@@ -192,3 +192,10 @@ def test_fsrs_schedules_good_and_easy_differently(app):
         easy_due = easy.due_at.replace(tzinfo=UTC) if easy.due_at.tzinfo is None else easy.due_at
         assert easy_due >= good_due
         assert good_due > now
+
+
+def test_today_shows_first_run_guidance(client):
+    response = client.get("/ko/learn")
+    assert response.status_code == 200
+    assert b"New here? Start with three moves" in response.data
+    assert b"What does" in response.data

@@ -302,3 +302,10 @@ def test_debrief_drill_attempt_works_after_the_call_ends(app, client):
     payload = response.get_json()
     assert payload["acceptable"] is True
     assert payload["review_card_id"] is not None
+
+
+def test_teacher_page_has_first_run_guidance_and_empty_transcript(client):
+    page = client.get("/ko/learn/teacher")
+    assert page.status_code == 200
+    assert b"Before your first call" in page.data
+    assert b"Your words will appear here after you start." in page.data

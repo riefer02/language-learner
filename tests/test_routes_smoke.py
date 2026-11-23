@@ -106,3 +106,11 @@ def test_conversation_renderer_does_not_inject_api_data_via_inner_html():
         "new_conversation.js uses insertAdjacentHTML; render model strings "
         "with textContent/createElement instead."
     )
+
+
+def test_navigation_has_brand_link_and_mobile_toggle(client):
+    page = client.get("/ko/")
+    assert b'class="brand"' in page.data
+    assert b'id="nav-toggle"' in page.data
+    assert b'aria-controls="primary-nav"' in page.data
+    assert b'id="primary-nav"' in page.data

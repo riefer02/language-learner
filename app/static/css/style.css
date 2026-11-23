@@ -2403,3 +2403,274 @@ progress {
   font-family: "Kiku Ethiopic", "Kefa III", "Kefa", "Noto Sans Ethiopic",
     "Abyssinica SIL", serif;
 }
+
+/* ---- Navigation refresh + mobile disclosure ---- */
+.nav-container {
+  max-width: 1100px;
+  gap: 1rem;
+}
+
+.brand {
+  color: #fff;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  padding: 0.25rem 0.4rem;
+  border-radius: 8px;
+}
+
+.brand:focus-visible {
+  outline-color: #fff;
+}
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-toggle-icon {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 900px) {
+  .nav-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 10px 16px;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  #primary-nav {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0.35rem 0 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  #primary-nav.is-open {
+    display: flex;
+  }
+
+  #primary-nav li {
+    margin: 0;
+  }
+
+  #primary-nav a {
+    display: block;
+    padding: 0.6rem 0.5rem;
+  }
+}
+
+/* ---- Global focus + motion ---- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+nav a:focus-visible,
+nav button:focus-visible {
+  outline-color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Page framing, help, and onboarding ---- */
+.page-hero {
+  max-width: 760px;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.page-hero h2 {
+  margin: 0.15rem 0 0.4rem;
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.page-hero p {
+  margin: 0.3rem 0;
+  color: #40506a;
+}
+
+.language-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #e8eff9;
+  color: #27446b;
+  border-radius: 999px;
+  padding: 0.18rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.help-tip {
+  margin: 0.85rem 0;
+  padding: 0.55rem 0.8rem;
+  background: #f8fafc;
+  border: 1px solid rgba(74, 111, 165, 0.22);
+  border-radius: 12px;
+}
+
+.help-tip summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: #27446b;
+}
+
+.help-tip p,
+.help-tip ul {
+  margin: 0.5rem 0 0;
+  color: #40506a;
+}
+
+.help-tip ul {
+  padding-left: 1.15rem;
+}
+
+.tutorial-card {
+  background: #fff;
+  border: 1px solid rgba(74, 111, 165, 0.22);
+  border-left: 4px solid var(--primary);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  margin: 1rem 0 1.25rem;
+  box-shadow: 0 8px 24px rgba(29, 45, 68, 0.05);
+}
+
+.tutorial-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.tutorial-head h3 {
+  margin: 0 0 0.25rem;
+}
+
+.tutorial-steps {
+  margin: 0.6rem 0 0;
+  padding-left: 1.2rem;
+  color: #3c4b60;
+}
+
+.tutorial-steps li {
+  margin: 0.3rem 0;
+}
+
+.tutorial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  color: #27446b;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.empty-state {
+  background: #fff;
+  border: 1px dashed rgba(74, 111, 165, 0.35);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  color: #40506a;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.6rem 0;
+}
+
+.chip {
+  display: inline-block;
+  background: #eef4fc;
+  border: 1px solid rgba(74, 111, 165, 0.25);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  color: #27446b;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  background: #dde9f8;
+}
+
+.site-footer {
+  max-width: 1100px;
+  margin: 2.5rem auto 0;
+  padding: 1.25rem 20px 2rem;
+  border-top: 1px solid rgba(74, 111, 165, 0.16);
+  color: #4a5a70;
+  font-size: 0.92rem;
+}
+
+.site-footer p {
+  margin: 0.25rem 0;
+}
+
+.site-footer a {
+  color: #27446b;
+}
+
+abbr[title] {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+.fidel-progress-bar {
+  display: block;
+  width: 100%;
+  height: 0.55rem;
+  margin: 0.75rem 0 0.25rem;
+  accent-color: var(--primary);
+}
+
+.brand-heading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}

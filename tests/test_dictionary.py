@@ -138,3 +138,11 @@ def test_library_only_shows_phrases_for_the_active_language(app, client):
     assert page.status_code == 200
     assert "안녕하세요".encode() in page.data
     assert "ሰላም".encode() not in page.data
+
+
+def test_empty_dictionary_prompts_instead_of_dumping_the_deck(client):
+    page = client.get("/ko/dictionary")
+    assert page.status_code == 200
+    assert b"Search your" in page.data
+    assert b"Browse the whole deck" in page.data
+    assert b'class="dictionary-entry"' not in page.data

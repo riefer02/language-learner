@@ -13,6 +13,46 @@
     </p>
   </div>
 
+  <section
+    class="tutorial-card"
+    data-dismissible="kiku-tutorial-learn"
+    aria-labelledby="learn-start"
+  >
+    <div class="tutorial-head">
+      <div>
+        <h3 id="learn-start">New here? Start with three moves</h3>
+        <p class="learn-meta">
+          Kiku works best as a short daily loop, not a long cram.
+        </p>
+      </div>
+      <button type="button" class="link-button" data-dismiss>Dismiss</button>
+    </div>
+    <ol class="tutorial-steps">
+      <li>
+        <strong>Review what is due.</strong> Try to recall before revealing.
+        Grading honestly is what schedules the next review.
+      </li>
+      <li>
+        <strong>Speak in a mission or with Teacher.</strong>
+        <a href="{{ url_for('teacher.panel') }}">Teacher</a> gives you a short
+        spoken lesson and drills.
+      </li>
+      <li>
+        <strong>Save what you noticed.</strong> Use the
+        <a href="{{ url_for('main.dictionary') }}">dictionary</a> or say
+        “save that” to the teacher.
+      </li>
+    </ol>
+    <details class="help-tip">
+      <summary>What does “due” mean?</summary>
+      <p>
+        A card is due when its next review time arrives. Kiku schedules that
+        time with FSRS based on how you graded it last time. New cards are
+        capped per day so the queue stays small.
+      </p>
+    </details>
+  </section>
+
   <div class="learn-stats" aria-label="Learning summary">
     <div class="learn-stat">
       <b>{{ summary.due }}</b>
@@ -34,7 +74,9 @@
 
   {% if weekly.has_data %}
   <p class="learn-meta">
-    This week: {{ weekly.reviews }} reviews · {{ weekly.can_dos }} can-dos ·
+    This week: {{ weekly.reviews }}
+    review{% if weekly.reviews != 1 %}s{% endif %} · {{ weekly.can_dos }}
+    can-do{% if weekly.can_dos != 1 %}s{% endif %} ·
     {{ weekly.active_days }}/7 active days.
   </p>
   {% endif %}

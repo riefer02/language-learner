@@ -14,8 +14,17 @@
     <p class="learn-sub">{{ lesson.summary }}</p>
   </div>
 
-  <section class="teacher-panel fidel-practice">
-    <p class="review-label">Say the sound</p>
+  <details class="help-tip">
+    <summary>How to read the fidel grid</summary>
+    <p>
+      Each column is one base consonant. The seven forms to its right are the
+      seven vowel orders. Learn one family left to right, then move to the next
+      row. Type the sound without worrying about diacritics.
+    </p>
+  </details>
+
+  <section class="teacher-panel fidel-practice" aria-labelledby="fidel-say">
+    <p class="review-label" id="fidel-say">Say the sound</p>
     <div class="fidel-glyph" id="fidel-glyph" lang="am">—</div>
     <form id="fidel-form" class="fidel-form" autocomplete="off">
       <label class="sr-only" for="fidel-answer">Romanization</label>
@@ -30,7 +39,14 @@
       />
       <button type="submit" class="btn btn-primary">Check</button>
     </form>
-    <p class="teacher-status" id="fidel-feedback" role="status"></p>
+    <progress
+      class="fidel-progress-bar"
+      id="fidel-bar"
+      max="{{ lesson.drills|length }}"
+      value="0"
+      aria-label="Lesson progress"
+    ></progress>
+    <p class="teacher-status" id="fidel-feedback" role="status" aria-live="polite"></p>
     <div class="fidel-actions">
       <button type="button" class="btn" id="fidel-reveal">Show answer</button>
       <button type="button" class="btn" id="fidel-next">Next</button>
