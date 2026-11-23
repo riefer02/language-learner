@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from app import db
 from app.learning.scheduler import ensure_utc, new_review_card, utcnow
 from app.models import Item, ReviewCard, ReviewLog, User
+from app.models_language import Language
 
 
 def learner_timezone():
@@ -29,6 +30,17 @@ def local_day_bounds(now=None):
     start_local = datetime.combine(local_now.date(), time.min, tzinfo=tz)
     end_local = start_local + timedelta(days=1)
     return start_local.astimezone(UTC), end_local.astimezone(UTC), local_now.date()
+
+
+def current_language(user=None):
+    """The learner's active target language, defaulting to Korean."""
+    user = user or get_or_create_local_user()
+    language = None
+    if user.target_language_id:
+        language = db.session.get(Language, user.target_language_id)
+    if language is None:
+        language = Language.query.filter_by(code="ko").first()
+    return language
 
 
 def get_or_create_local_user():
@@ -60,7 +72,13 @@ def new_cards_seen_today(user_id, now=None):
     ).count()
 
 
-def available_cards(user_id, now=None, new_limit=None):
+def _for_language(query, language_id):
+    if language_id is None:
+        return query
+    return query.filter(ReviewCard.item.has(Item.language_id == language_id))
+
+
+def available_cards(user_id, now=None, new_limit=None, language_id=None):
     """Due review cards plus a bounded number of new cards.
 
     New cards are capped per learner-local calendar day so a large seed deck
@@ -71,7 +89,9 @@ def available_cards(user_id, now=None, new_limit=None):
         new_limit = current_app.config.get("NEW_CARDS_PER_DAY", 10)
 
     review_due = (
-        ReviewCard.query.options(selectinload(ReviewCard.item))
+        _for_language(
+            ReviewCard.query.options(selectinload(ReviewCard.item)), language_id
+        )
         .filter(
             ReviewCard.user_id == user_id,
             ReviewCard.due_at <= now,
@@ -87,7 +107,10 @@ def available_cards(user_id, now=None, new_limit=None):
     new_due = []
     if remaining_new:
         new_due = (
-            ReviewCard.query.options(selectinload(ReviewCard.item))
+            _for_language(
+                ReviewCard.query.options(selectinload(ReviewCard.item)),
+                language_id,
+            )
             .filter(
                 ReviewCard.user_id == user_id,
                 ReviewCard.due_at <= now,
@@ -102,25 +125,33 @@ def available_cards(user_id, now=None, new_limit=None):
     return review_due + new_due
 
 
-def due_cards(user_id, limit=None, now=None):
-    cards = available_cards(user_id, now=now)
+def due_cards(user_id, limit=None, now=None, language_id=None):
+    cards = available_cards(user_id, now=now, language_id=language_id)
     if limit:
         return cards[:limit]
     return cards
 
 
-def next_due_card(user_id, now=None):
-    cards = due_cards(user_id, limit=1, now=now)
+def next_due_card(user_id, now=None, language_id=None):
+    cards = due_cards(user_id, limit=1, now=now, language_id=language_id)
     return cards[0] if cards else None
 
 
-def stats(user_id, now=None):
+def stats(user_id, now=None, language_id=None):
     now = ensure_utc(now or utcnow())
-    total_items = Item.query.count()
-    total_cards = ReviewCard.query.filter_by(user_id=user_id).count()
-    due = len(available_cards(user_id, now=now))
-    learned = ReviewCard.query.filter(
-        ReviewCard.user_id == user_id, ReviewCard.reps > 0
+    items_query = Item.query
+    cards_query = ReviewCard.query.filter_by(user_id=user_id)
+    if language_id is not None:
+        items_query = items_query.filter(Item.language_id == language_id)
+        cards_query = _for_language(cards_query, language_id)
+    total_items = items_query.count()
+    total_cards = cards_query.count()
+    due = len(available_cards(user_id, now=now, language_id=language_id))
+    learned = _for_language(
+        ReviewCard.query.filter(
+            ReviewCard.user_id == user_id, ReviewCard.reps > 0
+        ),
+        language_id,
     ).count()
 
     start_of_day, end_of_day, _local_date = local_day_bounds(now)
@@ -132,18 +163,24 @@ def stats(user_id, now=None):
 
     new_limit = current_app.config.get("NEW_CARDS_PER_DAY", 10)
     new_seen = new_cards_seen_today(user_id, now)
-    new_due_total = ReviewCard.query.filter(
-        ReviewCard.user_id == user_id,
-        ReviewCard.due_at <= now,
-        ReviewCard.reps == 0,
+    new_due_total = _for_language(
+        ReviewCard.query.filter(
+            ReviewCard.user_id == user_id,
+            ReviewCard.due_at <= now,
+            ReviewCard.reps == 0,
+        ),
+        language_id,
     ).count()
     new_remaining = max(
         0, new_due_total - max(0, int(new_limit) - new_seen)
     )
 
     next_card = (
-        ReviewCard.query.filter(
-            ReviewCard.user_id == user_id, ReviewCard.due_at > now
+        _for_language(
+            ReviewCard.query.filter(
+                ReviewCard.user_id == user_id, ReviewCard.due_at > now
+            ),
+            language_id,
         )
         .order_by(ReviewCard.due_at.asc())
         .first()
@@ -212,14 +249,17 @@ def recent_reviews(user_id, limit=10):
     )
 
 
-def ensure_review_cards(user_id):
-    """Create missing cards for every item, using its default skill."""
+def ensure_review_cards(user_id, language_id=None):
+    """Create missing cards for every item in a language (or all items)."""
     existing = {
         (card.item_id, card.skill)
         for card in ReviewCard.query.filter_by(user_id=user_id).all()
     }
+    items = Item.query
+    if language_id is not None:
+        items = items.filter(Item.language_id == language_id)
     created = 0
-    for item in Item.query.order_by(Item.id.asc()).all():
+    for item in items.order_by(Item.id.asc()).all():
         key = (item.id, item.default_skill)
         if key in existing:
             continue

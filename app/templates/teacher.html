@@ -11,6 +11,14 @@
     </p>
   </div>
 
+  {% if not voice_supported %}
+  <div class="teacher-warning">
+    The live voice teacher is Korean-only for now. Amharic uses the review
+    deck and the fidel bootcamp; a spoken Amharic teacher needs speech models
+    that OpenAI does not currently offer.
+  </div>
+  {% endif %}
+
   {% if not provider_configured %}
   <div class="teacher-warning">
     The teacher needs <code>OPENAI_API_KEY</code> on the server. Everything else
@@ -28,7 +36,12 @@
         </option>
         {% endfor %}
       </select>
-      <button type="button" class="btn btn-primary" id="teacher-start">
+      <button
+        type="button"
+        class="btn btn-primary"
+        id="teacher-start"
+        {% if not voice_supported %}disabled{% endif %}
+      >
         Start speaking
       </button>
       <button type="button" class="btn" id="teacher-stop" disabled>

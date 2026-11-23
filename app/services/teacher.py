@@ -18,8 +18,12 @@ from flask import current_app
 from pydantic import BaseModel, Field, ValidationError
 
 from app import db
-from app.learning.scheduler import new_review_card
-from app.learning.service import available_cards, get_or_create_local_user
+from app.learning.scheduler import ensure_utc, new_review_card
+from app.learning.service import (
+    available_cards,
+    get_or_create_local_user,
+    local_day_bounds,
+)
 from app.models import Item, ReviewCard
 from app.models_language import TermCard
 from app.models_teacher import Drill, DrillAttempt, TeacherSession, TeacherTurn
@@ -56,6 +60,10 @@ class TeacherConfigError(TeacherError):
 
 class TeacherProviderError(TeacherError):
     """Raised when the realtime provider rejects a session."""
+
+
+class TeacherLimitError(TeacherError):
+    """Raised when the learner has used their daily teacher minutes."""
 
 
 def _utcnow():
@@ -208,11 +216,63 @@ def _provider():
     return OpenAIRealtimeProvider()
 
 
+def daily_usage_minutes(user_id, now=None):
+    """Minutes of teacher time consumed in the learner's local day."""
+    now = ensure_utc(now or _utcnow())
+    start, end, _local_date = local_day_bounds(now)
+    sessions = TeacherSession.query.filter(
+        TeacherSession.user_id == user_id,
+        TeacherSession.started_at >= start,
+        TeacherSession.started_at < end,
+    ).all()
+    total = 0.0
+    for item in sessions:
+        started = ensure_utc(item.started_at) or now
+        finished = ensure_utc(item.ended_at) or (
+            now if item.status == "active" else started
+        )
+        total += max(0.0, (finished - started).total_seconds() / 60.0)
+    return total
+
+
+def expire_if_over_limit(session, now=None):
+    """End a session that has run past the configured maximum."""
+    if session is None or session.status != "active":
+        return session
+    now = ensure_utc(now or _utcnow())
+    maximum = int(current_app.config.get("TEACHER_MAX_SESSION_MINUTES", 15))
+    started = ensure_utc(session.started_at) or now
+    if maximum > 0 and (now - started).total_seconds() > maximum * 60:
+        session.status = "ended"
+        session.ended_at = now
+        session.summary_text = (
+            f"Session ended at the {maximum}-minute limit."
+        )
+        db.session.commit()
+    return session
+
+
 def create_session(user_id, language_id, plan_slug, sdp):
     if not teacher_enabled():
         raise TeacherConfigError("The teacher is disabled")
     if not isinstance(sdp, str) or "v=0" not in sdp[:200]:
         raise ValueError("A valid SDP offer is required")
+
+    daily_limit = int(current_app.config.get("TEACHER_DAILY_MINUTES", 20))
+    if daily_limit > 0 and daily_usage_minutes(user_id) >= daily_limit:
+        raise TeacherLimitError(
+            f"Daily teacher limit reached ({daily_limit} minutes). "
+            "Try again tomorrow."
+        )
+    active = TeacherSession.query.filter_by(
+        user_id=user_id, status="active"
+    ).first()
+    if active is not None:
+        expire_if_over_limit(active)
+        if active.status == "active":
+            active.status = "ended"
+            active.ended_at = _utcnow()
+            db.session.commit()
 
     plan = PLANS.get(plan_slug, PLANS["free_talk"])
     session = TeacherSession(
@@ -248,7 +308,10 @@ def _learner_name(user_id):
 
 
 def get_session(user_id, session_id):
-    return TeacherSession.query.filter_by(id=session_id, user_id=user_id).first()
+    session = TeacherSession.query.filter_by(
+        id=session_id, user_id=user_id
+    ).first()
+    return expire_if_over_limit(session)
 
 
 def next_turn_index(session):
@@ -653,6 +716,7 @@ __all__ = [
     "PLANS",
     "TeacherConfigError",
     "TeacherError",
+    "TeacherLimitError",
     "TeacherProviderError",
     "create_session",
     "dispatch_tool",

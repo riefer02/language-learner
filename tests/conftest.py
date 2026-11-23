@@ -13,6 +13,7 @@ Design notes
   services read it through ``app.services.ai.get_openai_client()``.
 """
 
+import base64
 import json
 import os
 import sys
@@ -39,6 +40,12 @@ if str(ROOT) not in sys.path:
 class _FakeMessage:
     def __init__(self, content):
         self.content = content
+        # Chat-completions audio models return base64 audio alongside content.
+        self.audio = type(
+            "FakeAudioOutput",
+            (),
+            {"data": base64.b64encode(b"ID3-fake-audio").decode("ascii")},
+        )()
 
 
 class _FakeChoice:

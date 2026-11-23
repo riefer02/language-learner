@@ -162,3 +162,18 @@ then.
 - 211 tests pass; the teacher page renders on the migrated local database.
 - Remaining deadline: pre-generated item audio still uses `tts-1` (shutdown
   6 Jan 2027). Live teacher voice does not depend on it.
+
+### OpenAI-only cleanup and Amharic (same day)
+
+- Pre-generated audio moved from `tts-1` to `gpt-audio-1.5` through Chat
+  Completions. No Gemini key and no `/v1/audio/speech` dependency.
+- `TEACHER_DAILY_MINUTES` and `TEACHER_MAX_SESSION_MINUTES` are enforced; new
+  sessions return 429 when the daily budget is spent.
+- Amharic (`am`) is active with a 64-item survival deck, Ge'ez forms and
+  transliterations, review cards, and a six-lesson **Fidel** bootcamp at
+  `/learn/fidel`.
+- Settings → Learning switches between Korean and Amharic; review and progress
+  are scoped per language.
+- The voice teacher remains Korean-only because OpenAI Realtime does not
+  support Amharic speech; the UI states this.
+- Amharic content is starter material pending native review.

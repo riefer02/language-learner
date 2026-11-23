@@ -11,6 +11,7 @@ from flask import (
     render_template,
     request,
     send_from_directory,
+    session,
     url_for,
 )
 from flask_wtf.csrf import validate_csrf
@@ -22,6 +23,7 @@ from werkzeug.exceptions import BadRequest
 from app import db
 from app.learning.service import get_or_create_local_user
 from app.models import Conversation, ConversationLine, Item, Phrase
+from app.models_language import Language
 from app.services.ai import OpenAIConfigError
 from app.services.audio import generate_audio
 from app.services.push import (
@@ -182,13 +184,25 @@ def settings():
                 user.reminder_time = f"{hour:02d}:{minute:02d}"
         except (TypeError, ValueError):
             pass
+        language_code = request.form.get("language")
+        if language_code in {"ko", "am"}:
+            selected = Language.query.filter_by(code=language_code).first()
+            if selected is not None:
+                user.target_language_id = selected.id
+                session.pop("review_limit", None)
+                session.pop("review_count", None)
+                session.pop("review_mode", None)
         user.reminder_enabled = request.form.get("reminder_enabled") == "on"
         db.session.commit()
         return redirect(url_for("main.settings", saved=1))
 
+    languages = Language.query.filter(
+        Language.code.in_(["ko", "am"])
+    ).order_by(Language.id.asc()).all()
     return render_template(
         "settings.html",
         user=user,
+        languages=languages,
         push_enabled=push_configured(),
         vapid_public_key=current_app.config.get("VAPID_PUBLIC_KEY"),
         saved=request.args.get("saved") == "1",

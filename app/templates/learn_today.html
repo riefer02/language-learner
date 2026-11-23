@@ -3,7 +3,7 @@
 {% block content %}
 <div class="learn">
   <div class="learn-header">
-    <p class="learn-eyebrow">Today's Korean</p>
+    <p class="learn-eyebrow">Today's {{ language.name if language else 'Korean' }}</p>
     <h2>One small session. One real win.</h2>
     <p class="learn-sub">
       Review what is due, then use it. Ten minutes is enough.

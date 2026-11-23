@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block title %} - Review{% endblock %}
 {% block content %}
-<div class="review-shell" data-card-id="{{ card.id }}">
+<div
+  class="review-shell"
+  data-card-id="{{ card.id }}"
+  data-tts-lang="{{ 'am-ET' if item_lang == 'am' else 'ko-KR' }}"
+>
   <div class="review-top">
     <a href="{{ url_for('learn.today') }}">← Today</a>
     <span class="review-count">
@@ -16,11 +20,11 @@
 
   <div class="review-card">
     <p class="review-label">
-      {% if prompt_side == "korean" %}Korean → English{% else %}English → Korean{% endif %}
+      {% if prompt_side == "korean" %}{{ language.name if language else "Korean" }} → English{% else %}English → {{ language.name if language else "Korean" }}{% endif %}
     </p>
 
     {% if prompt_side == "korean" %}
-    <div class="review-prompt" lang="ko">{{ item.korean }}</div>
+    <div class="review-prompt" lang="{{ item_lang }}">{{ item.korean }}</div>
       {% if item.audio_path %}
       <audio
         class="review-audio"
@@ -34,21 +38,21 @@
         type="button"
         class="speak-btn"
         data-speak="{{ item.korean }}"
-        aria-label="Hear {{ item.korean }} in Korean"
+        aria-label="Hear {{ item.korean }} in {{ language.name if language else 'Korean' }}"
       >
         Hear it
       </button>
       {% endif %}
     {% else %}
     <div class="review-prompt" lang="en">{{ item.english }}</div>
-    <p class="review-hint">Say it in Korean, then reveal the answer.</p>
+    <p class="review-hint">Say it in {{ language.name if language else "Korean" }}, then reveal the answer.</p>
     {% endif %}
 
     <details class="review-answer">
       <summary>Show answer</summary>
       <div class="review-answer-body">
         {% if answer_side == "korean" %}
-        <div class="review-answer-korean" lang="ko">{{ item.korean }}</div>
+        <div class="review-answer-korean" lang="{{ item_lang }}">{{ item.korean }}</div>
           {% if item.audio_path %}
           <audio
             class="review-audio"
@@ -62,7 +66,7 @@
             type="button"
             class="speak-btn"
             data-speak="{{ item.korean }}"
-            aria-label="Hear {{ item.korean }} in Korean"
+            aria-label="Hear {{ item.korean }} in {{ language.name if language else 'Korean' }}"
           >
             Hear the answer
           </button>

@@ -1,5 +1,6 @@
 """Self-contained tests for the AI services, schemas, retries, and TTS."""
 
+import base64
 import json
 from types import SimpleNamespace
 
@@ -90,14 +91,20 @@ class FakeAudioClient:
         self.payload = payload
         self.error = error
         self.calls = []
-        speech = SimpleNamespace(
-            with_streaming_response=SimpleNamespace(create=self._create)
+        self.chat = SimpleNamespace(
+            completions=SimpleNamespace(create=self._create)
         )
-        self.audio = SimpleNamespace(speech=speech)
 
     def _create(self, **kwargs):
         self.calls.append(kwargs)
-        return FakeStreamingResponse(self.payload, self.error)
+        if self.error:
+            raise self.error
+        audio = SimpleNamespace(
+            data=base64.b64encode(self.payload).decode("ascii")
+        )
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=SimpleNamespace(audio=audio))]
+        )
 
 
 def scenario_payload(lines):
@@ -433,7 +440,7 @@ def test_call_with_retries_reraises_last_error_after_exhaustion():
 def test_generate_audio_success_uses_config_model(app, tmp_path):
     fake = FakeAudioClient(payload=b"ID3-fake-audio")
     app.extensions["openai_client"] = fake
-    app.config["TTS_MODEL"] = "tts-1-hd"
+    app.config["TTS_MODEL"] = "gpt-audio-test"
     path = tmp_path / "line.mp3"
 
     with app.app_context():
@@ -441,12 +448,12 @@ def test_generate_audio_success_uses_config_model(app, tmp_path):
 
     assert result == "line.mp3"
     assert path.read_bytes() == b"ID3-fake-audio"
-    assert fake.calls[0]["model"] == "tts-1-hd"
-    assert fake.calls[0]["voice"] == "nova"
-    assert fake.calls[0]["input"] == "안녕하세요"
+    assert fake.calls[0]["model"] == "gpt-audio-test"
+    assert fake.calls[0]["audio"]["voice"] == "nova"
+    assert fake.calls[0]["messages"][-1]["content"] == "안녕하세요"
 
 
-def test_generate_audio_defaults_to_tts_1(app, tmp_path):
+def test_generate_audio_defaults_to_gpt_audio(app, tmp_path):
     fake = FakeAudioClient()
     app.extensions["openai_client"] = fake
     path = tmp_path / "line.mp3"
@@ -454,7 +461,7 @@ def test_generate_audio_defaults_to_tts_1(app, tmp_path):
     with app.app_context():
         audio_service.generate_audio("안녕하세요", str(path))
 
-    assert fake.calls[0]["model"] == "tts-1"
+    assert fake.calls[0]["model"] == "gpt-audio-1.5"
 
 
 def test_generate_audio_failure_removes_partial_file(app, tmp_path):

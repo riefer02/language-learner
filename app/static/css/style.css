@@ -2203,3 +2203,86 @@ progress {
   border-bottom: 1px solid rgba(74, 111, 165, 0.12);
   padding-bottom: 0.35rem;
 }
+
+/* Fidel bootcamp */
+.fidel-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.fidel-card {
+  display: block;
+  background: #fff;
+  border: 1px solid rgba(74, 111, 165, 0.18);
+  border-radius: 16px;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 8px 24px rgba(29, 45, 68, 0.06);
+}
+
+.fidel-card:hover,
+.fidel-card:focus-visible {
+  border-color: #4a6fa5;
+}
+
+.fidel-glyph {
+  font-family: "Noto Sans Ethiopic", "Abyssinica SIL", serif;
+  font-size: clamp(4rem, 18vw, 8rem);
+  line-height: 1.1;
+  text-align: center;
+  margin: 0.5rem 0 1rem;
+}
+
+.fidel-form {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.fidel-form input {
+  min-width: 14rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(74, 111, 165, 0.35);
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+.fidel-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.fidel-orders,
+.fidel-families {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.fidel-family {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  border-bottom: 1px solid rgba(74, 111, 165, 0.12);
+  padding-bottom: 0.35rem;
+}
+
+.fidel-family span {
+  font-family: "Noto Sans Ethiopic", "Abyssinica SIL", serif;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

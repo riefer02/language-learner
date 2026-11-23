@@ -17,6 +17,18 @@
 
     <fieldset>
       <legend>Your path</legend>
+      <label for="settings-language">Learning</label>
+      <select id="settings-language" name="language">
+        {% for language in languages %}
+        <option
+          value="{{ language.code }}"
+          {% if user.target_language_id == language.id %}selected{% endif %}
+        >
+          {{ language.name }}
+        </option>
+        {% endfor %}
+      </select>
+
       <label for="settings-goal">Goal</label>
       <select id="settings-goal" name="goal">
         {% for value, label in [

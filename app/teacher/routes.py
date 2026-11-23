@@ -13,7 +13,7 @@ from flask_wtf.csrf import validate_csrf
 from werkzeug.exceptions import BadRequest
 
 from app import db
-from app.learning.service import get_or_create_local_user
+from app.learning.service import current_language, get_or_create_local_user
 from app.models_language import Language
 from app.models_teacher import TeacherSession
 from app.services import teacher as teacher_service
@@ -43,7 +43,7 @@ def panel():
     if not teacher_service.teacher_enabled():
         return _error("The teacher is disabled", 404)
     user = get_or_create_local_user()
-    language = _language()
+    language = current_language(user)
     sessions = (
         TeacherSession.query.filter_by(user_id=user.id)
         .order_by(TeacherSession.started_at.desc())
@@ -57,6 +57,7 @@ def panel():
         plans=teacher_service.PLANS,
         sessions=sessions,
         provider_configured=bool(current_app.config.get("OPENAI_API_KEY")),
+        voice_supported=bool(language and language.code == "ko"),
     )
 
 
@@ -69,7 +70,9 @@ def create_session():
 
     payload = request.get_json(silent=True) or {}
     user = get_or_create_local_user()
-    language = _language()
+    language = current_language(user)
+    if language is not None and language.code != "ko":
+        return _error("The voice teacher is Korean-only for now", 503)
     try:
         session, answer = teacher_service.create_session(
             user_id=user.id,
@@ -80,6 +83,8 @@ def create_session():
     except teacher_service.TeacherConfigError as error:
         current_app.logger.warning("Teacher config error: %s", error)
         return _error(str(error), 503)
+    except teacher_service.TeacherLimitError as error:
+        return _error(str(error), 429)
     except teacher_service.TeacherProviderError as error:
         return _error(str(error), 502)
     except ValueError as error:

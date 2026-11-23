@@ -3,7 +3,7 @@
 {% block content %}
 <div class="learn">
   <div class="learn-header">
-    <p class="learn-eyebrow">Your Korean</p>
+    <p class="learn-eyebrow">Your {{ language.name if language else 'Korean' }}</p>
     <h2>What you can actually retrieve.</h2>
     <p class="learn-sub">
       This is the honest scoreboard: practiced cards, review history, and the
@@ -131,7 +131,7 @@
       {% for log in reviews %}
       <li>
         <div>
-          <strong lang="ko">{{ log.card.item.korean }}</strong>
+          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ log.card.item.korean }}</strong>
           <span lang="en"> — {{ log.card.item.english }}</span>
         </div>
         <div class="review-history-meta">

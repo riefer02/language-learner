@@ -18,6 +18,7 @@ from sqlalchemy.orm.exc import StaleDataError
 from werkzeug.exceptions import BadRequest
 
 from app import db
+from app.languages.am_content import VOWEL_ORDERS, fidel_lessons
 from app.learning.analytics import (
     record_event,
     retention_signal,
@@ -43,6 +44,7 @@ from app.learning.scheduler import (
 )
 from app.learning.seed_data import seed_content
 from app.learning.service import (
+    current_language,
     ensure_review_cards,
     get_or_create_local_user,
     new_cards_seen_today,
@@ -74,7 +76,8 @@ def _user():
         user, _items, _cards = seed_content()
         return user
     user = get_or_create_local_user()
-    ensure_review_cards(user.id)
+    language = current_language(user)
+    ensure_review_cards(user.id, language.id if language else None)
     return user
 
 
@@ -120,7 +123,8 @@ def today():
     user = _user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
-    summary = stats(user.id)
+    language = current_language(user)
+    summary = stats(user.id, language_id=language.id if language else None)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
     return render_template(
         "learn_today.html",
@@ -129,6 +133,7 @@ def today():
         next_mission=next_scene(user.id),
         weekly=weekly_recap(user.id),
         session_modes=sorted(_session_limits()),
+        language=language,
     )
 
 
@@ -480,6 +485,23 @@ def api_speech_score():
     )
 
 
+@learn.route("/fidel")
+def fidel():
+    return render_template("fidel_index.html", lessons=fidel_lessons())
+
+
+@learn.route("/fidel/<slug>")
+def fidel_lesson(slug):
+    lesson = next(
+        (row for row in fidel_lessons() if row["slug"] == slug), None
+    )
+    if lesson is None:
+        abort(404)
+    return render_template(
+        "fidel_lesson.html", lesson=lesson, vowel_orders=VOWEL_ORDERS
+    )
+
+
 @learn.route("/hangul")
 def hangul():
     return render_template("hangul_index.html", lessons=HANGUL_LESSONS)
@@ -510,7 +532,8 @@ def progress():
     user = _user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
-    summary = stats(user.id)
+    language = current_language(user)
+    summary = stats(user.id, language_id=language.id if language else None)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
     return render_template(
         "learn_progress.html",
@@ -520,6 +543,7 @@ def progress():
         can_dos=can_do_artifacts(user.id),
         weekly=weekly_recap(user.id),
         retention=retention_signal(user.id),
+        language=language,
     )
 
 
@@ -546,19 +570,24 @@ def review():
     if count >= limit:
         return redirect(url_for("learn.review_complete"))
 
-    card = next_due_card(user.id)
+    language = current_language(user)
+    card = next_due_card(user.id, language_id=language.id if language else None)
     if card is None:
-        summary = stats(user.id)
+        summary = stats(user.id, language_id=language.id if language else None)
         summary["next_due_human"] = _format_next_due(summary["next_due"])
         session.pop("review_limit", None)
         session.pop("review_count", None)
         session.pop("review_mode", None)
-        return render_template("learn_done.html", summary=summary, user=user)
+        return render_template(
+            "learn_done.html", summary=summary, user=user, language=language
+        )
 
     item = card.item
     prompt_side = "korean" if card.skill in {"recognize", "listen"} else "english"
     answer_side = "english" if prompt_side == "korean" else "korean"
-    due_count = stats(user.id)["due"]
+    due_count = stats(
+        user.id, language_id=language.id if language else None
+    )["due"]
     skill_labels = {
         "recognize": "Recognize",
         "produce": "Produce",
@@ -585,6 +614,8 @@ def review():
         skill_label=skill_labels.get(card.skill, card.skill.title()),
         type_label=type_labels.get(item.item_type, item.item_type.title()),
         is_new=(card.reps or 0) == 0,
+        language=language,
+        item_lang="am" if language and language.code == "am" else "ko",
     )
 
 
@@ -665,7 +696,8 @@ def review_complete():
     user = _user()
     if _needs_onboarding(user):
         return redirect(url_for("onboarding.welcome"))
-    summary = stats(user.id)
+    language = current_language(user)
+    summary = stats(user.id, language_id=language.id if language else None)
     summary["next_due_human"] = _format_next_due(summary["next_due"])
     return render_template(
         "review_session_complete.html",

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %} - {{ lesson.title }}{% endblock %}
+{% block content %}
+<div class="learn fidel-lesson" id="fidel-lesson" data-drills="{{ lesson.drills|tojson }}">
+  <div class="review-top">
+    <a href="{{ url_for('learn.fidel') }}">← All fidel lessons</a>
+    <span class="review-count" id="fidel-progress">0 / {{ lesson.drills|length }}</span>
+  </div>
+
+  <div class="learn-header">
+    <p class="learn-eyebrow">Fidel bootcamp</p>
+    <h2>{{ lesson.title }}</h2>
+    <p class="learn-sub">{{ lesson.summary }}</p>
+  </div>
+
+  <section class="teacher-panel fidel-practice">
+    <p class="review-label">Say the sound</p>
+    <div class="fidel-glyph" id="fidel-glyph" lang="am">—</div>
+    <form id="fidel-form" class="fidel-form" autocomplete="off">
+      <label class="sr-only" for="fidel-answer">Romanization</label>
+      <input
+        id="fidel-answer"
+        type="text"
+        inputmode="text"
+        placeholder="Type the sound, e.g. ha"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+      <button type="submit" class="btn btn-primary">Check</button>
+    </form>
+    <p class="teacher-status" id="fidel-feedback" role="status"></p>
+    <div class="fidel-actions">
+      <button type="button" class="btn" id="fidel-reveal">Show answer</button>
+      <button type="button" class="btn" id="fidel-next">Next</button>
+    </div>
+  </section>
+
+  <section class="teacher-panel">
+    <h3>Families in this lesson</h3>
+    <div class="fidel-families">
+      {% for base, forms, label in lesson.families %}
+      <div class="fidel-family">
+        <b>{{ base }}</b>
+        <span>{% for form in forms %}{{ form }}{% if not loop.last %} {% endif %}{% endfor %}</span>
+        <span class="learn-meta">{{ label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/fidel.js') }}"></script>
+{% endblock %}

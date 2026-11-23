@@ -247,3 +247,38 @@ def test_unknown_tool_is_rejected(app):
             teacher_service.dispatch_tool(session, "drop_database", {})
         assert error.value.code == "unknown_tool"
         assert Drill.query.count() == 0
+
+
+def test_daily_limit_blocks_a_new_session(app, client):
+    from datetime import UTC, datetime, timedelta
+
+    with app.app_context():
+        session = _session(app)
+        session.started_at = datetime.now(UTC) - timedelta(minutes=10)
+        session.ended_at = datetime.now(UTC) - timedelta(minutes=2)
+        session.status = "ended"
+        db.session.commit()
+
+    app.config["TEACHER_DAILY_MINUTES"] = 5
+    response = client.post(
+        "/api/teacher/sessions", json={"sdp": "v=0\r\noffer", "plan": "cafe"}
+    )
+    assert response.status_code == 429
+    assert "Daily teacher limit" in response.get_json()["error"]
+
+
+def test_session_is_ended_after_the_maximum(app, client):
+    from datetime import UTC, datetime, timedelta
+
+    with app.app_context():
+        session = _session(app)
+        session.started_at = datetime.now(UTC) - timedelta(minutes=30)
+        db.session.commit()
+        session_id = session.id
+
+    app.config["TEACHER_MAX_SESSION_MINUTES"] = 15
+    response = client.get(f"/api/teacher/sessions/{session_id}")
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["status"] == "ended"
+    assert "15-minute limit" in payload["summary"]

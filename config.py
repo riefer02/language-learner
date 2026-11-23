@@ -42,7 +42,7 @@ class Config:
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
     TRANSLATION_MODEL = os.environ.get("TRANSLATION_MODEL", "gpt-5.6-luna")
     CONVERSATION_MODEL = os.environ.get("CONVERSATION_MODEL", "gpt-5.6-luna")
-    TTS_MODEL = os.environ.get("TTS_MODEL", "tts-1")
+    TTS_MODEL = os.environ.get("TTS_MODEL", "gpt-audio-1.5")
     TTS_VOICE_1 = os.environ.get("TTS_VOICE_1", "onyx")
     TTS_VOICE_2 = os.environ.get("TTS_VOICE_2", "nova")
     OPENAI_TIMEOUT_CONNECT = 5.0

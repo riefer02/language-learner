@@ -75,7 +75,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "ko-KR";
+      const shell = document.querySelector(".review-shell");
+      utterance.lang = (shell && shell.dataset.ttsLang) || "ko-KR";
       utterance.rate = 0.85;
       window.speechSynthesis.speak(utterance);
     });

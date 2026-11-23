@@ -24,6 +24,19 @@ def register_learning_cli(app):
             f"created {created_cards} review card(s)."
         )
 
+    @app.cli.command("seed-amharic")
+    def seed_amharic_command():
+        """Insert the starter Amharic deck and fidel content metadata."""
+        from app.languages.seed import seed_amharic
+
+        result = seed_amharic()
+        click.echo(
+            f"Amharic language {result['language_id']}: "
+            f"{result['created_items']} new item(s), "
+            f"{result['total_items']} total, "
+            f"{result['created_cards']} review card(s)."
+        )
+
     @app.cli.command("metrics")
     def metrics_command():
         """Print the alpha activation and retention summary."""

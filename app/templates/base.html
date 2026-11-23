@@ -49,6 +49,15 @@
               >Scenes</a
             >
           </li>
+          {% if active_language and active_language.code == 'am' %}
+          <li>
+            <a
+              href="{{ url_for('learn.fidel') }}"
+              aria-current="{{ 'page' if request.path.startswith('/learn/fidel') else 'false' }}"
+              >Fidel</a
+            >
+          </li>
+          {% else %}
           <li>
             <a
               href="{{ url_for('learn.hangul') }}"
@@ -56,6 +65,7 @@
               >Hangul</a
             >
           </li>
+          {% endif %}
           <li>
             <a
               href="{{ url_for('teacher.panel') }}"

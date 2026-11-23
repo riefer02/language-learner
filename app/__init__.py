@@ -341,6 +341,16 @@ def create_app(config_name=None, overrides=None):
     def inject_csrf_token():
         return {"csrf_token": generate_csrf}
 
+    @app.context_processor
+    def inject_active_language():
+        from app.learning.service import current_language
+
+        try:
+            return {"active_language": current_language()}
+        except Exception:
+            current_app.logger.exception("Could not resolve the active language")
+            return {"active_language": None}
+
     @app.template_filter("has_hangul")
     def has_hangul(value):
         return any(

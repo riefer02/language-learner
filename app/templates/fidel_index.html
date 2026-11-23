@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %} - Fidel{% endblock %}
+{% block content %}
+<div class="learn">
+  <div class="learn-header">
+    <p class="learn-eyebrow">Fidel bootcamp</p>
+    <h2>Read Amharic.</h2>
+    <p class="learn-sub">
+      Ge'ez is an abugida: each base shape carries a consonant, and the seven
+      vowel orders change its form. Learn the grid family by family.
+    </p>
+  </div>
+
+  <div class="fidel-grid">
+    {% for lesson in lessons %}
+    <a class="fidel-card" href="{{ url_for('learn.fidel_lesson', slug=lesson.slug) }}">
+      <span class="learn-eyebrow">Lesson {{ loop.index }}</span>
+      <h3>{{ lesson.title }}</h3>
+      <p>{{ lesson.summary }}</p>
+      <p class="learn-meta">
+        {{ lesson.families|length }} families · {{ lesson.drills|length }} sounds
+      </p>
+    </a>
+    {% endfor %}
+  </div>
+
+  <section class="teacher-panel">
+    <h3>The seven orders</h3>
+    <p class="learn-meta">
+      The same consonant with each vowel. The labels are approximate; listen to
+      a native speaker when you can.
+    </p>
+    <div class="fidel-orders">
+      {% for name, vowel, hint in vowel_orders %}
+      <div><b>{{ loop.index }}. {{ name }}</b> — {{ vowel }} <span class="learn-meta">{{ hint }}</span></div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

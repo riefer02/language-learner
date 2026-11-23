@@ -1,11 +1,27 @@
-"""OpenAI text-to-speech helpers."""
+"""OpenAI audio generation.
 
+OpenAI's ``/v1/audio/speech`` models (``tts-1`` and ``gpt-4o-mini-tts``) shut
+down on 6 January 2027 and have no drop-in replacement on that endpoint. The
+current OpenAI path is ``gpt-audio-1.5`` through Chat Completions, which returns
+base64 audio in ``choices[0].message.audio.data``.
+"""
+
+import base64
 import os
 
 from flask import current_app
 
 from app.services.ai import get_openai_client
 from app.utils.retries import call_with_retries
+
+DEFAULT_TTS_MODEL = "gpt-audio-1.5"
+LANGUAGE_NAMES = {
+    "ko": "Korean",
+    "en": "English",
+    "am": "Amharic",
+    "es": "Spanish",
+    "ja": "Japanese",
+}
 
 
 def _remove_partial_file(filepath):
@@ -18,8 +34,25 @@ def _remove_partial_file(filepath):
         )
 
 
-def generate_audio(text, filepath, voice="onyx"):
-    """Convert text to speech and save it as an MP3 file.
+def _audio_bytes(response):
+    try:
+        message = response.choices[0].message
+    except (AttributeError, IndexError, TypeError) as error:
+        raise ValueError("Audio response did not contain a message") from error
+
+    audio = getattr(message, "audio", None)
+    data = getattr(audio, "data", None)
+    if data is None and isinstance(audio, dict):
+        data = audio.get("data")
+    if not isinstance(data, str):
+        raise ValueError(  # noqa: TRY004 - model output, not caller input
+            "Audio response did not contain audio data"
+        )
+    return base64.b64decode(data)
+
+
+def generate_audio(text, filepath, voice=None, language_code="ko"):
+    """Read ``text`` aloud and write an MP3 to ``filepath``.
 
     Returns the file's basename. On any failure the destination file is
     removed so callers never see a partial or empty audio artifact.
@@ -28,26 +61,45 @@ def generate_audio(text, filepath, voice="onyx"):
         raise ValueError("Empty text provided for audio generation")
 
     text = text.strip()
-    model = current_app.config.get("TTS_MODEL") or "tts-1"
+    voice = voice or current_app.config.get("TTS_VOICE_1", "onyx")
+    model = current_app.config.get("TTS_MODEL") or DEFAULT_TTS_MODEL
+    language = LANGUAGE_NAMES.get(language_code, "the target language")
     current_app.logger.info(
-        "generate_audio: chars=%s voice=%s file=%s",
+        "generate_audio: chars=%s voice=%s language=%s file=%s",
         len(text),
         voice,
+        language_code,
         filepath,
     )
 
-    def _stream_audio():
+    def _generate():
         client = get_openai_client()
-        with client.audio.speech.with_streaming_response.create(
+        response = client.chat.completions.create(
             model=model,
-            voice=voice,
-            input=text,
-            response_format="mp3",
-        ) as response:
-            response.stream_to_file(filepath)
+            modalities=["text", "audio"],
+            audio={"voice": voice, "format": "mp3"},
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        f"You are a {language} pronunciation model. Read the "
+                        "user's text aloud exactly as written, at a natural, "
+                        "learner-friendly pace. Do not add, translate, or "
+                        "explain anything."
+                    ),
+                },
+                {"role": "user", "content": text},
+            ],
+        )
+        return _audio_bytes(response)
 
     try:
-        call_with_retries(_stream_audio)
+        payload = call_with_retries(_generate)
+        if not payload:
+            raise OSError(f"Audio payload was empty: {filepath}")
+
+        with open(filepath, "wb") as file:
+            file.write(payload)
 
         if not os.path.exists(filepath):
             raise OSError(f"Audio file was not created: {filepath}")
