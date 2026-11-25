@@ -99,6 +99,7 @@ Live reference: **`/design`** (not linked from the learner nav).
 | `.nav-lookup` | Global header Look up field; submits `?q=` to the Look up page |
 | `.course-stepper` | Clickable lesson nodes; current node is `aria-current="step"` |
 | `.dash-hero` / `.dash-stats` / `.dash-card` | Today dashboard: primary action, compact stats, continue/terms |
+| `.page-head` / `.page-help` | Page title + one-time instructions behind a `?` control |
 
 ## Page composition
 
@@ -117,6 +118,9 @@ Live reference: **`/design`** (not linked from the learner nav).
 
 - `base.html` owns the single `<h1>` (brand) and `<main>`.
 - Page titles are `<h2>`; sections are `<h3>`.
+- Tool pages put the interface first. Instructions live behind a `?`
+  disclosure; the first visit opens it once (`localStorage`), then it stays
+  closed. Escape or an outside click closes it.
 - Use `<label>` for every control. Icon-only controls need `aria-label`.
 - Use `aria-current="page"` on the active nav item.
 - Test at 390px; the nav collapses at 900px.

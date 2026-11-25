@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %} - Design system{% endblock %}
 {% block content %}
+{% from "_macros.html" import page_help %}
 <div class="page-hero">
   <p class="learn-eyebrow">Design system</p>
   <h2>Tokens and components.</h2>
@@ -138,6 +139,22 @@
       <p class="learn-meta">I can order a drink and ask for a receipt.</p>
     </div>
     <a class="btn" href="#main-content">Continue</a>
+  </div>
+
+  <h4>Page help</h4>
+  <p class="learn-meta">
+    Instructions live behind a single <code>?</code>. The first visit opens the
+    panel once; afterwards it stays closed. Escape or an outside click closes it.
+  </p>
+  <div class="page-head">
+    <div>
+      <p class="learn-eyebrow">Example</p>
+      <h4>Page title</h4>
+    </div>
+    {% call page_help("kiku-help-design", "How this demo works") %}
+      <h3>How this demo works</h3>
+      <p>First visit opens this panel once; after that it stays behind the ?.</p>
+    {% endcall %}
   </div>
 </section>
 

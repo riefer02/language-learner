@@ -1,0 +1,10 @@
+{# Page-level instructions behind a single ? control.
+   data-first-visit opens it once; app.js remembers the key. #}
+{% macro page_help(key, label="How this page works") %}
+<details class="page-help" data-first-visit="{{ key }}">
+  <summary aria-label="{{ label }}">?</summary>
+  <div class="page-help-panel">
+    {{ caller() }}
+  </div>
+</details>
+{% endmacro %}

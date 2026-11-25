@@ -45,6 +45,33 @@ def test_hangul_lesson_has_clickable_stepper(client):
     assert b'id="hangul-bar"' in page.data
 
 
+def test_lookup_opens_on_the_interface_with_help_hidden(client):
+    client.get("/ko/learn")
+    page = client.get("/ko/translate")
+    html = page.get_data(as_text=True)
+
+    assert page.status_code == 200
+    assert (
+        '<details class="page-help" data-first-visit="kiku-help-lookup">'
+        in html
+    )
+    assert "tutorial-card" not in html
+    assert "How this works" in html
+    assert html.index('id="english-text"') > html.index('class="page-help"')
+
+
+def test_teacher_and_dictionary_use_first_visit_help(client):
+    client.get("/ko/learn")
+
+    teacher = client.get("/ko/learn/teacher")
+    assert teacher.status_code == 200
+    assert b'data-first-visit="kiku-help-teacher"' in teacher.data
+
+    dictionary = client.get("/ko/dictionary")
+    assert dictionary.status_code == 200
+    assert b'data-first-visit="kiku-help-dictionary"' in dictionary.data
+
+
 def test_amharic_nav_hides_practice_and_moves_fidel_to_learn(client, app):
     client.get("/ko/learn")
     with app.app_context():

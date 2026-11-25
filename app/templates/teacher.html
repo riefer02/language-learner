@@ -1,14 +1,31 @@
 {% extends "base.html" %}
 {% block title %} - Teacher{% endblock %}
 {% block content %}
+{% from "_macros.html" import page_help %}
 <div class="teacher" id="teacher-app" data-session-active="0">
-  <div class="learn-header">
-    <p class="learn-eyebrow">Speaking teacher</p>
-    <h2>Talk to Kiku.</h2>
-    <p class="learn-sub">
-      A short spoken lesson with a teacher who gives you drills, corrects you
-      once, and remembers what you saved. Seven minutes is enough.
-    </p>
+  <div class="page-head">
+    <div>
+      <p class="learn-eyebrow">Speaking teacher</p>
+      <h2>Talk to Kiku.</h2>
+      <p class="learn-meta">
+        Seven minutes. Microphone only. No raw audio stored.
+      </p>
+    </div>
+    {% call page_help("kiku-help-teacher", "Before your first call") %}
+      <h3>Before your first call</h3>
+      <ol>
+        <li>Allow the microphone when Chrome asks; the call uses it directly.</li>
+        <li>Say “안녕하세요” and let Kiku lead. Ask for a drill when you want one.</li>
+        <li>At the end, check the debrief and add drills to your review queue.</li>
+      </ol>
+      <h3>What can I ask?</h3>
+      <ul>
+        <li>“What does this word mean?” — it searches your dictionary.</li>
+        <li>“Give me two drills for these words.” — it creates short drills.</li>
+        <li>“Save that.” — it adds the term with your sentence.</li>
+        <li>“Slower, please.” — it changes pace without leaving Korean.</li>
+      </ul>
+    {% endcall %}
   </div>
 
   {% if not voice_supported %}
@@ -25,34 +42,6 @@
     in the app keeps working.
   </div>
   {% endif %}
-
-  <section
-    class="tutorial-card"
-    data-dismissible="kiku-tutorial-teacher"
-    aria-labelledby="teacher-start-help"
-  >
-    <div class="tutorial-head">
-      <div>
-        <h3 id="teacher-start-help">Before your first call</h3>
-        <p class="learn-meta">Seven minutes. Microphone only. No raw audio stored.</p>
-      </div>
-      <button type="button" class="link-button" data-dismiss>Dismiss</button>
-    </div>
-    <ol class="tutorial-steps">
-      <li>Allow the microphone when Chrome asks; the call uses it directly.</li>
-      <li>Say “안녕하세요” and let Kiku lead. Ask for a drill when you want one.</li>
-      <li>At the end, check the debrief and add drills to your review queue.</li>
-    </ol>
-    <details class="help-tip">
-      <summary>What can I ask the teacher?</summary>
-      <ul>
-        <li>“What does this word mean?” — it searches your dictionary.</li>
-        <li>“Give me two drills for these words.” — it creates short drills.</li>
-        <li>“Save that.” — it adds the term with your sentence.</li>
-        <li>“Slower, please.” — it changes pace without leaving Korean.</li>
-      </ul>
-    </details>
-  </section>
 
   <section class="teacher-panel" aria-label="Teacher call">
     <div class="teacher-controls">

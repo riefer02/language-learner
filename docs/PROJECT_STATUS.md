@@ -399,3 +399,14 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 - The review CTA is above the fold at 390×844; the dashboard is capped at 800px
   on desktop.
 - 272 tests pass; ruff clean.
+
+### Page help and direct UI (25 November 2026)
+
+- **Look up**, **Teacher**, and **Dictionary** now open on the interface: the
+  title and the real control first, instructions behind a single `?`.
+- The first visit opens the help panel once (`localStorage`); afterwards it
+  stays closed. Escape or an outside click closes it.
+- The old tutorial cards on Look up and Teacher are gone; the Dictionary help
+  box moved into the same panel.
+- 274 tests pass; ruff clean. Checked at 390px: the closed Look up page goes
+  straight to the input, and the first-visit panel fits the viewport.

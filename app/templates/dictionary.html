@@ -1,27 +1,28 @@
 {% extends "base.html" %}
 {% block title %} - Dictionary{% endblock %}
 {% block content %}
+{% from "_macros.html" import page_help %}
 <div class="library dictionary">
-  <div class="learn-header">
-    <p class="learn-eyebrow">Dictionary</p>
-    <h2>Look it up. Keep it.</h2>
-    <p class="learn-sub">
-      Search your {{ language.name if language else "target" }} deck, listen,
-      and save a term with the sentence where you met it.
-    </p>
+  <div class="page-head">
+    <div>
+      <p class="learn-eyebrow">Dictionary</p>
+      <h2>Search your {{ language.name if language else "target" }} deck.</h2>
+      <p class="learn-meta">
+        Listen, then save a term with the sentence where you met it.
+      </p>
+    </div>
+    {% call page_help("kiku-help-dictionary", "How saving works") %}
+      <h3>How saving works</h3>
+      <p>
+        Saving keeps the word, its translation, and the sentence you heard it
+        in. It also adds the term to your review queue so it comes back later.
+      </p>
+    {% endcall %}
   </div>
 
   {% if saved %}
   <div class="settings-saved" role="status">Saved to your term library.</div>
   {% endif %}
-
-  <details class="help-tip">
-    <summary>What happens when I save a term?</summary>
-    <p>
-      Saving keeps the word, its translation, and the sentence you heard it in.
-      It also adds the term to your review queue so it comes back later.
-    </p>
-  </details>
 
   <form
     class="dictionary-search"

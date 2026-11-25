@@ -1,46 +1,30 @@
 {% extends "base.html" %}
 {% block title %} - Look up{% endblock %}
 {% block content %}
-<div class="page-hero">
-  <span class="language-badge">
-    {{ language.name if language else "Korean" }}
-  </span>
-  <h2>Look up a word or phrase.</h2>
-  <p>
-    Type English, get a natural {{ language.name if language else "Korean" }}
-    word or phrase with audio, then keep it in your library.
-  </p>
-</div>
-
-<section
-  class="tutorial-card"
-  data-dismissible="kiku-tutorial-translate"
-  aria-labelledby="translate-how"
->
-  <div class="tutorial-head">
-    <div>
-      <h3 id="translate-how">How this page works</h3>
-      <p class="learn-meta">Three steps, about ten seconds.</p>
-    </div>
-    <button type="button" class="link-button" data-dismiss>Dismiss</button>
+{% from "_macros.html" import page_help %}
+<div class="page-head">
+  <div>
+    <p class="learn-eyebrow">
+      Look up · {{ language.name if language else "Korean" }}
+    </p>
+    <h2>Look up a word or phrase</h2>
   </div>
-  <ol class="tutorial-steps">
-    <li>Type the English word or phrase you want.</li>
-    <li>Listen to the generated audio before you repeat it.</li>
-    <li>Open your library to replay it later, or review it in Learn.</li>
-  </ol>
-  <details class="help-tip">
-    <summary>Why can the translation be different from a dictionary?</summary>
+  {% call page_help("kiku-help-lookup", "How Look up works") %}
+    <h3>How this works</h3>
+    <ol>
+      <li>Type the English word or phrase you want.</li>
+      <li>Listen to the generated audio before you repeat it.</li>
+      <li>Open your library to replay it later, or review it in Learn.</li>
+    </ol>
     <p>
       Kiku translates the whole phrase for the situation, not word by word.
       Slang, honorifics, and politeness can change the result. Check the
-      dictionary if you need a single term.
+      dictionary for a single term.
     </p>
-  </details>
-</section>
+  {% endcall %}
+</div>
 
-<section class="phrase-input" aria-labelledby="phrase-heading">
-  <h3 id="phrase-heading">Look up a word or phrase</h3>
+<section class="phrase-input" aria-label="Look up">
   <form
     id="phrase-form"
     data-lang="{{ language.code if language else 'ko' }}"

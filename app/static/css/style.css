@@ -3019,6 +3019,97 @@ nav button:focus-visible {
   border-radius: var(--radius-md);
 }
 
+/* Page header with one-time help tucked behind a ? control. */
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.page-head h2 {
+  margin: 0;
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+}
+
+.page-head .learn-meta {
+  margin-top: var(--space-1);
+}
+
+.page-help {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.page-help > summary {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--primary);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.page-help > summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-help > summary:hover,
+.page-help[open] > summary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--surface);
+}
+
+.page-help-panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 20;
+  box-sizing: border-box;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.page-help-panel h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lg);
+}
+
+.page-help-panel h3 + p {
+  margin-top: 0;
+}
+
+.page-help-panel ol,
+.page-help-panel ul {
+  margin: 0 0 var(--space-2);
+  padding-left: 1.2rem;
+  color: var(--ink-600);
+}
+
+.page-help-panel li {
+  margin-bottom: var(--space-1);
+}
+
+.page-help-panel p {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-600);
+}
+
 .help-tip summary {
   cursor: pointer;
   font-weight: 650;

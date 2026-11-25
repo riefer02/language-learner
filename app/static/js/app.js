@@ -135,6 +135,41 @@ document.addEventListener("keydown", function (e) {
   });
 })();
 
+// One-time page help: open on the first visit, then live behind the ? control.
+(function () {
+  document.querySelectorAll("details[data-first-visit]").forEach(function (details) {
+    const key = details.getAttribute("data-first-visit");
+    let seen = false;
+    try {
+      seen = window.localStorage.getItem(key) === "1";
+    } catch (_error) {
+      /* localStorage can be unavailable in private mode. */
+    }
+    if (seen) return;
+    details.open = true;
+    try {
+      window.localStorage.setItem(key, "1");
+    } catch (_error) {
+      /* ignore */
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    document.querySelectorAll("details.page-help[open]").forEach(function (details) {
+      if (!details.contains(event.target)) {
+        details.open = false;
+      }
+    });
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+    document.querySelectorAll("details.page-help[open]").forEach(function (details) {
+      details.open = false;
+    });
+  });
+})();
+
 // Language switch: submit the header form when the selection changes.
 (function () {
   document.querySelectorAll(".language-switch select").forEach(function (select) {
