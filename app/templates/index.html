@@ -21,6 +21,14 @@
       Slang, honorifics, and politeness can change the result. Check the
       dictionary for a single term.
     </p>
+    {% if registers %}
+    <p>
+      <strong>How formal?</strong> changes the speech level. Korean offers
+      everyday polite (해요), formal (합니다), and casual (반말). Amharic
+      offers everyday and formal (እርስዎ). The default is safe for most
+      situations.
+    </p>
+    {% endif %}
     {% if language and language.code == 'am' %}
     <p>
       Amharic changes with the person you address. Choose a man, a woman, or a
@@ -54,6 +62,23 @@
         {{ language.name if language else "Korean" }}.
       </small>
     </div>
+    {% if registers %}
+    <div class="form-group">
+      <label for="register">How formal?</label>
+      <select id="register" name="register">
+        {% for value, label in registers %}
+        <option value="{{ value }}"{% if value == default_register %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <small class="learn-meta">
+        {% if language and language.code == 'ko' %}
+        Everyday polite is safe with strangers; casual is for close friends.
+        {% else %}
+        Use the formal form with strangers, elders, and officials.
+        {% endif %}
+      </small>
+    </div>
+    {% endif %}
     {% if language and language.code == 'am' %}
     <div class="form-group">
       <label for="addressee">Who are you speaking to?</label>
@@ -94,6 +119,7 @@
     ></div>
     <div class="phrase-romanization" lang="en" hidden></div>
     <p class="phrase-addressee learn-meta" hidden></p>
+    <p class="phrase-register learn-meta" hidden></p>
     <div class="audio-player">
       <audio
         controls

@@ -263,9 +263,13 @@ def test_amharic_lookup_asks_who_you_are_speaking_to(client, app):
     assert page.status_code == 200
     assert b'id="addressee"' in page.data
     assert b"A woman" in page.data
+    assert b'id="register"' in page.data
+    assert "Formal (እርስዎ)".encode() in page.data
 
     korean = client.get("/ko/translate")
     assert b'id="addressee"' not in korean.data
+    assert b'id="register"' in korean.data
+    assert "Formal (합니다)".encode() in korean.data
 
 
 def test_amharic_progress_and_terms_hide_korean_only_actions(client, app):

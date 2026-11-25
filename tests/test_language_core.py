@@ -257,6 +257,7 @@ def test_legacy_database_backfills_and_downgrades(tmp_path):
         assert phrase["target_text"] == "커피"
         assert "target_transliteration" in set(phrase.keys())
         assert "addressee" in set(phrase.keys())
+        assert "register" in set(phrase.keys())
         assert phrase["target_language_id"] == korean_id
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
     finally:
@@ -285,6 +286,7 @@ def test_legacy_database_backfills_and_downgrades(tmp_path):
         assert phrase["korean_text"] == "커피"
         assert "target_transliteration" not in set(phrase.keys())
         assert "addressee" not in set(phrase.keys())
+        assert "register" not in set(phrase.keys())
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
     finally:
         connection.close()

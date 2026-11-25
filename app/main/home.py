@@ -3,6 +3,7 @@
 from flask import abort, redirect, render_template, request, session, url_for
 
 from app import db
+from app.languages.variants import default_register, register_choices
 from app.learning.service import current_language, get_or_create_local_user
 from app.main import main
 from app.main.helpers import _check_csrf
@@ -98,9 +99,12 @@ def legacy_welcome(rest=""):
 @main.route("/<lang_code>/translate")
 def index():
     language = current_language()
+    code = language.code if language else "ko"
     return render_template(
         "index.html",
         language=language,
         q=(request.args.get("q") or "").strip()[:500],
         run=request.args.get("run") == "1",
+        registers=register_choices(code),
+        default_register=default_register(code),
     )

@@ -402,3 +402,36 @@ def test_translate_api_records_the_addressee(client):
 
     library = client.get("/ko/library")
     assert b"To a woman" in library.data
+
+
+def test_translate_api_records_the_register(client):
+    from app.utils import caching
+
+    caching._cache.clear()
+    client.get("/ko/learn")
+
+    response = client.post(
+        "/api/translate",
+        json={"text": "Thank you", "formality": "formal"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["register"] == "formal"
+
+    library = client.get("/ko/library")
+    assert b"Formal" in library.data
+
+    phrases = client.get("/api/phrases").get_json()["phrases"]
+    assert phrases[0]["register"] == "formal"
+
+
+def test_translate_api_defaults_to_the_everyday_polite_register(client):
+    from app.utils import caching
+
+    caching._cache.clear()
+    client.get("/ko/learn")
+
+    response = client.post("/api/translate", json={"text": "Hello"})
+
+    assert response.status_code == 200
+    assert response.get_json()["register"] == "polite"

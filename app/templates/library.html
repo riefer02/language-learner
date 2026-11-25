@@ -72,6 +72,11 @@
         {% if phrase.addressee == 'male' %}To a man{% elif phrase.addressee == 'female' %}To a woman{% elif phrase.addressee == 'group' %}To a group{% endif %}
       </p>
       {% endif %}
+      {% if phrase.register %}
+      <p class="learn-meta">
+        {% if phrase.register == 'formal' %}Formal{% elif phrase.register == 'polite' %}Everyday polite{% elif phrase.register == 'casual' %}Casual{% endif %}
+      </p>
+      {% endif %}
       <div class="audio-player">
         <audio
           src="{{ phrase.audio_path }}"

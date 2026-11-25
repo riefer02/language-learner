@@ -480,6 +480,18 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   please, goodbye, and welcome.
 - **305 tests pass**; ruff clean.
 
+### Formality for every language (25 November 2026)
+
+- Look up now asks **“How formal?”** for both languages: Korean everyday polite
+  (해요, default), formal (합니다), and casual (반말); Amharic everyday (default)
+  and formal (እርስዎ).
+- The choice changes the translation prompt and cache key, is stored as
+  `phrase.register` (migration `0019`), and is shown in results and My terms.
+- Review cards now also surface curated register alternates from
+  `app/languages/variants.py` (for example 감사합니다 → 고마워요 / 고마워 and
+  እንደምን ነህ? → እንደምን ነዎት?), so Korean and Amharic teach the contrast.
+- **313 tests pass**; ruff clean.
+
 ### Settings nav alignment and cache truth (25 November 2026)
 
 - The plain **Settings** link now uses the same inline-flex box, padding,

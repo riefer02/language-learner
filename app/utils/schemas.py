@@ -42,6 +42,8 @@ class TranslationRequest(BaseModel):
 
     text: str = Field(min_length=1, max_length=500)
     addressee: Literal["male", "female", "group", "any"] = "any"
+    # Named formality, not ``register``: the latter shadows a BaseModel member.
+    formality: Literal["casual", "polite", "formal"] | None = None
 
     @field_validator("text", mode="before")
     @classmethod

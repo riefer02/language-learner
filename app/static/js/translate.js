@@ -42,13 +42,15 @@ document.addEventListener("DOMContentLoaded", function () {
       const lang = (form && form.dataset.lang) || "ko";
       const addresseeInput = document.getElementById("addressee");
       const addressee = addresseeInput ? addresseeInput.value : "any";
+      const registerInput = document.getElementById("register");
+      const register = registerInput ? registerInput.value : null;
       const response = await fetch("/api/translate?lang=" + encodeURIComponent(lang), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": csrfToken,
         },
-        body: JSON.stringify({ text: englishText, addressee }),
+        body: JSON.stringify({ text: englishText, addressee, formality: register }),
       });
 
       const data = await response.json();
@@ -88,6 +90,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const label = labels[data.addressee];
         addresseeOut.textContent = label || "";
         addresseeOut.hidden = !label;
+      }
+
+      const registerOut = resultDiv.querySelector(".phrase-register");
+      if (registerOut) {
+        const registerLabels = {
+          formal: "Formal",
+          polite: "Everyday polite",
+          casual: "Casual",
+        };
+        const label = registerLabels[data.register];
+        registerOut.textContent = label || "";
+        registerOut.hidden = !label;
       }
 
       if (repeatBtn) {

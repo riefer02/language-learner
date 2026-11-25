@@ -98,9 +98,10 @@ language from the learner.
 `apply_rating` → `ReviewLog`.
 
 New cards are capped by `NEW_CARDS_PER_DAY`; due reviews always come first.
-Gendered Amharic items (`… (to a man/woman/group)`) also render an **Other ways
-to say it** block from `addressee_variants(item)`, so every review shows all
-curated forms, not just the one the card happened to pick.
+Gendered Amharic items (`… (to a man/woman/group)`) and register alternates from
+`app/languages/variants.py` also render an **Other ways to say it** block from
+`review_variants(item, language_code)`, so every review shows the curated forms,
+not just the one the card happened to pick.
 
 ### Teacher (voice)
 
@@ -130,10 +131,10 @@ The teacher's `add_term_to_library` calls the same function.
 ### Translation
 
 `POST /api/translate` → `translate_text_with_romanization(text, target_code,
-addressee)` → script validation (Hangul for `ko`, Ethiopic for `am`) →
+addressee, register)` → script validation (Hangul for `ko`, Ethiopic for `am`) →
 `generate_audio` → `Phrase` with source/target ids, `target_text`,
-`target_transliteration`, and `addressee` → JSON with `target_text`,
-`romanization`, `addressee`, and `target_lang`.
+`target_transliteration`, `addressee`, and `register` → JSON with `target_text`,
+`romanization`, `addressee`, `register`, and `target_lang`.
 
 The romanization is generated in the same model call as the translation (Revised
 Romanization for Korean, a simple Latin transliteration for Amharic). It is a
@@ -143,6 +144,11 @@ without it still saves the translation.
 For Amharic, `addressee` is `male`, `female`, `group`, or `any`. The prompt uses
 the matching second-person forms; `any` asks for both when the phrase has a
 gender contrast. The value is stored on the phrase and shown in the library.
+
+Every language can also set `register`: `casual`, `polite`, or `formal`.
+Korean defaults to `polite` (해요) and offers formal (합니다) and casual (반말);
+Amharic defaults to `casual` (አንተ/አንቺ) and offers formal (እርስዎ). The chosen
+speech level changes the prompt, the cache key, and the saved phrase.
 
 `generate_audio` uses `gpt-audio-1.5` with a `<read>` contract and rejects
 conversational output whose transcript does not match the input.

@@ -5,6 +5,7 @@ import uuid
 from flask import current_app, jsonify, request
 
 from app import db
+from app.languages.variants import default_register
 from app.learning.service import request_language
 from app.main import main
 from app.main.helpers import _error, _parse_json
@@ -33,9 +34,13 @@ def api_translate():
 
     language = request_language()
     target_code = language.code if language else "ko"
+    register = payload.formality or default_register(target_code)
     try:
         result = translate_text_with_romanization(
-            payload.text, target_code, addressee=payload.addressee
+            payload.text,
+            target_code,
+            addressee=payload.addressee,
+            register=register,
         )
     except ValueError as exc:
         return _error(str(exc), 400)
@@ -67,6 +72,7 @@ def api_translate():
             target_text=target_text,
             target_transliteration=result.romanization,
             addressee=payload.addressee,
+            register=register,
         )
         db.session.add(phrase)
         db.session.commit()
@@ -91,6 +97,7 @@ def api_translate():
             "target_text": target_text,
             "romanization": result.romanization,
             "addressee": payload.addressee,
+            "register": register,
             "target_lang": target_code,
             "target_language": language.name if language else "Korean",
         }

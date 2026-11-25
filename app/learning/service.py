@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app import db
+from app.languages.variants import alternates_for
 from app.learning.scheduler import ensure_utc, new_review_card, utcnow
 from app.models import Item, ReviewCard, ReviewLog, User
 from app.models_language import Language
@@ -81,6 +82,43 @@ def addressee_variants(item):
             {"item": row, "label": f"To {row_match.group(1)}"}
         )
     return sorted(variants, key=lambda variant: variant["label"])
+
+
+def review_variants(item, language_code):
+    """Every other curated form of an item, flat and ready to render.
+
+    Gendered Amharic items are grouped by gloss; register alternates come from
+    the language content pack. Duplicate target text is dropped.
+    """
+    forms = []
+    seen = {item.target_text} if item else set()
+    for variant in addressee_variants(item):
+        row = variant["item"]
+        if row.target_text in seen:
+            continue
+        seen.add(row.target_text)
+        forms.append(
+            {
+                "label": variant["label"],
+                "text": row.target_text,
+                "transliteration": row.transliteration,
+                "audio_path": row.audio_path,
+            }
+        )
+    if item is not None:
+        for alternate in alternates_for(language_code, item.target_text):
+            if alternate["text"] in seen:
+                continue
+            seen.add(alternate["text"])
+            forms.append(
+                {
+                    "label": alternate["label"],
+                    "text": alternate["text"],
+                    "transliteration": alternate.get("transliteration"),
+                    "audio_path": None,
+                }
+            )
+    return forms
 
 
 def request_language():

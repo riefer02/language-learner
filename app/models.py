@@ -25,6 +25,7 @@ class Phrase(db.Model):
     target_text = db.Column(db.String(500), nullable=True)
     target_transliteration = db.Column(db.String(500), nullable=True)
     addressee = db.Column(db.String(12), nullable=True)
+    register = db.Column(db.String(12), nullable=True)
 
     def __repr__(self):
         return f"<Phrase {self.source_text}>"
@@ -37,6 +38,7 @@ class Phrase(db.Model):
             "target_text": self.target_text,
             "target_transliteration": self.target_transliteration,
             "addressee": self.addressee,
+            "register": self.register,
             "audio_path": self.audio_path,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }

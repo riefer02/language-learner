@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from flask import current_app
 from pydantic import ValidationError
 
+from app.languages.variants import default_register
 from app.services.ai import get_openai_client
 from app.utils.caching import cache_result
 from app.utils.retries import call_with_retries
@@ -18,7 +19,7 @@ from app.utils.schemas import (
 )
 
 TRANSLATION_MODEL = "gpt-5.6-luna"
-TRANSLATION_CACHE_VERSION = "translation-prompt-v5"
+TRANSLATION_CACHE_VERSION = "translation-prompt-v6"
 TARGET_LANGUAGES = {
     "ko": "Korean",
     "am": "Amharic",
@@ -115,7 +116,31 @@ def _conversation_model():
     return current_app.config.get("CONVERSATION_MODEL", CONVERSATION_MODEL)
 
 
-def _request_translation(text, target_code="ko", addressee="any"):
+def _register_rule(target_code, register):
+    if target_code == "ko":
+        if register == "formal":
+            return (
+                " Use formal polite speech (합니다체): -ㅂ니다/습니다 and "
+                "-십시오 requests."
+            )
+        if register == "casual":
+            return (
+                " Use casual plain speech (반말): -아/어 endings, not -요."
+            )
+        return " Use everyday polite speech (해요체): -요 endings."
+    if target_code == "am":
+        if register == "formal":
+            return (
+                " Use formal/polite second person (እርስዎ, and እርሳቸው for"
+                " 'he/she' honorific) with formal verb agreement."
+            )
+        return (
+            " Use everyday informal second person (አንተ / አንቺ / እናንተ)."
+        )
+    return ""
+
+
+def _request_translation(text, target_code="ko", addressee="any", register=None):
     language = TARGET_LANGUAGES.get(target_code, "Korean")
     if target_code == "ko":
         romanization_rule = "use Revised Romanization for Korean"
@@ -143,6 +168,7 @@ def _request_translation(text, target_code="ko", addressee="any"):
                 " addressee's gender, give the masculine form first and the"
                 " feminine form in parentheses."
             )
+    register_rule = _register_rule(target_code, register)
     client = get_openai_client()
     model = _translation_model()
     max_tokens = min(1200, max(220, len(text) * 4))
@@ -160,7 +186,7 @@ def _request_translation(text, target_code="ko", addressee="any"):
                         "translation in its native script) and 'romanization' "
                         "(a learner-friendly Latin-script reading of the "
                         f"translation; {romanization_rule}; do not translate "
-                        "it)." + addressee_rule
+                        "it)." + addressee_rule + register_rule
                     ),
                 },
                 {"role": "user", "content": text},
@@ -171,12 +197,14 @@ def _request_translation(text, target_code="ko", addressee="any"):
     return _parse_translation_response(response, target_code)
 
 
-def _translate_with_output_retries(text, target_code="ko", addressee="any"):
+def _translate_with_output_retries(
+    text, target_code="ko", addressee="any", register=None
+):
     last_error = None
 
     for attempt in range(MAX_OUTPUT_ATTEMPTS):
         try:
-            return _request_translation(text, target_code, addressee)
+            return _request_translation(text, target_code, addressee, register)
         except ValueError as error:
             last_error = error
             current_app.logger.warning(
@@ -193,19 +221,23 @@ def _translate_with_output_retries(text, target_code="ko", addressee="any"):
 
 
 @cache_result(expire_seconds=86400)
-def _translate_cached(cache_version, target_code, text, addressee):
+def _translate_cached(cache_version, target_code, text, addressee, register):
     # The version is part of the cache key, so prompt/schema changes do not
     # serve stale translations for 24 hours.
-    return _translate_with_output_retries(text, target_code, addressee)
+    return _translate_with_output_retries(text, target_code, addressee, register)
 
 
-def translate_text_with_romanization(text, target_code="ko", addressee="any"):
+def translate_text_with_romanization(
+    text, target_code="ko", addressee="any", register=None
+):
     """Translate and return the text plus its learner-facing romanization."""
     if addressee not in {"male", "female", "group", "any"}:
         addressee = "any"
+    if register not in {"casual", "polite", "formal"}:
+        register = default_register(target_code)
     try:
         request = TranslationRequest.model_validate(
-            {"text": text, "addressee": addressee}
+            {"text": text, "addressee": addressee, "formality": register}
         )
     except ValidationError as error:
         raise ValueError(
@@ -214,10 +246,10 @@ def translate_text_with_romanization(text, target_code="ko", addressee="any"):
 
     cache_version = (
         f"{TRANSLATION_CACHE_VERSION}:{_translation_model()}:"
-        f"{target_code}:{request.addressee}"
+        f"{target_code}:{request.addressee}:{request.formality}"
     )
     return _translate_cached(
-        cache_version, target_code, request.text, request.addressee
+        cache_version, target_code, request.text, request.addressee, request.formality
     )
 
 

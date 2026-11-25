@@ -104,26 +104,26 @@
             {% for variant in variants %}
             <li class="review-variant">
               <span class="review-variant-label">{{ variant.label }}</span>
-              <strong lang="{{ item_lang }}">{{ variant.item.target_text }}</strong>
-              {% if variant.item.transliteration %}
+              <strong lang="{{ item_lang }}">{{ variant.text }}</strong>
+              {% if variant.transliteration %}
               <span class="review-romanization" lang="en">
-                {{ variant.item.transliteration }}
+                {{ variant.transliteration }}
               </span>
               {% endif %}
-              {% if variant.item.audio_path %}
+              {% if variant.audio_path %}
               <audio
                 class="review-audio"
-                src="{{ variant.item.audio_path }}"
+                src="{{ variant.audio_path }}"
                 controls
                 preload="none"
-                aria-label="Play {{ variant.label|lower }}: {{ variant.item.target_text }}"
+                aria-label="Play {{ variant.label|lower }}: {{ variant.text }}"
               ></audio>
               {% else %}
               <button
                 type="button"
                 class="speak-btn"
-                data-speak="{{ variant.item.target_text }}"
-                aria-label="Hear {{ variant.item.target_text }} in {{ language.name if language else 'Amharic' }}"
+                data-speak="{{ variant.text }}"
+                aria-label="Hear {{ variant.text }} in {{ language.name if language else 'the target language' }}"
               >
                 Hear it
               </button>

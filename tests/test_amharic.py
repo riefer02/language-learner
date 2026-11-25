@@ -11,6 +11,7 @@ from app.learning.service import (
     available_cards,
     current_language,
     get_or_create_local_user,
+    review_variants,
     stats,
 )
 from app.models import Item, ReviewCard
@@ -71,6 +72,44 @@ def test_review_card_shows_every_addressee_form(client, app):
     assert b"Other ways to say it" in page.data
     assert "ስምሽ ማን ነው?".encode() in page.data
     assert "ስማችሁ ማን ነው?".encode() in page.data
+    assert "ስምዎ ማን ነው?".encode() in page.data
+
+
+def test_review_variants_include_korean_formality(client, app):
+    client.get("/ko/learn")
+    with app.app_context():
+        item = Item.query.filter_by(target_text="안녕하세요").one()
+
+        forms = {
+            variant["label"]: variant["text"]
+            for variant in review_variants(item, "ko")
+        }
+
+        assert forms["Formal"] == "안녕하십니까"
+        assert forms["Casual"] == "안녕"
+
+
+def test_review_card_shows_korean_register_forms(client, app):
+    client.get("/ko/learn")
+    with app.app_context():
+        item = Item.query.filter_by(target_text="안녕하세요").one()
+        user = get_or_create_local_user()
+        korean = Language.query.filter_by(code="ko").one()
+        user.target_language_id = korean.id
+        ReviewCard.query.filter(ReviewCard.item_id != item.id).update(
+            {"due_at": utcnow() + timedelta(days=30)}
+        )
+        ReviewCard.query.filter(ReviewCard.item_id == item.id).update(
+            {"due_at": utcnow() - timedelta(hours=1)}
+        )
+        db.session.commit()
+
+    page = client.get("/ko/learn/review")
+
+    assert page.status_code == 200
+    assert b"Other ways to say it" in page.data
+    assert '<strong lang="ko">안녕하십니까</strong>'.encode() in page.data
+    assert '<strong lang="ko">안녕</strong>'.encode() in page.data
 
 
 def test_review_queue_is_scoped_to_the_active_language(app):

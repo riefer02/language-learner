@@ -569,6 +569,68 @@ def test_translate_amharic_unspecified_asks_for_both(app):
     assert "feminine form in parentheses" in system
 
 
+def test_translate_korean_formal_register_prompt(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"translation": "감사합니다", "romanization": "gamsahamnida"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        translation_service.translate_text_with_romanization(
+            "Thank you", "ko", register="formal"
+        )
+
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "formal polite speech" in system
+    assert "합니다체" in system
+
+
+def test_translate_korean_casual_register_prompt(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"translation": "고마워", "romanization": "gomawo"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        translation_service.translate_text_with_romanization(
+            "Thank you", "ko", register="casual"
+        )
+
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "casual plain speech" in system
+    assert "반말" in system
+
+
+def test_translate_amharic_formal_register_prompt(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"translation": "እንደምን ነዎት?", "romanization": "endemin newot?"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        translation_service.translate_text_with_romanization(
+            "How are you?", "am", addressee="male", register="formal"
+        )
+
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "formal/polite second person" in system
+    assert "እርስዎ" in system
+    assert "Address one man" in system
+
+
+def test_translate_uses_the_language_default_register(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"translation": "እንደምን ነህ?", "romanization": "endemin neh?"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        translation_service.translate_text_with_romanization("How are you?", "am")
+
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "everyday informal second person" in system
+
+
 def test_translate_text_scales_the_output_budget(app):
     fake = FakeOpenAIClient(
         [
