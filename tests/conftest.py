@@ -62,6 +62,7 @@ class _FakeCompletion:
 # ``translation`` and conversation generation reads ``lines``.
 _DEFAULT_PAYLOAD = {
     "translation": "안녕하세요",
+    "romanization": "annyeonghaseyo",
     "title": "Test conversation",
     "description": "A fake scenario for tests.",
     "lines": [

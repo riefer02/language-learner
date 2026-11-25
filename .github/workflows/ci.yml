@@ -110,6 +110,8 @@ jobs:
           }
           if not {"source_text", "target_text"} <= phrase_columns:
               raise SystemExit("language-neutral phrase columns are missing")
+          if "target_transliteration" not in phrase_columns:
+              raise SystemExit("phrase transliteration is missing after migration")
           if "korean_text" in phrase_columns:
               raise SystemExit("legacy phrase.korean_text column still exists")
           print("migration schema ok:", sorted(tables))

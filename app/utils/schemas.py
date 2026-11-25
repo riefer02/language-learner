@@ -52,11 +52,20 @@ class GenericTranslationResponse(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 
     translation: str = Field(min_length=1, max_length=500)
+    romanization: str | None = Field(default=None, max_length=500)
 
     @field_validator("translation", mode="before")
     @classmethod
     def _strip_translation(cls, value):
         return _required_text(value, "translation")
+
+    @field_validator("romanization", mode="before")
+    @classmethod
+    def _strip_romanization(cls, value):
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
 
 
 class ConversationRequest(BaseModel):

@@ -1,6 +1,7 @@
 """OpenAI-backed translation and conversation generation."""
 
 import json
+from dataclasses import dataclass
 
 from flask import current_app
 from pydantic import ValidationError
@@ -17,7 +18,7 @@ from app.utils.schemas import (
 )
 
 TRANSLATION_MODEL = "gpt-5.6-luna"
-TRANSLATION_CACHE_VERSION = "translation-prompt-v4"
+TRANSLATION_CACHE_VERSION = "translation-prompt-v5"
 TARGET_LANGUAGES = {
     "ko": "Korean",
     "am": "Amharic",
@@ -27,6 +28,12 @@ TARGET_LANGUAGES = {
 }
 CONVERSATION_MODEL = "gpt-5.6-luna"
 MAX_OUTPUT_ATTEMPTS = 3
+
+
+@dataclass(frozen=True)
+class TranslationResult:
+    translation: str
+    romanization: str | None = None
 
 # Reasoning-tier chat models (GPT-5/6, o-series) reject ``temperature`` and use
 # ``max_completion_tokens`` instead of ``max_tokens``. ``gpt-5.6-luna`` replaces
@@ -80,20 +87,24 @@ def _parse_translation_response(response, target_code="ko"):
             "OpenAI translation response must be a JSON object"
         )
 
-    value = payload.get("translation")
     try:
-        translated = GenericTranslationResponse.model_validate(
-            {"translation": value}
-        ).translation
+        result = GenericTranslationResponse.model_validate(payload)
     except ValidationError as error:
         raise ValueError(
             "OpenAI translation response did not match the expected schema"
         ) from error
-    if not _script_ok(translated, target_code):
+    if not _script_ok(result.translation, target_code):
         raise ValueError(
             f"Translation was not written in the target script ({target_code})"
         )
-    return translated
+    if target_code in {"ko", "am"} and not result.romanization:
+        current_app.logger.warning(
+            "Translation response omitted romanization for %s", target_code
+        )
+    return TranslationResult(
+        translation=result.translation,
+        romanization=result.romanization,
+    )
 
 
 def _translation_model():
@@ -106,6 +117,12 @@ def _conversation_model():
 
 def _request_translation(text, target_code="ko"):
     language = TARGET_LANGUAGES.get(target_code, "Korean")
+    if target_code == "ko":
+        romanization_rule = "use Revised Romanization for Korean"
+    elif target_code == "am":
+        romanization_rule = "use a simple Latin transliteration for Amharic"
+    else:
+        romanization_rule = "use a simple Latin transliteration"
     client = get_openai_client()
     model = _translation_model()
     response = call_with_retries(
@@ -116,15 +133,18 @@ def _request_translation(text, target_code="ko"):
                 {
                     "role": "system",
                     "content": (
-                        f"You are a helpful translator. Translate the given "
-                        f"English text to {language}. Respond with a JSON object "
-                        "containing a single key 'translation' whose value is the "
-                        f"{language} translation in its native script."
+                        "You are a helpful translator. Translate the given "
+                        f"English text to {language}. Respond with a JSON "
+                        "object with exactly two keys: 'translation' (the "
+                        "translation in its native script) and 'romanization' "
+                        "(a learner-friendly Latin-script reading of the "
+                        f"translation; {romanization_rule}; do not translate "
+                        "it)."
                     ),
                 },
                 {"role": "user", "content": text},
             ],
-            **_chat_options(model, max_tokens=150, temperature=0.3),
+            **_chat_options(model, max_tokens=220, temperature=0.3),
         )
     )
     return _parse_translation_response(response, target_code)
@@ -158,8 +178,8 @@ def _translate_cached(cache_version, target_code, text):
     return _translate_with_output_retries(text, target_code)
 
 
-def translate_text(text, target_code="ko"):
-    """Translate English text into the target language."""
+def translate_text_with_romanization(text, target_code="ko"):
+    """Translate and return the text plus its learner-facing romanization."""
     try:
         request = TranslationRequest.model_validate({"text": text})
     except ValidationError as error:
@@ -171,6 +191,11 @@ def translate_text(text, target_code="ko"):
         f"{TRANSLATION_CACHE_VERSION}:{_translation_model()}:{target_code}"
     )
     return _translate_cached(cache_version, target_code, request.text)
+
+
+def translate_text(text, target_code="ko"):
+    """Translate and return only the target text (backward-compatible)."""
+    return translate_text_with_romanization(text, target_code).translation
 
 
 def translate_to_korean(text):

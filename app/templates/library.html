@@ -65,6 +65,9 @@
     <div class="phrase-card" data-id="{{ phrase.id }}">
       <div class="phrase-english" lang="en">{{ phrase.source_text }}</div>
       <div class="phrase-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ phrase.target_text }}</div>
+      {% if phrase.target_transliteration %}
+      <div class="phrase-romanization">{{ phrase.target_transliteration }}</div>
+      {% endif %}
       <div class="audio-player">
         <audio
           src="{{ phrase.audio_path }}"

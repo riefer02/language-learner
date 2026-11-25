@@ -366,3 +366,20 @@ def test_failed_conversation_leaves_no_rows_or_files(app, client):
         assert Phrase.query.count() == 0
         assert Conversation.query.count() == 0
     assert set(os.listdir(audio_dir)) == before
+
+
+def test_translate_api_returns_romanization_and_saves_phrase(client):
+    from app.utils import caching
+
+    caching._cache.clear()
+    client.get("/ko/learn")
+
+    response = client.post("/api/translate", json={"text": "Hello"})
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["target_text"] == "안녕하세요"
+    assert data["romanization"] == "annyeonghaseyo"
+
+    library = client.get("/ko/library")
+    assert b"annyeonghaseyo" in library.data

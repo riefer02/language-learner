@@ -265,6 +265,13 @@ nav a[aria-current="page"] {
   color: var(--primary);
 }
 
+.phrase-romanization {
+  margin: -6px 0 12px;
+  color: var(--ink-500);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
 /* Forms */
 .form-group {
   margin-bottom: 20px;

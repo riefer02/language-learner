@@ -71,6 +71,7 @@
       class="phrase-korean"
       lang="{{ 'am' if language and language.code == 'am' else 'ko' }}"
     ></div>
+    <div class="phrase-romanization" lang="en" hidden></div>
     <div class="audio-player">
       <audio
         controls
@@ -101,5 +102,5 @@
 ></div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/translate.js') }}?v=20261125b"></script>
+<script src="{{ url_for('static', filename='js/translate.js') }}?v=20261125c"></script>
 {% endblock %}

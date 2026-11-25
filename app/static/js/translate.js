@@ -69,6 +69,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const audio = resultDiv.querySelector("audio");
       const repeatBtn = resultDiv.querySelector(".repeat-btn");
+      const romanizationEl = resultDiv.querySelector(".phrase-romanization");
+
+      if (romanizationEl) {
+        romanizationEl.textContent = data.romanization || "";
+        romanizationEl.hidden = !data.romanization;
+      }
 
       if (repeatBtn) {
         repeatBtn.setAttribute(

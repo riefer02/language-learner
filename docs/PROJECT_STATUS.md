@@ -410,3 +410,15 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   box moved into the same panel.
 - 274 tests pass; ruff clean. Checked at 390px: the closed Look up page goes
   straight to the input, and the first-visit panel fits the viewport.
+
+### Lookup romanization (25 November 2026)
+
+- The Look up translation call now returns a **romanization** in the same model
+  request: Revised Romanization for Korean, a simple Latin transliteration for
+  Amharic.
+- It is stored on `phrase.target_transliteration` and shown under the lookup
+  result and in the library’s phrase cards.
+- Migration `0017` adds the nullable column. Older saved phrases have no
+  transliteration until they are looked up again.
+- 277 tests pass; ruff clean. Verified live with `이거 얼마예요?` →
+  `Igeo eolmayeyo?` and audio.

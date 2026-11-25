@@ -126,9 +126,16 @@ The teacher's `add_term_to_library` calls the same function.
 
 ### Translation
 
-`POST /api/translate` → `translate_text(text, target_code)` → script validation
-(Hangul for `ko`, Ethiopic for `am`) → `generate_audio(..., language_code)` →
-`Phrase` with source/target ids → JSON with `target_text`/`target_lang`.
+`POST /api/translate` → `translate_text_with_romanization(text, target_code)` →
+script validation (Hangul for `ko`, Ethiopic for `am`) → `generate_audio` →
+`Phrase` with source/target ids, `target_text`, and
+`target_transliteration` → JSON with `target_text`, `romanization`, and
+`target_lang`.
+
+The romanization is generated in the same model call as the translation (Revised
+Romanization for Korean, a simple Latin transliteration for Amharic). It is a
+reading guide, not a pronunciation grade, and the field is optional: a response
+without it still saves the translation.
 
 `generate_audio` uses `gpt-audio-1.5` with a `<read>` contract and rejects
 conversational output whose transcript does not match the input.

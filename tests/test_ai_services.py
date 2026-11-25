@@ -192,7 +192,9 @@ def test_injected_client_takes_precedence(app):
 
 def test_translate_success(app):
     fake = FakeOpenAIClient(
-        [chat_response('{"translation": "안녕하세요"}')]
+        [chat_response(
+            '{"translation": "안녕하세요", "romanization": "annyeonghaseyo"}'
+        )]
     )
     app.extensions["openai_client"] = fake
 
@@ -206,9 +208,31 @@ def test_translate_success(app):
     assert call["response_format"] == {"type": "json_object"}
 
 
+def test_translate_returns_romanization(app):
+    fake = FakeOpenAIClient(
+        [
+            chat_response(
+                '{"translation": "안녕하세요", '
+                '"romanization": "annyeonghaseyo"}'
+            )
+        ]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        result = translation_service.translate_text_with_romanization(
+            "Hello there", "ko"
+        )
+
+    assert result.translation == "안녕하세요"
+    assert result.romanization == "annyeonghaseyo"
+
+
 def test_reasoning_model_omits_temperature_and_uses_completion_tokens(app):
     fake = FakeOpenAIClient(
-        [chat_response('{"translation": "안녕하세요"}')]
+        [chat_response(
+            '{"translation": "안녕하세요", "romanization": "annyeonghaseyo"}'
+        )]
     )
     app.extensions["openai_client"] = fake
 
@@ -217,7 +241,7 @@ def test_reasoning_model_omits_temperature_and_uses_completion_tokens(app):
         translation_service.translate_to_korean("Hello")
 
     call = fake.completions.calls[0]
-    assert call["max_completion_tokens"] == 150
+    assert call["max_completion_tokens"] == 220
     assert call["reasoning_effort"] == "none"
     assert "max_tokens" not in call
     assert "temperature" not in call
@@ -225,7 +249,9 @@ def test_reasoning_model_omits_temperature_and_uses_completion_tokens(app):
 
 def test_classic_model_keeps_temperature_and_max_tokens(app):
     fake = FakeOpenAIClient(
-        [chat_response('{"translation": "안녕하세요"}')]
+        [chat_response(
+            '{"translation": "안녕하세요", "romanization": "annyeonghaseyo"}'
+        )]
     )
     app.extensions["openai_client"] = fake
 
@@ -234,7 +260,7 @@ def test_classic_model_keeps_temperature_and_max_tokens(app):
         translation_service.translate_to_korean("Hello")
 
     call = fake.completions.calls[0]
-    assert call["max_tokens"] == 150
+    assert call["max_tokens"] == 220
     assert call["temperature"] == 0.3
     assert "max_completion_tokens" not in call
 
@@ -271,6 +297,18 @@ def test_translation_response_schema_rejects_blank_and_oversized_text():
 
     with pytest.raises(ValidationError):
         GenericTranslationResponse.model_validate({"translation": "가" * 501})
+
+
+def test_translation_schema_accepts_optional_romanization():
+    with_romanization = GenericTranslationResponse.model_validate(
+        {"translation": "안녕하세요", "romanization": "annyeonghaseyo"}
+    )
+    without = GenericTranslationResponse.model_validate(
+        {"translation": "안녕하세요"}
+    )
+
+    assert with_romanization.romanization == "annyeonghaseyo"
+    assert without.romanization is None
 
 
 # --- Conversation schema and generation ------------------------------------
@@ -493,7 +531,9 @@ def test_generate_audio_rejects_blank_text(app):
 
 
 def test_translate_text_targets_amharic(app):
-    fake = FakeOpenAIClient([chat_response('{"translation": "ቡናው የት አለ?"}')])
+    fake = FakeOpenAIClient([chat_response(
+            '{"translation": "ቡናው የት አለ?", "romanization": "bunaw yät alä?"}'
+        )])
     app.extensions["openai_client"] = fake
 
     with app.app_context():

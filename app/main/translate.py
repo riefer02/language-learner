@@ -12,7 +12,7 @@ from app.models import Phrase
 from app.models_language import Language
 from app.services.ai import OpenAIConfigError
 from app.services.audio import generate_audio
-from app.services.translation import translate_text
+from app.services.translation import translate_text_with_romanization
 from app.utils.media import AudioBatch, remove_files, safe_audio_filename
 from app.utils.rate_limit import rate_limit
 from app.utils.schemas import TranslationRequest
@@ -34,12 +34,14 @@ def api_translate():
     language = request_language()
     target_code = language.code if language else "ko"
     try:
-        target_text = translate_text(payload.text, target_code)
+        result = translate_text_with_romanization(payload.text, target_code)
     except ValueError as exc:
         return _error(str(exc), 400)
     except OpenAIConfigError as exc:
         current_app.logger.error("AI configuration error: %s", exc)
         return _error("Translation service is not configured", 503)
+
+    target_text = result.translation
 
     unique_id = uuid.uuid4().hex[:8]
     filename = (
@@ -61,6 +63,7 @@ def api_translate():
             target_language_id=language.id if language else None,
             source_text=payload.text,
             target_text=target_text,
+            target_transliteration=result.romanization,
         )
         db.session.add(phrase)
         db.session.commit()
@@ -83,6 +86,7 @@ def api_translate():
     data.update(
         {
             "target_text": target_text,
+            "romanization": result.romanization,
             "target_lang": target_code,
             "target_language": language.name if language else "Korean",
         }
