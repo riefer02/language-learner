@@ -473,7 +473,12 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 - “Not sure” asks the model for both forms when the phrase has a gender
   contrast; the result and library show which addressee a saved phrase used.
 - Migration `0018` stores `phrase.addressee`; older phrases have no addressee.
-- **299 tests pass**; ruff clean.
+- Review cards for a gendered item now show an **Other ways to say it** panel
+  with every curated form (male, female, group), so the deck teaches the
+  contrast instead of hiding the other versions. The seed gained the missing
+  female/group "What is your name?" forms and group forms for how-are-you,
+  please, goodbye, and welcome.
+- **305 tests pass**; ruff clean.
 
 ### Settings nav alignment and cache truth (25 November 2026)
 

@@ -96,6 +96,43 @@
         {% else %}
         <p class="learn-meta">Starter content — not native-checked.</p>
         {% endif %}
+
+        {% if variants %}
+        <div class="review-variants">
+          <h3 class="review-variants-title">Other ways to say it</h3>
+          <ul class="review-variant-list">
+            {% for variant in variants %}
+            <li class="review-variant">
+              <span class="review-variant-label">{{ variant.label }}</span>
+              <strong lang="{{ item_lang }}">{{ variant.item.target_text }}</strong>
+              {% if variant.item.transliteration %}
+              <span class="review-romanization" lang="en">
+                {{ variant.item.transliteration }}
+              </span>
+              {% endif %}
+              {% if variant.item.audio_path %}
+              <audio
+                class="review-audio"
+                src="{{ variant.item.audio_path }}"
+                controls
+                preload="none"
+                aria-label="Play {{ variant.label|lower }}: {{ variant.item.target_text }}"
+              ></audio>
+              {% else %}
+              <button
+                type="button"
+                class="speak-btn"
+                data-speak="{{ variant.item.target_text }}"
+                aria-label="Hear {{ variant.item.target_text }} in {{ language.name if language else 'Amharic' }}"
+              >
+                Hear it
+              </button>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
       </div>
     </details>
   </div>

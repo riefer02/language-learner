@@ -1,15 +1,19 @@
 """Amharic starter pack, fidel bootcamp, and language-scoped review."""
 
+from datetime import timedelta
+
 from app import db
 from app.languages.am_content import AMHARIC_ITEMS
 from app.languages.seed import seed_amharic
+from app.learning.scheduler import utcnow
 from app.learning.service import (
+    addressee_variants,
     available_cards,
     current_language,
     get_or_create_local_user,
     stats,
 )
-from app.models import Item
+from app.models import Item, ReviewCard
 from app.models_language import ItemForm, ItemGloss, Language
 
 
@@ -27,6 +31,46 @@ def test_seed_amharic_creates_items_forms_glosses_and_cards(app):
         # Re-running is idempotent.
         again = seed_amharic()
         assert again["created_items"] == 0
+
+
+def test_addressee_variants_lists_the_other_forms(app):
+    with app.app_context():
+        seed_amharic()
+        item = Item.query.filter_by(gloss="What is your name? (to a man)").one()
+
+        variants = addressee_variants(item)
+
+        assert {v["label"]: v["item"].target_text for v in variants} == {
+            "To a woman": "ስምሽ ማን ነው?",
+            "To a group": "ስማችሁ ማን ነው?",
+        }
+        # An ungendered item has no variant block.
+        plain = Item.query.filter_by(gloss="Water").one()
+        assert addressee_variants(plain) == []
+
+
+def test_review_card_shows_every_addressee_form(client, app):
+    client.get("/ko/learn")
+    with app.app_context():
+        seed_amharic()
+        item = Item.query.filter_by(gloss="What is your name? (to a man)").one()
+        user = get_or_create_local_user()
+        language = Language.query.filter_by(code="am").one()
+        user.target_language_id = language.id
+        ReviewCard.query.filter(ReviewCard.item_id != item.id).update(
+            {"due_at": utcnow() + timedelta(days=30)}
+        )
+        ReviewCard.query.filter(ReviewCard.item_id == item.id).update(
+            {"due_at": utcnow() - timedelta(hours=1)}
+        )
+        db.session.commit()
+
+    page = client.get("/am/learn/review")
+
+    assert page.status_code == 200
+    assert b"Other ways to say it" in page.data
+    assert "ስምሽ ማን ነው?".encode() in page.data
+    assert "ስማችሁ ማን ነው?".encode() in page.data
 
 
 def test_review_queue_is_scoped_to_the_active_language(app):

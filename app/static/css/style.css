@@ -1046,6 +1046,59 @@ audio {
   line-height: 1.5;
 }
 
+.review-variants {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--surface-tint);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.review-variants-title {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-600);
+}
+
+.review-variant-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-variant {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+.review-variant-label {
+  flex-basis: 100%;
+  color: var(--ink-600);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.review-variant strong {
+  font-size: 1.05rem;
+}
+
+.review-variant .review-romanization {
+  margin-top: 0;
+}
+
+.review-variant .review-audio {
+  width: 100%;
+  max-width: 220px;
+  height: 32px;
+}
+
 .review-gradebar {
   position: sticky;
   bottom: 0;

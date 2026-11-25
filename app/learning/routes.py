@@ -45,6 +45,7 @@ from app.learning.scheduler import (
 )
 from app.learning.seed_data import seed_content
 from app.learning.service import (
+    addressee_variants,
     current_language,
     ensure_review_cards,
     get_or_create_local_user,
@@ -676,6 +677,7 @@ def review():
         is_new=(card.reps or 0) == 0,
         language=language,
         item_lang="am" if language and language.code == "am" else "ko",
+        variants=addressee_variants(item),
     )
 
 

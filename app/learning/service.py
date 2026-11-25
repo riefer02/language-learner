@@ -1,5 +1,6 @@
 """Learner-facing service helpers for the review loop."""
 
+import re
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -48,6 +49,38 @@ def current_language(user=None):
     if language is None:
         language = Language.query.filter_by(code="ko").first()
     return language
+
+
+def addressee_variants(item):
+    """Return the other curated forms of a gendered phrase.
+
+    The Amharic seed encodes the addressee in the gloss, e.g.
+    ``What is your name? (to a man)``. Variants share the same base gloss.
+    """
+    if item is None or not item.gloss:
+        return []
+    match = re.search(r"\s*\(to (a man|a woman|a group)\)\s*$", item.gloss)
+    if match is None:
+        return []
+    base = item.gloss[: match.start()].strip()
+    rows = Item.query.filter(
+        Item.language_id == item.language_id,
+        Item.id != item.id,
+        Item.gloss.startswith(base),
+    ).all()
+    variants = []
+    for row in rows:
+        row_match = re.search(
+            r"\s*\(to (a man|a woman|a group)\)\s*$", row.gloss or ""
+        )
+        if row_match is None:
+            continue
+        if (row.gloss or "")[: row_match.start()].strip() != base:
+            continue
+        variants.append(
+            {"item": row, "label": f"To {row_match.group(1)}"}
+        )
+    return sorted(variants, key=lambda variant: variant["label"])
 
 
 def request_language():

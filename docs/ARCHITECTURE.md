@@ -98,6 +98,9 @@ language from the learner.
 `apply_rating` → `ReviewLog`.
 
 New cards are capped by `NEW_CARDS_PER_DAY`; due reviews always come first.
+Gendered Amharic items (`… (to a man/woman/group)`) also render an **Other ways
+to say it** block from `addressee_variants(item)`, so every review shows all
+curated forms, not just the one the card happened to pick.
 
 ### Teacher (voice)
 
