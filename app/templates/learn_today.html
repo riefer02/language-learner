@@ -1,180 +1,164 @@
 {% extends "base.html" %}
-{% block title %} - Learn{% endblock %}
+{% block title %} - Today{% endblock %}
 {% block content %}
-<div class="learn">
-  <div class="learn-header">
-    <p class="learn-eyebrow">Today's {{ language.name if language else 'Korean' }}</p>
-    <h2>One small session. One real win.</h2>
-    <p class="learn-sub">
-      Review what is due, then use it. Ten minutes is enough.
-    </p>
+<div class="dashboard">
+  <header class="dash-head">
+    <p class="learn-eyebrow">Today · {{ language.name if language else "Korean" }}</p>
+    <h2>{{ today_label }}</h2>
     <p class="learn-meta">
-      {{ user.goal|capitalize }} path · {{ user.daily_minutes }} minutes/day
+      {{ user.goal|capitalize }} path · {{ user.daily_minutes }} minutes a day
     </p>
-  </div>
+  </header>
 
+  {% if summary.due %}
   <section
-    class="tutorial-card"
-    data-dismissible="kiku-tutorial-learn"
-    aria-labelledby="learn-start"
+    class="dash-hero surface-card"
+    data-due="{{ summary.due }}"
+    aria-labelledby="dash-review-heading"
   >
-    <div class="tutorial-head">
-      <div>
-        <h3 id="learn-start">New here? Start with three moves</h3>
-        <p class="learn-meta">
-          Kiku works best as a short daily loop, not a long cram.
-        </p>
+    <div class="dash-hero-main">
+      <p class="dash-eyebrow" id="dash-review-heading">Due now</p>
+      <p class="dash-number">{{ summary.due }}</p>
+      <p class="learn-meta">
+        card{% if summary.due != 1 %}s{% endif %} · about
+        {{ ((summary.due * 20) / 60) | round(0, 'ceil') | int }} min
+      </p>
+    </div>
+    <div class="dash-hero-actions">
+      <a class="btn btn-primary btn-large" href="{{ url_for('learn.review') }}">
+        Start review
+      </a>
+      <div class="session-modes" aria-label="Session length">
+        <span>Session:</span>
+        {% for mode in session_modes %}
+        <a href="{{ url_for('learn.review', mode=mode) }}">{{ mode }} min</a>
+        {% endfor %}
       </div>
-      <button type="button" class="link-button" data-dismiss>Dismiss</button>
     </div>
-    <ol class="tutorial-steps">
-      <li>
-        <strong>Review what is due.</strong> Try to recall before revealing.
-        Grading honestly is what schedules the next review.
-      </li>
-      <li>
-        {% if language and language.code == 'am' %}
-        <strong>Practice the fidel.</strong>
-        <a href="{{ url_for('learn.fidel') }}">Fidel</a> teaches the Ge’ez
-        shapes, one family at a time.
-        {% else %}
-        <strong>Speak in a mission or with Teacher.</strong>
-        <a href="{{ url_for('teacher.panel') }}">Teacher</a> gives you a short
-        spoken lesson and drills.
-        {% endif %}
-      </li>
-      <li>
-        <strong>Save what you noticed.</strong> Use the
-        <a href="{{ url_for('main.dictionary') }}">dictionary</a> or say
-        “save that” to the teacher.
-      </li>
-    </ol>
   </section>
-
-  <details class="help-tip">
-    <summary>What does “due” mean?</summary>
-    <p>
-      A card is due when its next review time arrives. Kiku schedules that time
-      with spaced repetition (FSRS) based on how you graded it last time. New
-      cards are capped per day so the queue stays small.
-    </p>
-  </details>
-
-  <div class="learn-stats" aria-label="Learning summary">
-    <div class="learn-stat">
-      <b>{{ summary.due }}</b>
-      <span>cards due</span>
+  {% else %}
+  <section
+    class="dash-hero surface-card"
+    data-due="0"
+    aria-labelledby="dash-caughtup-heading"
+  >
+    <div class="dash-hero-main">
+      <p class="dash-eyebrow" id="dash-caughtup-heading">Caught up</p>
+      <p class="dash-caughtup">You're caught up.</p>
+      <p class="learn-meta">
+        {% if summary.next_due_human %}
+        Next review {{ summary.next_due_human }}.
+        {% else %}
+        Nothing scheduled right now.
+        {% endif %}
+      </p>
     </div>
-    <div class="learn-stat">
-      <b>{{ summary.learned }}</b>
-      <span>cards practiced</span>
+    <div class="dash-hero-actions">
+      <a class="btn" href="{{ url_for('main.index') }}">Look up a word</a>
+      <a class="btn" href="{{ url_for('learn.review') }}">Review anyway</a>
     </div>
-    <div class="learn-stat">
-      <b>{{ summary.streak }}</b>
-      <span>day streak</span>
-    </div>
-    <div class="learn-stat">
-      <b>{{ summary.reviews_today }}</b>
-      <span>reviews today</span>
-    </div>
-  </div>
-
-  {% if weekly.has_data %}
-  <p class="learn-meta">
-    This week: {{ weekly.reviews }}
-    review{% if weekly.reviews != 1 %}s{% endif %} · {{ weekly.can_dos }}
-    real-world task{% if weekly.can_dos != 1 %}s{% endif %} completed ·
-    {{ weekly.active_days }}/7 active days.
-  </p>
+  </section>
   {% endif %}
 
-  <section class="surface-card learn-terms" aria-labelledby="my-terms-heading">
-    <div class="tutorial-head">
+  <section class="dash-stats" aria-label="Learning summary">
+    <div class="dash-stat">
+      <b>{{ summary.learned }}</b><span>practiced</span>
+    </div>
+    <div class="dash-stat">
+      <b>{{ summary.streak }}</b><span>day streak</span>
+    </div>
+    <div class="dash-stat">
+      <b>{{ summary.reviews_today }}</b><span>reviews today</span>
+    </div>
+    <div class="dash-stat">
+      <b>{{ summary.next_due_human or "—" }}</b><span>next batch</span>
+    </div>
+  </section>
+
+  {% if next_mission %}
+  <section class="dash-card dash-continue" aria-labelledby="dash-mission-heading">
+    <div>
+      <p class="dash-eyebrow" id="dash-mission-heading">Next mission</p>
+      <h3>{{ next_mission.scene.title }}</h3>
+      <p class="learn-meta">{{ next_mission.scene.can_do }}</p>
+    </div>
+    <a
+      class="btn"
+      href="{{ url_for('learn.scene_detail', slug=next_mission.scene.slug) }}"
+    >
+      Continue
+    </a>
+  </section>
+  {% elif language and language.code == 'am' %}
+  <section class="dash-card dash-continue" aria-labelledby="dash-course-heading">
+    <div>
+      <p class="dash-eyebrow" id="dash-course-heading">Course</p>
+      <h3>Fidel bootcamp</h3>
+      <p class="learn-meta">Read the Ge’ez shapes, one family at a time.</p>
+    </div>
+    <a class="btn" href="{{ url_for('learn.fidel') }}">Open</a>
+  </section>
+  {% else %}
+  <section class="dash-card dash-continue" aria-labelledby="dash-course-heading">
+    <div>
+      <p class="dash-eyebrow" id="dash-course-heading">Course</p>
+      <h3>Hangul bootcamp</h3>
+      <p class="learn-meta">Read Hangul, one block at a time.</p>
+    </div>
+    <a class="btn" href="{{ url_for('learn.hangul') }}">Open</a>
+  </section>
+  {% endif %}
+
+  <section class="dash-card" aria-labelledby="dash-terms-heading">
+    <div class="dash-card-head">
       <div>
-        <h3 id="my-terms-heading">My terms</h3>
-        <p class="learn-meta">
-          {% if term_count %}
-          {{ term_count }} saved term{% if term_count != 1 %}s{% endif %},
-          ready to review.
-          {% else %}
-          Words you save from the dictionary or ask Teacher to keep.
-          {% endif %}
-        </p>
+        <p class="dash-eyebrow" id="dash-terms-heading">My terms</p>
+        <h3>{{ term_count }} saved</h3>
       </div>
       <a class="btn" href="{{ url_for('main.library') }}">Open My terms</a>
     </div>
     {% if terms %}
-    <ul class="term-list term-list-compact">
+    <ul class="dash-term-list">
       {% for term in terms %}
-      <li class="term-card">
-        <div>
-          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text if term.item else '' }}</strong>
-          <span class="learn-meta">{{ term.item.transliteration if term.item else '' }}</span>
-          <p>{{ term.item.gloss if term.item else '' }}</p>
-        </div>
+      <li>
+        <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text if term.item else '' }}</strong>
+        <span class="learn-meta">{{ term.item.gloss if term.item else '' }}</span>
       </li>
       {% endfor %}
     </ul>
     {% else %}
     <p class="learn-meta">
-      Start in the
-      <a href="{{ url_for('main.dictionary') }}">dictionary</a>, or say
-      “save that” during a teacher call.
+      Save a word from the dictionary, or say “save that” to Teacher.
     </p>
     {% endif %}
   </section>
 
-  <div class="learn-primary">
-    {% if summary.due %}
-    <a class="btn btn-primary btn-large" href="{{ url_for('learn.review') }}">
-      Start review · {{ summary.due }} card{% if summary.due != 1 %}s{% endif %}
-    </a>
-    <p class="learn-meta">About {{ ((summary.due * 20) / 60) | round(0, 'ceil') | int }} minutes</p>
-    {% else %}
-    <p class="learn-done-line">You are caught up for now.</p>
-    {% if summary.next_due_human %}
-    <p class="learn-meta">Next review {{ summary.next_due_human }}.</p>
-    {% endif %}
-    {% endif %}
-    {% if summary.due %}
-    <div class="session-modes">
-      <span>Choose a session:</span>
-      {% for mode in session_modes %}
-      <a href="{{ url_for('learn.review', mode=mode) }}">{{ mode }} min</a>
-      {% endfor %}
-    </div>
-    {% endif %}
-  </div>
-
-  {% if user.reminder_enabled %}
-  <p class="learn-meta">
-    Reminder set for {{ user.reminder_time }} ({{ user.timezone }}).
-    <a href="{{ url_for('main.settings') }}">Change</a>
+  {% if weekly.has_data %}
+  <p class="dash-week learn-meta">
+    This week: {{ weekly.reviews }} review{% if weekly.reviews != 1 %}s{% endif %}
+    · {{ weekly.can_dos }} task{% if weekly.can_dos != 1 %}s{% endif %} ·
+    {{ weekly.active_days }}/7 active days.
   </p>
   {% endif %}
 
-  {% if next_mission %}
-  <div class="next-mission">
-    <div>
-      <p class="learn-eyebrow">Next mission</p>
-      <strong>{{ next_mission.scene.can_do }}</strong>
-      <p class="learn-meta">{{ next_mission.scene.title }} · {{ next_mission.scene.persona }}</p>
-    </div>
-    <a class="btn" href="{{ url_for('learn.scene_detail', slug=next_mission.scene.slug) }}">
-      Open mission
-    </a>
-  </div>
-  {% endif %}
+  <details class="help-tip">
+    <summary>How Kiku works</summary>
+    <p>
+      A card is <strong>due</strong> when its next review time arrives. Kiku
+      schedules that with FSRS from your last rating.
+    </p>
+    <ul>
+      <li>Retrieve first: try to remember before revealing.</li>
+      <li>Grade honestly: the rating sets the next review.</li>
+      <li>Come back tomorrow: short daily loops beat long cramming.</li>
+    </ul>
+  </details>
 
-  {% if summary.reviews_today == 0 and summary.learned == 0 %}
-  <div class="learn-how">
-    <h3>How this works</h3>
-    <ol>
-      <li><strong>Retrieve first.</strong> Try to remember before you reveal.</li>
-      <li><strong>Grade honestly.</strong> Kiku schedules the next review from your answer.</li>
-      <li><strong>Come back tomorrow.</strong> A short daily loop beats a long weekend cram.</li>
-    </ol>
-  </div>
+  {% if user.reminder_enabled %}
+  <p class="learn-meta dash-reminder">
+    Reminder set for {{ user.reminder_time }} ({{ user.timezone }}).
+    <a href="{{ url_for('main.settings') }}">Change</a>
+  </p>
   {% endif %}
 </div>
 {% endblock %}

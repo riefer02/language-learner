@@ -98,6 +98,7 @@ Live reference: **`/design`** (not linked from the learner nav).
 | `.review-gradebar` | Sticky grading bar with the four buttons and keyboard hint |
 | `.nav-lookup` | Global header Look up field; submits `?q=` to the Look up page |
 | `.course-stepper` | Clickable lesson nodes; current node is `aria-current="step"` |
+| `.dash-hero` / `.dash-stats` / `.dash-card` | Today dashboard: primary action, compact stats, continue/terms |
 
 ## Page composition
 

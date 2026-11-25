@@ -387,3 +387,15 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   language-aware.
 - Audit: [`navigation-audit-2026-11-25.md`](navigation-audit-2026-11-25.md).
 - 272 tests pass; ruff clean. Chrome-checked at 390px and desktop.
+
+### Dashboard Today (25 November 2026)
+
+- Today is now a dashboard: the date, one **Due now** hero with the primary
+  **Start review** action, compact stats (practiced, streak, reviews today,
+  next batch), the next mission/course, My terms, and a weekly line.
+- Removed the marketing headline, first-run tutorial, duplicate stat cards, the
+  due explainer above the fold, and the footer’s duplicate nav links.
+- Guidance moved below the dashboard as a single **How Kiku works** disclosure.
+- The review CTA is above the fold at 390×844; the dashboard is capped at 800px
+  on desktop.
+- 272 tests pass; ruff clean.

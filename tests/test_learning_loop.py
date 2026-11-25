@@ -11,7 +11,7 @@ def test_learn_page_auto_seeds_and_shows_due_cards(client, app):
     response = client.get("/ko/learn")
 
     assert response.status_code == 200
-    assert b"One small session" in response.data
+    assert b"Due now" in response.data
     assert b"Start review" in response.data
     with app.app_context():
         assert Item.query.count() >= 25
@@ -21,7 +21,7 @@ def test_learn_page_auto_seeds_and_shows_due_cards(client, app):
 def test_new_card_daily_cap(client, app):
     response = client.get("/ko/learn")
 
-    assert b"10 cards" in response.data
+    assert b'data-due="10"' in response.data
 
     with app.app_context():
         card_ids = [card.id for card in ReviewCard.query.limit(10).all()]
@@ -30,7 +30,7 @@ def test_new_card_daily_cap(client, app):
         client.post(f"/ko/learn/review/{card_id}", data={"rating": "3"})
 
     response = client.get("/ko/learn")
-    assert b"You are caught up" in response.data
+    assert b"You're caught up" in response.data
 
 
 def test_progress_page_renders(client, app):
@@ -195,11 +195,11 @@ def test_fsrs_schedules_good_and_easy_differently(app):
         assert good_due > now
 
 
-def test_today_shows_first_run_guidance(client):
+def test_today_shows_dashboard_help(client):
     response = client.get("/ko/learn")
     assert response.status_code == 200
-    assert b"New here? Start with three moves" in response.data
-    assert b"What does" in response.data
+    assert b"How Kiku works" in response.data
+    assert b"due" in response.data
 
 
 def test_today_shows_my_terms_card(client):

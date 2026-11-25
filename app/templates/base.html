@@ -26,7 +26,7 @@
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}?v=20261125h"
+      href="{{ url_for('static', filename='css/style.css') }}?v=20261125j"
     />
     <script src="{{ url_for('static', filename='js/head.js') }}?v=20261123"></script>
     {% block head %}{% endblock %}
@@ -243,8 +243,6 @@
       <p>
         Kiku · learning
         {{ active_language.name if active_language else 'a language' }}
-        · <a href="{{ url_for('main.settings') }}">Settings</a>
-        · <a href="{{ url_for('learn.today') }}">Today</a>
       </p>
       <p class="learn-meta">
         No raw audio is stored. Speech checks are evidence, not a pronunciation

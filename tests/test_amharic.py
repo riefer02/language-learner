@@ -106,7 +106,8 @@ def test_amharic_url_prefix_is_explicit(app, client):
 
     page = client.get("/am/learn")
     assert page.status_code == 200
-    assert b"Today's Amharic" in page.data
+    assert b"Today" in page.data
+    assert b"Amharic" in page.data
 
     fidel = client.get("/am/learn/fidel")
     assert fidel.status_code == 200

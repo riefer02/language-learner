@@ -48,6 +48,7 @@ from app.learning.service import (
     current_language,
     ensure_review_cards,
     get_or_create_local_user,
+    learner_timezone,
     new_cards_seen_today,
     next_due_card,
     recent_reviews,
@@ -123,10 +124,13 @@ def _format_next_due(value):
     if delta.total_seconds() <= 0:
         return "now"
     if delta.total_seconds() < 3600:
-        return f"in {max(1, int(delta.total_seconds() // 60))} minutes"
+        minutes = max(1, int(delta.total_seconds() // 60))
+        return f"in {minutes} minute{'s' if minutes != 1 else ''}"
     if delta.total_seconds() < 86400:
-        return f"in {max(1, int(delta.total_seconds() // 3600))} hours"
-    return f"in {int(delta.total_seconds() // 86400)} days"
+        hours = max(1, int(delta.total_seconds() // 3600))
+        return f"in {hours} hour{'s' if hours != 1 else ''}"
+    days = int(delta.total_seconds() // 86400)
+    return f"in {days} day{'s' if days != 1 else ''}"
 
 
 @learn.route("/", strict_slashes=False)
@@ -154,6 +158,7 @@ def today():
         weekly=weekly_recap(user.id),
         session_modes=sorted(_session_limits()),
         language=language,
+        today_label=datetime.now(learner_timezone()).strftime("%A, %d %B"),
     )
 
 
