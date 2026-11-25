@@ -95,6 +95,31 @@
       was said, and an optional note.
     </p>
   </details>
+
+  <h4>Course stepper</h4>
+  <p class="learn-meta">
+    Lesson position; every node is a link and the current node is announced as
+    the step. Numbers keep the row legible on mobile.
+  </p>
+  <div class="course-stepper" role="navigation" aria-label="Example lessons">
+    <ol>
+      <li>
+        <a href="#main-content" aria-label="Lesson 1: Intro">
+          <span class="course-node" aria-hidden="true">1</span>
+        </a>
+      </li>
+      <li class="is-current">
+        <a href="#main-content" aria-current="step" aria-label="Lesson 2: Vowels">
+          <span class="course-node" aria-hidden="true">2</span>
+        </a>
+      </li>
+      <li>
+        <a href="#main-content" aria-label="Lesson 3: Blocks">
+          <span class="course-node" aria-hidden="true">3</span>
+        </a>
+      </li>
+    </ol>
+  </div>
 </section>
 
 <section class="surface-card" aria-labelledby="forms-heading">

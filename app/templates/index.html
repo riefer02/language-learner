@@ -1,14 +1,14 @@
 {% extends "base.html" %}
-{% block title %} - Translate{% endblock %}
+{% block title %} - Look up{% endblock %}
 {% block content %}
 <div class="page-hero">
   <span class="language-badge">
     {{ language.name if language else "Korean" }}
   </span>
-  <h2>Learn the phrase you need right now.</h2>
+  <h2>Look up a word or phrase.</h2>
   <p>
     Type English, get a natural {{ language.name if language else "Korean" }}
-    phrase with audio, then keep it in your library.
+    word or phrase with audio, then keep it in your library.
   </p>
 </div>
 
@@ -25,7 +25,7 @@
     <button type="button" class="link-button" data-dismiss>Dismiss</button>
   </div>
   <ol class="tutorial-steps">
-    <li>Type the English phrase you want to say.</li>
+    <li>Type the English word or phrase you want.</li>
     <li>Listen to the generated audio before you repeat it.</li>
     <li>Open your library to replay it later, or review it in Learn.</li>
   </ol>
@@ -40,17 +40,18 @@
 </section>
 
 <section class="phrase-input" aria-labelledby="phrase-heading">
-  <h3 id="phrase-heading">Translate a phrase</h3>
+  <h3 id="phrase-heading">Look up a word or phrase</h3>
   <form
     id="phrase-form"
     data-lang="{{ language.code if language else 'ko' }}"
   >
     <div class="form-group">
-      <label for="english-text">English phrase</label>
+      <label for="english-text">English word or phrase</label>
       <input
         type="text"
         id="english-text"
-        placeholder="e.g., Hello, how are you?"
+        value="{{ q }}"
+        placeholder="e.g., thank you, where is the bathroom?"
         required
         aria-describedby="phrase-help"
         maxlength="500"
@@ -63,7 +64,7 @@
       </small>
     </div>
     <button type="submit" id="translate-btn" class="btn btn-primary">
-      Translate &amp; generate audio
+      Look up &amp; generate audio
     </button>
   </form>
 
@@ -80,7 +81,7 @@
 
 <section id="result" class="result hidden" aria-live="polite">
   <div class="phrase-card">
-    <p class="review-label">Your phrase</p>
+    <p class="review-label">Your word or phrase</p>
     <div class="phrase-english" lang="en"></div>
     <div
       class="phrase-korean"
@@ -116,5 +117,5 @@
 ></div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/translate.js') }}?v=20261123"></script>
+<script src="{{ url_for('static', filename='js/translate.js') }}?v=20261125b"></script>
 {% endblock %}

@@ -1,6 +1,21 @@
 // Hangul drills: immediate feedback, retry on mistakes, no server round trip.
 document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".drill").forEach(function (drill) {
+  const drillBar = document.getElementById("hangul-bar");
+  const drillLabel = document.getElementById("hangul-progress-label");
+  const completed = new Set();
+  const drills = Array.from(document.querySelectorAll(".drill"));
+
+  function updateDrillProgress() {
+    if (drillBar) {
+      drillBar.value = completed.size;
+    }
+    if (drillLabel) {
+      drillLabel.textContent =
+        completed.size + " / " + drills.length + " read";
+    }
+  }
+
+  drills.forEach(function (drill) {
     const answer = drill.getAttribute("data-answer");
     const feedback = drill.querySelector(".drill-feedback");
     const explanation = feedback.getAttribute("data-explanation") || "";
@@ -13,6 +28,8 @@ document.addEventListener("DOMContentLoaded", function () {
         button.classList.add(correct ? "correct" : "incorrect");
 
         if (correct) {
+          completed.add(drill);
+          updateDrillProgress();
           options.forEach(function (option) {
             option.disabled = true;
             if (option.getAttribute("data-option") === answer) {

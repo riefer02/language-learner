@@ -26,7 +26,7 @@
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}?v=20261125e"
+      href="{{ url_for('static', filename='css/style.css') }}?v=20261125h"
     />
     <script src="{{ url_for('static', filename='js/head.js') }}?v=20261123"></script>
     {% block head %}{% endblock %}
@@ -74,6 +74,32 @@
         </form>
         {% endif %}
 
+        <form
+          class="nav-lookup"
+          method="get"
+          action="{{ url_for('main.index') }}"
+          role="search"
+        >
+          <label class="sr-only" for="nav-lookup-q">
+            Look up a word or phrase
+          </label>
+          <input
+            id="nav-lookup-q"
+            name="q"
+            type="search"
+            placeholder="English → {{ active_language.name if active_language else 'Korean' }}…"
+            maxlength="500"
+            autocomplete="off"
+          />
+          <button
+            type="submit"
+            class="nav-lookup-submit"
+            aria-label="Look up this word or phrase"
+          >
+            →
+          </button>
+        </form>
+
         <button
           type="button"
           class="nav-toggle"
@@ -88,7 +114,7 @@
         <ul id="primary-nav">
           <li class="nav-group">
             <details
-              {% if request.endpoint in ['learn.today', 'learn.review', 'learn.review_complete', 'learn.progress'] %}class="is-active"{% endif %}
+              {% if request.endpoint in ['learn.today', 'learn.review', 'learn.review_complete', 'learn.progress', 'learn.hangul', 'learn.hangul_lesson', 'learn.fidel', 'learn.fidel_lesson'] %}class="is-active"{% endif %}
             >
               <summary>Learn</summary>
               <ul class="nav-submenu">
@@ -113,23 +139,6 @@
                     >Progress</a
                   >
                 </li>
-              </ul>
-            </details>
-          </li>
-
-          <li class="nav-group">
-            <details
-              {% if request.endpoint in ['teacher.panel', 'learn.scenes', 'learn.scene_detail', 'learn.fidel', 'learn.fidel_lesson', 'learn.hangul', 'learn.hangul_lesson', 'learn.sound_gym'] %}class="is-active"{% endif %}
-            >
-              <summary>Practice</summary>
-              <ul class="nav-submenu">
-                <li>
-                  <a
-                    href="{{ url_for('teacher.panel') }}"
-                    aria-current="{{ 'page' if request.endpoint == 'teacher.panel' else 'false' }}"
-                    >Teacher</a
-                  >
-                </li>
                 {% if active_language and active_language.code == 'am' %}
                 <li>
                   <a
@@ -141,16 +150,35 @@
                 {% else %}
                 <li>
                   <a
-                    href="{{ url_for('learn.scenes') }}"
-                    aria-current="{{ 'page' if request.endpoint in ['learn.scenes', 'learn.scene_detail'] else 'false' }}"
-                    >Scenes</a
+                    href="{{ url_for('learn.hangul') }}"
+                    aria-current="{{ 'page' if request.endpoint in ['learn.hangul', 'learn.hangul_lesson'] else 'false' }}"
+                    >Hangul</a
+                  >
+                </li>
+                {% endif %}
+              </ul>
+            </details>
+          </li>
+
+          {% if not active_language or active_language.code != 'am' %}
+          <li class="nav-group">
+            <details
+              {% if request.endpoint in ['teacher.panel', 'learn.scenes', 'learn.scene_detail', 'learn.sound_gym'] %}class="is-active"{% endif %}
+            >
+              <summary>Practice</summary>
+              <ul class="nav-submenu">
+                <li>
+                  <a
+                    href="{{ url_for('teacher.panel') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'teacher.panel' else 'false' }}"
+                    >Teacher</a
                   >
                 </li>
                 <li>
                   <a
-                    href="{{ url_for('learn.hangul') }}"
-                    aria-current="{{ 'page' if request.endpoint in ['learn.hangul', 'learn.hangul_lesson'] else 'false' }}"
-                    >Hangul</a
+                    href="{{ url_for('learn.scenes') }}"
+                    aria-current="{{ 'page' if request.endpoint in ['learn.scenes', 'learn.scene_detail'] else 'false' }}"
+                    >Scenes</a
                   >
                 </li>
                 <li>
@@ -160,10 +188,10 @@
                     >Sound Gym</a
                   >
                 </li>
-                {% endif %}
               </ul>
             </details>
           </li>
+          {% endif %}
 
           <li class="nav-group">
             <details
@@ -173,9 +201,9 @@
               <ul class="nav-submenu">
                 <li>
                   <a
-                    href="{{ url_for('main.library') }}"
-                    aria-current="{{ 'page' if request.endpoint == 'main.library' else 'false' }}"
-                    >My terms</a
+                    href="{{ url_for('main.index') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.index' else 'false' }}"
+                    >Look up</a
                   >
                 </li>
                 <li>
@@ -187,16 +215,9 @@
                 </li>
                 <li>
                   <a
-                    href="{{ url_for('main.resources') }}"
-                    aria-current="{{ 'page' if request.endpoint == 'main.resources' else 'false' }}"
-                    >Resources</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="{{ url_for('main.index') }}"
-                    aria-current="{{ 'page' if request.endpoint == 'main.index' else 'false' }}"
-                    >Translate</a
+                    href="{{ url_for('main.library') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.library' else 'false' }}"
+                    >My terms</a
                   >
                 </li>
               </ul>

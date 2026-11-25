@@ -8,6 +8,10 @@
     <span class="review-count" id="fidel-progress">0 / {{ lesson.drills|length }}</span>
   </div>
 
+  {% with stepper_lessons=lessons, current_slug=lesson.slug, stepper_endpoint='learn.fidel_lesson', stepper_label='Fidel' %}
+    {% include "_course_stepper.html" %}
+  {% endwith %}
+
   <div class="learn-header">
     <p class="learn-eyebrow">Fidel bootcamp</p>
     <h2>{{ lesson.title }}</h2>

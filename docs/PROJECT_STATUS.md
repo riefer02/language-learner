@@ -371,3 +371,19 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 - Verified at 390×667 and 320×568: the grade bar is fully visible without
   scrolling, and the answer/full card still scrolls behind it.
 - 268 tests pass; ruff clean.
+
+### Navigation and IA pass (25 November 2026)
+
+- Added a global **English → target Look up** field to the header. It submits
+  `/<lang>/translate?q=…`, which pre-fills and runs immediately, with audio.
+- Navigation now has one job per group: **Learn** (Today, Review, Progress,
+  Hangul/Fidel), **Practice** (Teacher, Scenes, Sound Gym; Korean only),
+  **Words** (Look up, Dictionary, My terms). Resources is a deeper browse link
+  from the dictionary, not a top-level item.
+- Amharic hides Practice and Teacher; Fidel sits under Learn.
+- Hangul and Fidel lesson pages carry a clickable course stepper; Hangul drills
+  gained a live `0 / N read` progress bar.
+- Removed Today’s duplicate footer link row; the tutorial step is now
+  language-aware.
+- Audit: [`navigation-audit-2026-11-25.md`](navigation-audit-2026-11-25.md).
+- 272 tests pass; ruff clean. Chrome-checked at 390px and desktop.

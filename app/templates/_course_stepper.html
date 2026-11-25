@@ -1,0 +1,17 @@
+{# Clickable course progress. Every node is a link, the current one is
+   announced as the step. Labels collapse to the current node on small screens. #}
+<div class="course-stepper" role="navigation" aria-label="{{ stepper_label }} lessons">
+  <ol>
+    {% for item in stepper_lessons %}
+    <li class="{% if item.slug == current_slug %}is-current{% endif %}">
+      <a
+        href="{{ url_for(stepper_endpoint, slug=item.slug) }}"
+        {% if item.slug == current_slug %}aria-current="step"{% endif %}
+        aria-label="Lesson {{ loop.index }}: {{ item.title }}"
+      >
+        <span class="course-node" aria-hidden="true">{{ loop.index }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+</div>

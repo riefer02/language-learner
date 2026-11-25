@@ -92,4 +92,8 @@ def legacy_welcome(rest=""):
 @main.route("/<lang_code>/translate")
 def index():
     language = current_language()
-    return render_template("index.html", language=language)
+    return render_template(
+        "index.html",
+        language=language,
+        q=(request.args.get("q") or "").strip()[:500],
+    )

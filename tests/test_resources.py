@@ -43,10 +43,12 @@ def test_resources_empty_state(client):
     assert b"No matches yet" in response.data
 
 
-def test_nav_uses_resources_and_scenes_not_legacy_tools(client):
+def test_nav_uses_grouped_practice_and_words(client):
     response = client.get("/ko/learn")
 
     assert b"Scenes" in response.data
-    assert b"Resources" in response.data
+    assert b"Look up" in response.data
+    assert b"Dictionary" in response.data
+    assert b"Resources" not in response.data
     assert b"New Phrase" not in response.data
     assert b">Library<" not in response.data

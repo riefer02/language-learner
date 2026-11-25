@@ -7,6 +7,10 @@
     <span class="review-count">Day {{ lesson.day }} of {{ lesson_total }}</span>
   </div>
 
+  {% with stepper_lessons=lessons, current_slug=lesson.slug, stepper_endpoint='learn.hangul_lesson', stepper_label='Hangul' %}
+    {% include "_course_stepper.html" %}
+  {% endwith %}
+
   <p class="learn-eyebrow">Day {{ lesson.day }}</p>
   <h2>{{ lesson.title }}</h2>
   <p class="learn-sub">{{ lesson.subtitle }}</p>
@@ -49,6 +53,17 @@
   <section class="hangul-section" aria-labelledby="drills-heading">
     <h3 id="drills-heading">Read it out loud</h3>
     <p>Say the answer before you tap. The explanation is the lesson.</p>
+    <div class="drill-progress">
+      <span class="learn-meta" id="hangul-progress-label">
+        0 / {{ lesson.drills|length }} read
+      </span>
+      <progress
+        id="hangul-bar"
+        max="{{ lesson.drills|length }}"
+        value="0"
+        aria-labelledby="hangul-progress-label"
+      ></progress>
+    </div>
     {% for drill in lesson.drills %}
     <div class="drill" data-answer="{{ drill.answer }}">
       <p class="drill-prompt">{{ drill.prompt }}</p>
@@ -101,5 +116,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/hangul.js') }}?v=20261123"></script>
+<script src="{{ url_for('static', filename='js/hangul.js') }}?v=20261125b"></script>
 {% endblock %}

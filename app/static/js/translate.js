@@ -101,4 +101,17 @@ document.addEventListener("DOMContentLoaded", function () {
       loadingDiv.classList.add("hidden");
     }
   });
+
+  // A header lookup lands here with ?q=. Run it immediately so "type a word,
+  // get it with audio" is one action, not a second click.
+  if (form) {
+    const initial = document.getElementById("english-text");
+    if (initial && initial.value.trim()) {
+      if (form.requestSubmit) {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event("submit", { cancelable: true }));
+      }
+    }
+  }
 });

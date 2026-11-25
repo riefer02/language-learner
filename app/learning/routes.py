@@ -528,13 +528,15 @@ def fidel():
 def fidel_lesson(slug):
     if current_language() and current_language().code != "am":
         return redirect(url_for("learn.today"))
-    lesson = next(
-        (row for row in fidel_lessons() if row["slug"] == slug), None
-    )
+    lessons = fidel_lessons()
+    lesson = next((row for row in lessons if row["slug"] == slug), None)
     if lesson is None:
         abort(404)
     return render_template(
-        "fidel_lesson.html", lesson=lesson, vowel_orders=VOWEL_ORDERS
+        "fidel_lesson.html",
+        lesson=lesson,
+        lessons=lessons,
+        vowel_orders=VOWEL_ORDERS,
     )
 
 
@@ -561,6 +563,7 @@ def hangul_lesson(slug):
     return render_template(
         "hangul_lesson.html",
         lesson=lesson,
+        lessons=HANGUL_LESSONS,
         next_lesson=next_lesson,
         lesson_number=index + 1,
         lesson_total=len(HANGUL_LESSONS),

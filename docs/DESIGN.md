@@ -58,19 +58,22 @@ Navigation is grouped so the learner does not have to parse eight equal links:
 
 | Group | Contents |
 |---|---|
-| **Learn** | Today, Review, Progress |
-| **Practice** | Teacher, Scenes/Fidel, Hangul, Sound Gym |
-| **Words** | My terms, Dictionary, Browse, Translate |
+| **Learn** | Today, Review, Progress, Hangul/Fidel |
+| **Practice** | Teacher, Scenes, Sound Gym (Korean only) |
+| **Words** | Look up, Dictionary, My terms |
 | **Settings** | Language, goal, timezone, reminders |
 
 - The current language is a persistent select in the header. Changing it lands
   on Today in that language.
-- “My terms” is the saved-term library. It is reachable from the header, from
-  Today, and from the dictionary.
-- “Dictionary” searches and saves. “Browse” is the wider reference view.
-  “Translate” is the phrase tool, not the home page.
-- Korean-only surfaces (Scenes, Hangul, Sound Gym) are replaced by Fidel for
-  Amharic rather than shown and then rejected.
+- The header also carries **Look up**, the free-association search. It submits
+  `?q=…` to the Look up page, which searches/translates and plays the audio.
+- Script courses sit under **Learn**, not **Practice**; lessons carry a
+  clickable course stepper.
+- “My terms” is the saved-term library. “Dictionary” searches and saves deck
+  terms. **Resources** remains a deeper browse view linked from the dictionary,
+  not a top-level destination.
+- Korean-only surfaces (Teacher, Scenes, Sound Gym) are hidden for Amharic
+  rather than shown and then rejected; Fidel replaces Hangul under Learn.
 
 ## Components
 
@@ -93,6 +96,8 @@ Live reference: **`/design`** (not linked from the learner nav).
 | `.scene-reply` (with `.help-tip`) | Collapsed natural reply + audio on a scene step |
 | `.content-flag` (with `.help-tip`) | Quiet correction form; flat until opened |
 | `.review-gradebar` | Sticky grading bar with the four buttons and keyboard hint |
+| `.nav-lookup` | Global header Look up field; submits `?q=` to the Look up page |
+| `.course-stepper` | Clickable lesson nodes; current node is `aria-current="step"` |
 
 ## Page composition
 
@@ -136,4 +141,5 @@ Live reference: **`/design`** (not linked from the learner nav).
 5. Bump the `?v=` query on changed CSS/JS includes.
 6. Update this file and `AGENTS.md` if a convention changed.
 
-**Latest audit:** [`design-audit-2026-11-25.md`](design-audit-2026-11-25.md).
+**Latest audits:** [`design-audit-2026-11-25.md`](design-audit-2026-11-25.md) ·
+[`navigation-audit-2026-11-25.md`](navigation-audit-2026-11-25.md).
