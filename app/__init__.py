@@ -8,6 +8,7 @@ import uuid
 import click
 from flask import Flask, Response, abort, current_app, g, jsonify, request
 from flask_migrate import Migrate
+from flask_migrate.cli import db as db_cli
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import event
@@ -352,6 +353,10 @@ def create_app(config_name=None, overrides=None):
 
     db.init_app(app)
     migrate.init_app(app, db)
+    # Flask-Migrate 3.x exposes ``db`` through the ``flask.commands`` entry
+    # point. Newer setuptools no longer ships pkg_resources, so Flask 2.0's
+    # discovery can miss it; register the command explicitly instead.
+    app.cli.add_command(db_cli)
     csrf.init_app(app)
 
     secret = app.config.get("SECRET_KEY") or ""

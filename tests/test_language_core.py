@@ -171,6 +171,11 @@ def test_language_audit_cli_reports_unbackfilled_content(app, runner):
     assert payload["items_without_primary_form"] == 1
 
 
+def test_flask_db_command_is_registered(app):
+    """Do not rely only on Flask-Migrate's entry point; it can be missed."""
+    assert "db" in app.cli.commands
+
+
 def test_legacy_database_backfills_and_downgrades(tmp_path):
     db_path = tmp_path / "legacy.db"
     _flask(db_path, "db", "upgrade", LEGACY_REVISION)
