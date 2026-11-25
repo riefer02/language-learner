@@ -11,7 +11,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import event
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, make_url
 
 from config import config
 
@@ -41,6 +41,41 @@ def _ensure_directories(app):
         if not path:
             raise RuntimeError(f"{key} must be configured")
         os.makedirs(path, exist_ok=True)
+    _ensure_sqlite_directory(app)
+
+
+def _ensure_sqlite_directory(app):
+    """Create the SQLite file's parent directory before the first query.
+
+    A missing directory otherwise surfaces as ``sqlite3.OperationalError:
+    unable to open database file`` on every request, which reads as an app bug
+    rather than a setup problem.  A created directory is announced, because a
+    typo in ``DATABASE_URL`` would otherwise produce an empty database that only
+    fails later, during migrations.
+    """
+    uri = app.config.get("SQLALCHEMY_DATABASE_URI") or ""
+    if not uri:
+        # Leave the diagnosis to SQLAlchemy: an empty value is a config error,
+        # not something this helper can guess at.
+        return
+    url = make_url(uri)
+    if not url.drivername.startswith("sqlite"):
+        return
+    database = url.database
+    if not database or database == ":memory:":
+        return
+    directory = os.path.dirname(os.path.abspath(database))
+    if os.path.isdir(directory):
+        return
+    try:
+        os.makedirs(directory, exist_ok=True)
+    except OSError as error:
+        raise RuntimeError(
+            f"Cannot create the directory for the SQLite database at {database}: {error}"
+        ) from error
+    app.logger.warning(
+        "Created missing directory %s for the SQLite database at %s", directory, database
+    )
 
 
 def _constant_time_equal(left, right):
@@ -281,6 +316,24 @@ def _register_cli(app):
         click.echo(f"Deleted {removed} orphaned audio file(s).")
 
 
+def _verify_checkout_path(app):
+    """Fail loudly when the code is imported from a directory that is gone.
+
+    A dev server that outlives a rename or move keeps the old absolute paths in
+    memory (``app.root_path``, ``basedir``).  Every request then fails with
+    "unable to open database file" and an unrenderable template set, which looks
+    like an application bug.  Say what actually happened instead.
+    """
+    root = app.root_path
+    if os.path.isdir(root):
+        return
+    raise RuntimeError(
+        f"The app was imported from {root}, which no longer exists. The checkout "
+        "was probably moved or renamed while a server was running; stop it and "
+        "start the server again from the current directory."
+    )
+
+
 def create_app(config_name=None, overrides=None):
     config_name = config_name or os.environ.get("FLASK_ENV", "production")
     if config_name not in config:
@@ -289,6 +342,7 @@ def create_app(config_name=None, overrides=None):
         )
 
     app = Flask(__name__)
+    _verify_checkout_path(app)
     app.config.from_object(config[config_name])
     if overrides:
         app.config.update(overrides)
