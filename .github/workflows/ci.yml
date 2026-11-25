@@ -33,6 +33,9 @@ jobs:
       - name: Migrate an empty database
         env:
           DATABASE_URL: sqlite:///${{ runner.temp }}/ci.db
+          # CI-only throwaway. Production config rejects a missing secret, and
+          # run.py defaults to production when .env is absent (as in CI).
+          SECRET_KEY: ci-only-secret-key-for-migrations-0123456789
         run: |
           rm -f "$RUNNER_TEMP/ci.db"
           FLASK_APP=run.py python -m flask db upgrade
