@@ -43,5 +43,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/new_conversation.js') }}?v=20261123"></script>
+<script src="{{ url_for('static', filename='js/new_conversation.js') }}?v={{ asset_version }}"></script>
 {% endblock %}

@@ -46,6 +46,10 @@
   --success-bg: var(--green-100);
   --danger: var(--red-700);
   --danger-bg: var(--red-100);
+  --warning-bg: var(--yellow-100);
+  --warning-ink: #92400e;
+  --info-bg: #dbeafe;
+  --info-ink: #1e40af;
 
   /* ---- Spacing scale (4px base) ---------------------------------------- */
   --space-1: 0.25rem;
@@ -170,7 +174,8 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 800px;
+  gap: 1rem;
+  max-width: var(--content-max);
   margin: 0 auto;
   padding: 10px 20px;
 }
@@ -304,7 +309,7 @@ input[type="text"]:focus-visible {
 small {
   display: block;
   margin-top: 5px;
-  color: #666;
+  color: var(--muted);
 }
 
 button {
@@ -319,11 +324,11 @@ button {
 }
 
 button:hover {
-  background-color: #3a5a8c;
+  background-color: var(--primary-strong);
 }
 
 button:disabled {
-  background-color: #b8c7dc;
+  background-color: var(--ink-300);
   cursor: not-allowed;
 }
 
@@ -405,7 +410,7 @@ audio {
 
 /* Error message */
 .error-message {
-  background-color: #fde8e8;
+  background-color: var(--danger-bg);
   color: var(--error);
   padding: 10px 15px;
   border-radius: 4px;
@@ -434,14 +439,14 @@ audio {
 
 .current-page {
   margin: 0 10px;
-  color: #666;
+  color: var(--muted);
 }
 
 /* Empty states */
 .empty-library {
   text-align: center;
   padding: 40px 0;
-  color: #666;
+  color: var(--muted);
 }
 
 .empty-library a {
@@ -481,7 +486,7 @@ audio {
 
 .btn:hover,
 .btn:focus-visible {
-  background-color: #3a5a8c;
+  background-color: var(--primary-strong);
   color: white;
 }
 
@@ -491,7 +496,7 @@ audio {
 
 .btn-primary:hover,
 .btn-primary:focus-visible {
-  background-color: #9a3412;
+  background-color: var(--orange-700);
 }
 
 .btn-large {
@@ -532,7 +537,7 @@ audio {
 }
 
 .learn-sub {
-  color: #5b6472;
+  color: var(--muted);
   margin: 0;
 }
 
@@ -562,7 +567,7 @@ audio {
   display: block;
   margin-top: 4px;
   font-size: 0.75rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 /* Personal dashboard: status first, one primary action, compact cards. */
@@ -753,7 +758,7 @@ audio {
 .learn-primary {
   padding: 20px;
   border-radius: 10px;
-  background: #fff7ed;
+  background: var(--surface)7ed;
   border: 1px solid #fed7aa;
   margin-bottom: 24px;
 }
@@ -761,7 +766,7 @@ audio {
 .learn-meta {
   margin: 10px 0 0;
   font-size: 0.9rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .learn-done-line {
@@ -825,7 +830,7 @@ audio {
   display: block;
   margin-top: 2px;
   font-size: 0.72rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .activity-chart {
@@ -841,7 +846,7 @@ audio {
   align-items: center;
   gap: 4px;
   font-size: 0.7rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .activity-day progress {
@@ -871,7 +876,7 @@ audio {
 }
 
 .can-do-list time {
-  color: #5b6472;
+  color: var(--muted);
   white-space: nowrap;
   font-size: 0.78rem;
 }
@@ -891,7 +896,7 @@ audio {
 .learn-how ol {
   margin: 0;
   padding-left: 20px;
-  color: #4b5563;
+  color: var(--ink-600);
 }
 
 .learn-how li {
@@ -901,7 +906,7 @@ audio {
 .learn-library-link {
   margin-top: 18px;
   font-size: 0.9rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .learn-library-link a {
@@ -927,7 +932,7 @@ audio {
 }
 
 .review-count {
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .review-progress {
@@ -935,7 +940,7 @@ audio {
   justify-content: space-between;
   gap: 10px;
   font-size: 0.78rem;
-  color: #5b6472;
+  color: var(--muted);
   margin-bottom: 10px;
 }
 
@@ -959,7 +964,7 @@ audio {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .review-prompt {
@@ -972,7 +977,7 @@ audio {
 
 .review-hint {
   margin: 16px 0 0;
-  color: #5b6472;
+  color: var(--muted);
   font-size: 0.92rem;
 }
 
@@ -989,7 +994,7 @@ audio {
 
 .speak-btn:hover,
 .speak-btn:focus-visible {
-  background: #3a5a8c;
+  background: var(--primary-strong);
 }
 
 .review-answer {
@@ -1057,13 +1062,13 @@ audio {
 
 .review-romanization {
   margin-top: 6px;
-  color: #5b6472;
+  color: var(--muted);
   font-style: italic;
 }
 
 .review-notes {
   margin: 12px 0 0;
-  color: #4b5563;
+  color: var(--ink-600);
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -1094,7 +1099,7 @@ audio {
   border: 1px solid transparent;
   font-size: 0.95rem;
   font-weight: 650;
-  color: #111827;
+  color: var(--ink-900);
   background: #f3f4f6;
 }
 
@@ -1105,23 +1110,23 @@ audio {
 }
 
 .grade-again {
-  background: #fde8e8;
-  color: #991b1b;
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .grade-hard {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-bg);
+  color: var(--warning-ink);
 }
 
 .grade-good {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .grade-easy {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--info-bg);
+  color: var(--info-ink);
 }
 
 .grade:hover,
@@ -1141,7 +1146,7 @@ audio {
   margin: 5px 0 0;
   text-align: center;
   font-size: 0.72rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .review-ratings {
@@ -1161,7 +1166,7 @@ audio {
 }
 
 .skill-label span:last-child {
-  color: #5b6472;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1195,7 +1200,7 @@ progress {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #5b6472;
+  color: var(--muted);
   white-space: nowrap;
 }
 
@@ -1208,23 +1213,23 @@ progress {
 }
 
 .rating-1 {
-  background: #fde8e8;
-  color: #991b1b;
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .rating-2 {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-bg);
+  color: var(--warning-ink);
 }
 
 .rating-3 {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .rating-4 {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--info-bg);
+  color: var(--info-ink);
 }
 
 .session-modes {
@@ -1234,7 +1239,7 @@ progress {
   gap: 8px;
   margin-top: 14px;
   font-size: 0.82rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .session-modes a {
@@ -1354,7 +1359,7 @@ progress {
 .choice small {
   display: block;
   margin: 0;
-  color: #5b6472;
+  color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.35;
 }
@@ -1365,7 +1370,7 @@ progress {
 
 .choice:has(input:checked) {
   border-color: var(--accent);
-  background: #fff7ed;
+  background: var(--surface)7ed;
   box-shadow: 0 0 0 1px var(--accent);
 }
 
@@ -1377,13 +1382,13 @@ progress {
 .onboarding-footnote {
   margin: 18px 0 0;
   font-size: 0.82rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .onboarding-link {
   margin-top: 10px;
   font-size: 0.85rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .onboarding-link a {
@@ -1408,7 +1413,7 @@ progress {
 
 .first-word-romanization {
   margin-top: 4px;
-  color: #5b6472;
+  color: var(--muted);
   font-style: italic;
 }
 
@@ -1437,7 +1442,7 @@ progress {
 .record-status {
   margin: 10px 0 0;
   font-size: 0.85rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 #playback {
@@ -1506,7 +1511,7 @@ progress {
 .hangul-card p {
   margin: 0;
   font-size: 0.82rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .hangul-section {
@@ -1520,7 +1525,7 @@ progress {
 
 .hangul-section p {
   margin: 0 0 10px;
-  color: #4b5563;
+  color: var(--ink-600);
 }
 
 /* Course stepper: one node per lesson, every node clickable. */
@@ -1667,21 +1672,21 @@ progress {
 }
 
 .drill-option.correct {
-  border-color: #166534;
-  background: #dcfce7;
-  color: #166534;
+  border-color: var(--success);
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .drill-option.incorrect {
-  border-color: #991b1b;
-  background: #fde8e8;
-  color: #991b1b;
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .drill-feedback {
   margin: 10px 0 0;
   font-size: 0.85rem;
-  color: #4b5563;
+  color: var(--ink-600);
 }
 
 .drill-feedback[hidden] {
@@ -1690,7 +1695,7 @@ progress {
 
 .hangul-notes {
   padding: 16px 18px;
-  background: #fff7ed;
+  background: var(--surface)7ed;
   border: 1px solid #fed7aa;
   border-radius: 10px;
 }
@@ -1698,7 +1703,7 @@ progress {
 .hangul-notes ul {
   margin: 8px 0 0;
   padding-left: 20px;
-  color: #4b5563;
+  color: var(--ink-600);
   font-size: 0.88rem;
 }
 
@@ -1799,9 +1804,9 @@ progress {
   margin: 16px 0;
   padding: 10px 14px;
   border-radius: 6px;
-  border-left: 4px solid #166534;
-  background: #dcfce7;
-  color: #166534;
+  border-left: 4px solid var(--success);
+  background: var(--success-bg);
+  color: var(--success);
   font-size: 0.9rem;
 }
 
@@ -1915,7 +1920,7 @@ progress {
 
 .resource-romanization {
   margin-top: 3px;
-  color: #5b6472;
+  color: var(--muted);
   font-style: italic;
   font-size: 0.85rem;
 }
@@ -1933,13 +1938,13 @@ progress {
   padding: 3px 8px;
   border-radius: 999px;
   background: var(--light);
-  color: #4b5563;
+  color: var(--ink-600);
   white-space: nowrap;
 }
 
 .resource-notes {
   margin: 12px 0 0;
-  color: #4b5563;
+  color: var(--ink-600);
   font-size: 0.88rem;
 }
 
@@ -1979,7 +1984,7 @@ progress {
 
 .resource-quick-card span {
   display: block;
-  color: #5b6472;
+  color: var(--muted);
   font-size: 0.82rem;
 }
 
@@ -2055,17 +2060,17 @@ progress {
   padding: 3px 8px;
   border-radius: 999px;
   background: var(--grey);
-  color: #4b5563;
+  color: var(--ink-600);
 }
 
 .status-completed {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .status-in_progress {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-bg);
+  color: var(--warning-ink);
 }
 
 .scene-card h3 {
@@ -2075,20 +2080,20 @@ progress {
 
 .scene-subtitle {
   margin: 0 0 8px;
-  color: #5b6472;
+  color: var(--muted);
   font-size: 0.82rem;
 }
 
 .scene-goal {
   margin: 0 0 8px;
   font-size: 0.88rem;
-  color: #4b5563;
+  color: var(--ink-600);
 }
 
 .scene-meta {
   margin: 0;
   font-size: 0.75rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .mission-card {
@@ -2136,7 +2141,7 @@ progress {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5b6472;
+  color: var(--muted);
   margin-bottom: 4px;
 }
 
@@ -2149,7 +2154,7 @@ progress {
 .bubble-english {
   margin-top: 4px;
   font-size: 0.82rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .bubble-speak {
@@ -2185,8 +2190,8 @@ progress {
   padding: 10px 14px;
   border-radius: 6px;
   border-left: 4px solid var(--error);
-  background: #fde8e8;
-  color: #991b1b;
+  background: var(--danger-bg);
+  color: var(--danger);
   font-size: 0.88rem;
 }
 
@@ -2210,7 +2215,7 @@ progress {
 .scene-hint-details {
   margin: 12px 0;
   padding: 10px 12px;
-  background: #fff7ed;
+  background: var(--surface)7ed;
   border: 1px solid #fed7aa;
   border-radius: 6px;
   font-size: 0.86rem;
@@ -2249,16 +2254,6 @@ progress {
   margin: 0;
 }
 
-.link-button {
-  background: none;
-  border: 0;
-  padding: 0;
-  color: var(--primary);
-  text-decoration: underline;
-  font-size: inherit;
-  cursor: pointer;
-}
-
 .debrief-card {
   padding: 18px;
   background: white;
@@ -2275,7 +2270,7 @@ progress {
 .debrief-card ul {
   margin: 0 0 12px;
   padding-left: 20px;
-  color: #4b5563;
+  color: var(--ink-600);
 }
 
 .debrief-card li {
@@ -2323,7 +2318,7 @@ progress {
   gap: 12px;
   margin-bottom: 12px;
   font-size: 0.85rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .pair-header strong {
@@ -2356,7 +2351,7 @@ progress {
 
 .pair-option small {
   font-size: 0.72rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .pair-option:hover,
@@ -2367,26 +2362,26 @@ progress {
 }
 
 .pair-option.correct {
-  border-color: #166534;
-  background: #dcfce7;
+  border-color: var(--success);
+  background: var(--success-bg);
 }
 
 .pair-option.incorrect {
-  border-color: #991b1b;
-  background: #fde8e8;
+  border-color: var(--danger);
+  background: var(--danger-bg);
 }
 
 .pair-tip {
   margin: 10px 0 0;
   font-size: 0.82rem;
-  color: #5b6472;
+  color: var(--muted);
 }
 
 .pair-feedback,
 .production-feedback {
   margin: 10px 0 0;
   font-size: 0.88rem;
-  color: #4b5563;
+  color: var(--ink-600);
 }
 
 .production-head {
@@ -2403,7 +2398,7 @@ progress {
 }
 
 .production-romanization {
-  color: #5b6472;
+  color: var(--muted);
   font-style: italic;
   font-size: 0.85rem;
 }
@@ -2415,7 +2410,7 @@ progress {
 .production-focus {
   margin: 12px 0;
   font-size: 0.86rem;
-  color: #4b5563;
+  color: var(--ink-600);
 }
 
 .production-card .record-actions {
@@ -2433,24 +2428,24 @@ progress {
 
 .check-btn:disabled,
 .record-btn:disabled {
-  background: #b8c7dc;
+  background: var(--ink-300);
   color: white;
   cursor: not-allowed;
   opacity: 0.75;
 }
 
 .band-clear {
-  color: #166534;
+  color: var(--success);
   font-weight: 600;
 }
 
 .band-close {
-  color: #92400e;
+  color: var(--warning-ink);
   font-weight: 600;
 }
 
 .band-try_again {
-  color: #991b1b;
+  color: var(--danger);
   font-weight: 600;
 }
 
@@ -2495,7 +2490,7 @@ progress {
 .teacher-panel,
 .teacher-debrief,
 .teacher-history {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(74, 111, 165, 0.18);
   border-radius: 16px;
   padding: 1.25rem;
@@ -2517,7 +2512,7 @@ progress {
   padding: 0.55rem 0.75rem;
   border-radius: 10px;
   border: 1px solid rgba(74, 111, 165, 0.35);
-  background: #fff;
+  background: var(--surface);
 }
 
 .teacher-status {
@@ -2526,7 +2521,7 @@ progress {
 }
 
 .teacher-warning {
-  background: #fff6e5;
+  background: var(--surface)6e5;
   border: 1px solid #f0c36d;
   border-radius: 12px;
   padding: 0.85rem 1rem;
@@ -2579,7 +2574,7 @@ progress {
 }
 
 .teacher-drill {
-  border-left: 3px solid #4a6fa5;
+  border-left: 3px solid var(--primary);
   background: #f7f9fc;
   border-radius: 8px;
   padding: 0.7rem 0.9rem;
@@ -2590,7 +2585,7 @@ progress {
 }
 
 .teacher-answer {
-  color: #2f6b4f;
+  color: var(--success);
   font-weight: 600;
 }
 
@@ -2625,7 +2620,7 @@ progress {
 
 .fidel-card {
   display: block;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(74, 111, 165, 0.18);
   border-radius: 16px;
   padding: 1rem;
@@ -2636,7 +2631,7 @@ progress {
 
 .fidel-card:hover,
 .fidel-card:focus-visible {
-  border-color: #4a6fa5;
+  border-color: var(--primary);
 }
 
 .fidel-glyph {
@@ -2708,7 +2703,7 @@ progress {
 }
 
 .dictionary-entry {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(74, 111, 165, 0.18);
   border-radius: 14px;
   padding: 1rem;
@@ -2744,7 +2739,7 @@ progress {
 }
 
 .term-library {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid rgba(74, 111, 165, 0.18);
   border-radius: 16px;
   padding: 1rem;
@@ -2791,7 +2786,7 @@ progress {
 }
 
 .teacher-answer.is-correct {
-  color: #2f6b4f;
+  color: var(--success);
 }
 
 
@@ -2810,11 +2805,6 @@ progress {
 }
 
 /* ---- Navigation refresh + mobile disclosure ---- */
-.nav-container {
-  max-width: var(--content-max);
-  gap: 1rem;
-}
-
 .brand {
   color: var(--surface);
   font-size: var(--text-xl);
@@ -3044,6 +3034,38 @@ nav button:focus-visible {
 
 .page-head .learn-meta {
   margin-top: var(--space-1);
+}
+
+.page-head > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* One header typography across page-head, page-hero, learn-header, dash-head. */
+.page-head,
+.page-hero,
+.learn-header,
+.dash-head {
+  max-width: 760px;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.page-head h2,
+.page-hero h2,
+.learn-header h2,
+.dash-head h2 {
+  margin: 0.15rem 0 0.4rem;
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.page-head p,
+.page-hero p,
+.learn-header p,
+.dash-head p {
+  margin: 0.3rem 0;
+  color: var(--ink-600);
 }
 
 .page-help {

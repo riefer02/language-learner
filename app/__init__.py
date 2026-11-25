@@ -16,6 +16,10 @@ from sqlalchemy.engine import Engine, make_url
 
 from config import config
 
+# One query string for every static asset; bump this on a release so Chrome
+# never mixes a new template with an old CSS or JS file.
+ASSET_VERSION = "20261125r2"
+
 db = SQLAlchemy()
 migrate = Migrate()
 csrf = CSRFProtect()
@@ -436,6 +440,10 @@ def create_app(config_name=None, overrides=None):
     @app.context_processor
     def inject_csrf_token():
         return {"csrf_token": generate_csrf}
+
+    @app.context_processor
+    def inject_asset_version():
+        return {"asset_version": ASSET_VERSION}
 
     @app.context_processor
     def inject_active_language():

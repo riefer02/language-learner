@@ -26,9 +26,9 @@
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}?v=20261125m"
+      href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_version }}"
     />
-    <script src="{{ url_for('static', filename='js/head.js') }}?v=20261123"></script>
+    <script src="{{ url_for('static', filename='js/head.js') }}?v={{ asset_version }}"></script>
     {% block head %}{% endblock %}
   </head>
   <body>
@@ -250,7 +250,7 @@
       </p>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=20261125c"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ asset_version }}"></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

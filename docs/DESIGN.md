@@ -41,7 +41,8 @@ Rules:
 
 - New components use semantic tokens and scales, not raw hex or arbitrary px.
 - Legacy rules are migrated opportunistically. Do not add new hard-coded color
-  values; prefer a token.
+  values; prefer a token. `tests/test_style_contract.py` budgets the remaining
+  raw hex/px and duplicate selectors, so debt can shrink but not grow.
 - Status color is never the only signal. Pair it with text or an icon.
 - The focus ring is `var(--focus)` at 3px with a 3px offset.
 
@@ -118,6 +119,9 @@ Live reference: **`/design`** (not linked from the learner nav).
 
 - `base.html` owns the single `<h1>` (brand) and `<main>`.
 - Page titles are `<h2>`; sections are `<h3>`.
+- Page headers share one type/margin scale. `page-head` is the tool-page header
+  and owns the `?` help control; `page-hero`, `learn-header`, and `dash-head`
+  are legacy names on the same scale until Phase 1b migrates them.
 - Tool pages put the interface first. Instructions live behind a `?`
   disclosure; the first visit opens it once (`localStorage`), then it stays
   closed. Escape or an outside click closes it.
@@ -143,7 +147,8 @@ Live reference: **`/design`** (not linked from the learner nav).
 2. If a new token is genuinely needed, add it to `:root` with a semantic name.
 3. Add the component to `/design` with a short usage note.
 4. Check desktop and 390px mobile, keyboard focus, and console errors.
-5. Bump the `?v=` query on changed CSS/JS includes.
+5. Bump `ASSET_VERSION` in `app/__init__.py`; every template shares one
+   `?v=` query string. Never hardcode a version in a page.
 6. Update this file and `AGENTS.md` if a convention changed.
 
 **Latest audits:** [`design-audit-2026-11-25.md`](design-audit-2026-11-25.md) ·

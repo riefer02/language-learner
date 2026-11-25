@@ -422,3 +422,21 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   transliteration until they are looked up again.
 - 277 tests pass; ruff clean. Verified live with `이거 얼마예요?` →
   `Igeo eolmayeyo?` and audio.
+
+### Styling-system Phase 1 (25 November 2026)
+
+- One **`ASSET_VERSION`** in `app/__init__.py`; every template uses
+  `?v={{ asset_version }}`. The five hardcoded version values are gone.
+- Page-header typography is unified across `page-head`, `page-hero`,
+  `learn-header`, and `dash-head`: same h2 size, margins, eyebrow, and body
+  color. Class-name migration is Phase 1b.
+- Token sweep: unique hex outside `:root` **34 → 14**, hex declarations
+  **126 → 19**; added semantic `--warning-*` / `--info-*` tokens.
+- Merged the duplicate `.nav-container` and `.link-button` blocks.
+- Added `tests/test_style_contract.py`: raw hex/px budgets, no duplicate
+  top-level selectors, no hardcoded `?v=` values.
+- Still open: 13 card families, 9 button families, 508 raw px, 7 breakpoints,
+  and the four header class names. Tracked in
+  [`styling-system-decision-2026-11-25.md`](styling-system-decision-2026-11-25.md).
+- 281 tests pass; ruff clean. Header consistency checked at 390px across Today,
+  My terms, Resources, Settings, and Progress.
