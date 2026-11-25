@@ -40,13 +40,15 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const form = document.getElementById("phrase-form");
       const lang = (form && form.dataset.lang) || "ko";
+      const addresseeInput = document.getElementById("addressee");
+      const addressee = addresseeInput ? addresseeInput.value : "any";
       const response = await fetch("/api/translate?lang=" + encodeURIComponent(lang), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": csrfToken,
         },
-        body: JSON.stringify({ text: englishText }),
+        body: JSON.stringify({ text: englishText, addressee }),
       });
 
       const data = await response.json();
@@ -74,6 +76,18 @@ document.addEventListener("DOMContentLoaded", function () {
       if (romanizationEl) {
         romanizationEl.textContent = data.romanization || "";
         romanizationEl.hidden = !data.romanization;
+      }
+
+      const addresseeOut = resultDiv.querySelector(".phrase-addressee");
+      if (addresseeOut) {
+        const labels = {
+          male: "To a man",
+          female: "To a woman",
+          group: "To a group",
+        };
+        const label = labels[data.addressee];
+        addresseeOut.textContent = label || "";
+        addresseeOut.hidden = !label;
       }
 
       if (repeatBtn) {

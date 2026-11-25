@@ -115,7 +115,7 @@ def _conversation_model():
     return current_app.config.get("CONVERSATION_MODEL", CONVERSATION_MODEL)
 
 
-def _request_translation(text, target_code="ko"):
+def _request_translation(text, target_code="ko", addressee="any"):
     language = TARGET_LANGUAGES.get(target_code, "Korean")
     if target_code == "ko":
         romanization_rule = "use Revised Romanization for Korean"
@@ -123,6 +123,26 @@ def _request_translation(text, target_code="ko"):
         romanization_rule = "use a simple Latin transliteration for Amharic"
     else:
         romanization_rule = "use a simple Latin transliteration"
+    addressee_rule = ""
+    if target_code == "am":
+        if addressee == "male":
+            addressee_rule = (
+                " Address one man: use masculine second-person forms "
+                "(for example -ህ, ነህ, ሁን)."
+            )
+        elif addressee == "female":
+            addressee_rule = (
+                " Address one woman: use feminine second-person forms "
+                "(for example -ሽ, ነሽ, ሁኚ)."
+            )
+        elif addressee == "group":
+            addressee_rule = " Address a group: use plural second-person forms."
+        else:
+            addressee_rule = (
+                " The addressee is unspecified: if the phrase changes with the"
+                " addressee's gender, give the masculine form first and the"
+                " feminine form in parentheses."
+            )
     client = get_openai_client()
     model = _translation_model()
     max_tokens = min(1200, max(220, len(text) * 4))
@@ -140,7 +160,7 @@ def _request_translation(text, target_code="ko"):
                         "translation in its native script) and 'romanization' "
                         "(a learner-friendly Latin-script reading of the "
                         f"translation; {romanization_rule}; do not translate "
-                        "it)."
+                        "it)." + addressee_rule
                     ),
                 },
                 {"role": "user", "content": text},
@@ -151,12 +171,12 @@ def _request_translation(text, target_code="ko"):
     return _parse_translation_response(response, target_code)
 
 
-def _translate_with_output_retries(text, target_code="ko"):
+def _translate_with_output_retries(text, target_code="ko", addressee="any"):
     last_error = None
 
     for attempt in range(MAX_OUTPUT_ATTEMPTS):
         try:
-            return _request_translation(text, target_code)
+            return _request_translation(text, target_code, addressee)
         except ValueError as error:
             last_error = error
             current_app.logger.warning(
@@ -173,25 +193,32 @@ def _translate_with_output_retries(text, target_code="ko"):
 
 
 @cache_result(expire_seconds=86400)
-def _translate_cached(cache_version, target_code, text):
+def _translate_cached(cache_version, target_code, text, addressee):
     # The version is part of the cache key, so prompt/schema changes do not
     # serve stale translations for 24 hours.
-    return _translate_with_output_retries(text, target_code)
+    return _translate_with_output_retries(text, target_code, addressee)
 
 
-def translate_text_with_romanization(text, target_code="ko"):
+def translate_text_with_romanization(text, target_code="ko", addressee="any"):
     """Translate and return the text plus its learner-facing romanization."""
+    if addressee not in {"male", "female", "group", "any"}:
+        addressee = "any"
     try:
-        request = TranslationRequest.model_validate({"text": text})
+        request = TranslationRequest.model_validate(
+            {"text": text, "addressee": addressee}
+        )
     except ValidationError as error:
         raise ValueError(
             "Text must be a non-empty string of at most 500 characters"
         ) from error
 
     cache_version = (
-        f"{TRANSLATION_CACHE_VERSION}:{_translation_model()}:{target_code}"
+        f"{TRANSLATION_CACHE_VERSION}:{_translation_model()}:"
+        f"{target_code}:{request.addressee}"
     )
-    return _translate_cached(cache_version, target_code, request.text)
+    return _translate_cached(
+        cache_version, target_code, request.text, request.addressee
+    )
 
 
 def translate_text(text, target_code="ko"):

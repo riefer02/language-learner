@@ -67,6 +67,11 @@
       {% if phrase.target_transliteration %}
       <div class="phrase-romanization" lang="en">{{ phrase.target_transliteration }}</div>
       {% endif %}
+      {% if phrase.addressee and phrase.addressee != 'any' %}
+      <p class="learn-meta">
+        {% if phrase.addressee == 'male' %}To a man{% elif phrase.addressee == 'female' %}To a woman{% elif phrase.addressee == 'group' %}To a group{% endif %}
+      </p>
+      {% endif %}
       <div class="audio-player">
         <audio
           src="{{ phrase.audio_path }}"

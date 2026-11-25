@@ -380,6 +380,25 @@ def test_translate_api_returns_romanization_and_saves_phrase(client):
     data = response.get_json()
     assert data["target_text"] == "안녕하세요"
     assert data["romanization"] == "annyeonghaseyo"
+    assert data["addressee"] == "any"
 
     library = client.get("/ko/library")
     assert b"annyeonghaseyo" in library.data
+
+
+def test_translate_api_records_the_addressee(client):
+    from app.utils import caching
+
+    caching._cache.clear()
+    client.get("/ko/learn")
+
+    response = client.post(
+        "/api/translate",
+        json={"text": "Hello", "addressee": "female"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["addressee"] == "female"
+
+    library = client.get("/ko/library")
+    assert b"To a woman" in library.data

@@ -464,3 +464,15 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   validation, gloss-bearing snapshots, scaled translation output budgets, and
   CSRF request ids are fixed.
 - **299 tests pass**; ruff clean.
+
+### Amharic addressee (25 November 2026)
+
+- Look up now asks **“Who are you speaking to?”** for Amharic: a man, a woman, a
+  group, or **Not sure — show both**. The choice is passed into the translation
+  prompt, which uses the matching second-person forms.
+- “Not sure” asks the model for both forms when the phrase has a gender
+  contrast; the result and library show which addressee a saved phrase used.
+- Migration `0018` stores `phrase.addressee`; older phrases have no addressee.
+- **303 tests pass**; ruff clean. Verified live with `How are you?`:
+  - A woman → `እንዴት ነሽ?` / `Endet nesh?`
+  - Not sure → `እንዴት ነህ? (እንዴት ነሽ?)`

@@ -254,6 +254,20 @@ def test_content_report_rejects_a_non_string_lang(client):
     assert response.status_code == 400
 
 
+def test_amharic_lookup_asks_who_you_are_speaking_to(client, app):
+    _seed_both(client, app)
+    _prefer(app, "am")
+
+    page = client.get("/am/translate")
+
+    assert page.status_code == 200
+    assert b'id="addressee"' in page.data
+    assert b"A woman" in page.data
+
+    korean = client.get("/ko/translate")
+    assert b'id="addressee"' not in korean.data
+
+
 def test_amharic_progress_and_terms_hide_korean_only_actions(client, app):
     _seed_both(client, app)
     _prefer(app, "am")

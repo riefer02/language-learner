@@ -21,6 +21,12 @@
       Slang, honorifics, and politeness can change the result. Check the
       dictionary for a single term.
     </p>
+    {% if language and language.code == 'am' %}
+    <p>
+      Amharic changes with the person you address. Choose a man, a woman, or a
+      group. “Not sure” shows both forms when the phrase has a gender contrast.
+    </p>
+    {% endif %}
   {% endcall %}
 </div>
 
@@ -48,6 +54,20 @@
         {{ language.name if language else "Korean" }}.
       </small>
     </div>
+    {% if language and language.code == 'am' %}
+    <div class="form-group">
+      <label for="addressee">Who are you speaking to?</label>
+      <select id="addressee" name="addressee">
+        <option value="any">Not sure — show both</option>
+        <option value="male">A man</option>
+        <option value="female">A woman</option>
+        <option value="group">A group</option>
+      </select>
+      <small class="learn-meta">
+        Amharic changes with the person you address.
+      </small>
+    </div>
+    {% endif %}
     <button type="submit" id="translate-btn" class="btn btn-primary">
       Look up &amp; generate audio
     </button>
@@ -73,6 +93,7 @@
       lang="{{ 'am' if language and language.code == 'am' else 'ko' }}"
     ></div>
     <div class="phrase-romanization" lang="en" hidden></div>
+    <p class="phrase-addressee learn-meta" hidden></p>
     <div class="audio-player">
       <audio
         controls

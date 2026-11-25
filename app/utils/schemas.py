@@ -41,6 +41,7 @@ class TranslationRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 
     text: str = Field(min_length=1, max_length=500)
+    addressee: Literal["male", "female", "group", "any"] = "any"
 
     @field_validator("text", mode="before")
     @classmethod

@@ -34,7 +34,9 @@ def api_translate():
     language = request_language()
     target_code = language.code if language else "ko"
     try:
-        result = translate_text_with_romanization(payload.text, target_code)
+        result = translate_text_with_romanization(
+            payload.text, target_code, addressee=payload.addressee
+        )
     except ValueError as exc:
         return _error(str(exc), 400)
     except OpenAIConfigError as exc:
@@ -64,6 +66,7 @@ def api_translate():
             source_text=payload.text,
             target_text=target_text,
             target_transliteration=result.romanization,
+            addressee=payload.addressee,
         )
         db.session.add(phrase)
         db.session.commit()
@@ -87,6 +90,7 @@ def api_translate():
         {
             "target_text": target_text,
             "romanization": result.romanization,
+            "addressee": payload.addressee,
             "target_lang": target_code,
             "target_language": language.name if language else "Korean",
         }

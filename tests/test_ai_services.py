@@ -530,6 +530,45 @@ def test_generate_audio_rejects_blank_text(app):
         audio_service.generate_audio("   ", "/tmp/never-written.mp3")
 
 
+def test_translate_amharic_female_prompt(app):
+    fake = FakeOpenAIClient(
+        [
+            chat_response(
+                '{"translation": "እንደምን ነሽ?", '
+                '"romanization": "endemin nesh?"}'
+            )
+        ]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        result = translation_service.translate_text_with_romanization(
+            "How are you?", "am", addressee="female"
+        )
+
+    assert result.translation == "እንደምን ነሽ?"
+    assert result.romanization == "endemin nesh?"
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "Address one woman" in system
+    assert "feminine" in system
+
+
+def test_translate_amharic_unspecified_asks_for_both(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"translation": "እንደምን ነህ?", "romanization": "endemin neh?"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        translation_service.translate_text_with_romanization(
+            "How are you?", "am", addressee="any"
+        )
+
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "addressee is unspecified" in system
+    assert "feminine form in parentheses" in system
+
+
 def test_translate_text_scales_the_output_budget(app):
     fake = FakeOpenAIClient(
         [
