@@ -44,23 +44,20 @@
         Hear it
       </button>
       {% endif %}
+    <p class="review-hint">Tap the card or press Space to reveal the answer.</p>
     {% else %}
     <div class="review-prompt" lang="en">{{ item.gloss }}</div>
-    <details class="help-tip">
-      <summary>What do the four ratings mean?</summary>
-      <ul>
-        <li><strong>Again</strong> — you could not recall it. It comes back soon.</li>
-        <li><strong>Hard</strong> — you recalled it with effort.</li>
-        <li><strong>Good</strong> — you recalled it correctly.</li>
-        <li><strong>Easy</strong> — it was immediate and confident.</li>
-      </ul>
-    </details>
-
-    <p class="review-hint">Say it in {{ language.name if language else "Korean" }}, then reveal the answer.</p>
+    <p class="review-hint">
+      Say it in {{ language.name if language else "Korean" }}, then tap the card
+      or press Space.
+    </p>
     {% endif %}
 
     <details class="review-answer">
-      <summary>Show answer</summary>
+      <summary>
+        <span class="review-reveal-closed">Reveal answer</span>
+        <span class="review-reveal-open">Hide answer</span>
+      </summary>
       <div class="review-answer-body">
         {% if answer_side == "target" %}
         <div class="review-answer-korean" lang="{{ item_lang }}">{{ item.target_text }}</div>
@@ -99,38 +96,51 @@
         {% else %}
         <p class="learn-meta">Starter content — not native-checked.</p>
         {% endif %}
-        {% with surface="review", item_id=item.id, uid="review-" ~ card.id %}
-          {% include "_content_flag.html" %}
-        {% endwith %}
       </div>
     </details>
   </div>
 
-  <form
-    class="grade-form"
-    method="post"
-    action="{{ url_for('learn.submit_review', card_id=card.id) }}"
-  >
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-    <input type="hidden" name="expected_reps" value="{{ card.reps }}" />
-    <input type="hidden" name="elapsed_ms" id="elapsed-ms" value="" />
-    <button type="submit" name="rating" value="1" class="grade grade-again">
-      <span>Again</span><small>1</small>
-    </button>
-    <button type="submit" name="rating" value="2" class="grade grade-hard">
-      <span>Hard</span><small>2</small>
-    </button>
-    <button type="submit" name="rating" value="3" class="grade grade-good">
-      <span>Good</span><small>3</small>
-    </button>
-    <button type="submit" name="rating" value="4" class="grade grade-easy">
-      <span>Easy</span><small>4</small>
-    </button>
-  </form>
+  <div class="review-gradebar">
+    <form
+      class="grade-form"
+      method="post"
+      action="{{ url_for('learn.submit_review', card_id=card.id) }}"
+    >
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <input type="hidden" name="expected_reps" value="{{ card.reps }}" />
+      <input type="hidden" name="elapsed_ms" id="elapsed-ms" value="" />
+      <button type="submit" name="rating" value="1" class="grade grade-again">
+        <span>Again</span><small>1</small>
+      </button>
+      <button type="submit" name="rating" value="2" class="grade grade-hard">
+        <span>Hard</span><small>2</small>
+      </button>
+      <button type="submit" name="rating" value="3" class="grade grade-good">
+        <span>Good</span><small>3</small>
+      </button>
+      <button type="submit" name="rating" value="4" class="grade grade-easy">
+        <span>Easy</span><small>4</small>
+      </button>
+    </form>
 
-  <p class="review-help">Press 1–4 to grade · Space to reveal the answer</p>
+    <p class="review-help">Press 1–4 to grade · Space to reveal the answer</p>
+  </div>
+
+  <details class="help-tip review-ratings">
+    <summary>What do the four ratings mean?</summary>
+    <ul>
+      <li><strong>Again</strong> — you could not recall it. It comes back soon.</li>
+      <li><strong>Hard</strong> — you recalled it with effort.</li>
+      <li><strong>Good</strong> — you recalled it correctly.</li>
+      <li><strong>Easy</strong> — it was immediate and confident.</li>
+    </ul>
+  </details>
+
+  {% with surface="review", item_id=item.id, uid="review-" ~ card.id %}
+    {% include "_content_flag.html" %}
+  {% endwith %}
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/review.js') }}?v=20261123"></script>
+<script src="{{ url_for('static', filename='js/review.js') }}?v=20261125"></script>
 {% endblock %}

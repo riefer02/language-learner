@@ -357,5 +357,17 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 - Accepted item reports mark `item.review_status = native_checked`, shown as a
   quiet **Native-checked** line on the review answer and in My terms. The
   default is `unchecked`; a model never sets it.
-- 267 tests pass; ruff clean. Verified live in Chrome: submit, row, CLI output,
+- 268 tests pass; ruff clean. Verified live in Chrome: submit, row, CLI output,
   and cleanup.
+
+### Streamlined review (25 November 2026)
+
+- The whole prompt card is now a reveal target; the **Reveal answer** summary
+  stays as the keyboard/screen-reader control and Space still works.
+- Grading moved into a **sticky bottom bar** with four compact buttons and the
+  keyboard hint, so it stays on screen after the answer expands.
+- The ratings explainer and **Something’s off?** moved below the grade bar;
+  the answer, notes, and provenance stay in the card.
+- Verified at 390×667 and 320×568: the grade bar is fully visible without
+  scrolling, and the answer/full card still scrolls behind it.
+- 268 tests pass; ruff clean.

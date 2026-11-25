@@ -36,7 +36,7 @@ def test_session_stops_at_limit_and_can_continue(app, client):
 
     continued = client.get("/ko/learn/review?continue=1")
     assert continued.status_code == 200
-    assert b"Show answer" in continued.data
+    assert b"Reveal answer" in continued.data
 
     with app.app_context():
         assert ReviewLog.query.count() == 2

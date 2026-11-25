@@ -92,6 +92,7 @@ Live reference: **`/design`** (not linked from the learner nav).
 | `.fidel-glyph`, `.fidel-progress-bar` | Fidel trainer |
 | `.scene-reply` (with `.help-tip`) | Collapsed natural reply + audio on a scene step |
 | `.content-flag` (with `.help-tip`) | Quiet correction form; flat until opened |
+| `.review-gradebar` | Sticky grading bar with the four buttons and keyboard hint |
 
 ## Page composition
 

@@ -47,8 +47,9 @@ def test_review_page_renders_a_card(client, app):
     response = client.get("/ko/learn/review")
 
     assert response.status_code == 200
-    assert b"Show answer" in response.data
+    assert b"Reveal answer" in response.data
     assert b"grade-form" in response.data
+    assert b"review-gradebar" in response.data
 
 
 def test_rating_updates_card_and_writes_log(client, app):

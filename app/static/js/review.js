@@ -2,6 +2,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.querySelector(".grade-form");
   const answer = document.querySelector(".review-answer");
+  const card = document.querySelector(".review-card");
   const elapsedInput = document.getElementById("elapsed-ms");
   const startedAt = Date.now();
   const gradeButtons = form
@@ -17,11 +18,30 @@ document.addEventListener("DOMContentLoaded", function () {
     gradeButtons.forEach(function (button) {
       button.disabled = !answer.open;
     });
+    if (card) {
+      card.classList.toggle("is-revealable", !answer.open);
+    }
   }
 
   if (answer) {
     syncGradeLock();
     answer.addEventListener("toggle", syncGradeLock);
+  }
+
+  // The summary remains the semantic control; this just makes the whole prompt
+  // card a larger target for touch and mouse.
+  if (card && answer) {
+    card.addEventListener("click", function (event) {
+      if (answer.open) return;
+      if (
+        event.target.closest(
+          "a, button, audio, summary, input, select, textarea, label"
+        )
+      ) {
+        return;
+      }
+      answer.open = true;
+    });
   }
 
   if (form && elapsedInput) {
