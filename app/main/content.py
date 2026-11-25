@@ -259,8 +259,12 @@ def api_content_report():
 
     if item is not None:
         snapshot = item.target_text
+        if item.gloss:
+            snapshot = f"{snapshot} — {item.gloss}"
     elif phrase is not None:
         snapshot = phrase.target_text or phrase.source_text
+        if phrase.source_text and phrase.target_text:
+            snapshot = f"{phrase.source_text} — {phrase.target_text}"
     else:
         snapshot = str(payload.get("snapshot_text") or "").strip()[:500]
     if not snapshot:
@@ -272,6 +276,8 @@ def api_content_report():
         report_language_id = language.id
     else:
         report_language_id = None
+    if report_language_id is None and language is not None:
+        report_language_id = language.id
 
     report = ContentReport(
         user_id=user.id,

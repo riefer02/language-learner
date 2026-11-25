@@ -1,6 +1,6 @@
 # Design System
 
-Current as of 23 November 2026. This is how Kiku’s UI is built and how to extend
+Current as of 25 November 2026. This is how Kiku’s UI is built and how to extend
 it without making the interface harder to understand.
 
 ## Framework decision
@@ -18,7 +18,7 @@ Why:
   copy — not utility-class generation.
 
 **Tailwind was considered and rejected for now.** It would require a Node
-toolchain and a rewrite of ~2,700 lines of CSS into template class strings. It
+toolchain and a rewrite of ~3,600 lines of CSS into template class strings. It
 does not fix navigation, language context, or page purpose by itself. Revisit
 Tailwind only if several contributors are editing the UI daily and utility
 classes become a shared convention. Until then, tokens + documented components
@@ -46,9 +46,9 @@ Rules:
 - Status color is never the only signal. Pair it with text or an icon.
 - The focus ring is `var(--focus)` at 3px with a 3px offset.
 
-Current debt: the stylesheet still contains 47 unique hex values and ~222
-top-level classes from the pre-token era. They are being retired component by
-component, not in one risky rewrite.
+Current debt: 42 unique hex values in the file, **13 outside `:root`**, and
+**509 raw px** values outside the scale. The stylesheet has 518 top-level class
+rules; they are being retired component by component, not in one risky rewrite.
 
 ## Information architecture
 
@@ -62,7 +62,7 @@ Navigation is grouped so the learner does not have to parse eight equal links:
 | **Learn** | Today, Review, Progress, Hangul/Fidel |
 | **Practice** | Teacher, Scenes, Sound Gym (Korean only) |
 | **Words** | Look up, Dictionary, My terms |
-| **Settings** | Language, goal, timezone, reminders |
+| **Settings** | Language, goal, timezone, reminders (one page) |
 
 - The current language is a persistent select in the header. Changing it lands
   on Today in that language.
@@ -86,7 +86,6 @@ Live reference: **`/design`** (not linked from the learner nav).
 | `.language-badge` | Current target language |
 | `.surface-card` | Generic white panel |
 | `.teacher-panel` | Interactive panel (teacher, dictionary sections) |
-| `.tutorial-card` | First-run guidance; `data-dismissible` + `[data-dismiss]` |
 | `.help-tip` | Native `<details>` explanation; never a hover-only tooltip |
 | `.empty-state` | What is missing, why, and the next action |
 | `.chip-row` / `.chip` | Suggested searches, compact links |
@@ -123,8 +122,9 @@ Live reference: **`/design`** (not linked from the learner nav).
   and owns the `?` help control; `page-hero`, `learn-header`, and `dash-head`
   are legacy names on the same scale until Phase 1b migrates them.
 - Tool pages put the interface first. Instructions live behind a `?`
-  disclosure; the first visit opens it once (`localStorage`), then it stays
-  closed. Escape or an outside click closes it.
+  disclosure. The first visit shows the same content **inline** once
+  (`localStorage`); afterwards it stays behind the `?`. Escape or an outside
+  click closes the panel.
 - Use `<label>` for every control. Icon-only controls need `aria-label`.
 - Use `aria-current="page"` on the active nav item.
 - Test at 390px; the nav collapses at 900px.
@@ -151,5 +151,7 @@ Live reference: **`/design`** (not linked from the learner nav).
    `?v=` query string. Never hardcode a version in a page.
 6. Update this file and `AGENTS.md` if a convention changed.
 
-**Latest audits:** [`design-audit-2026-11-25.md`](design-audit-2026-11-25.md) ·
-[`navigation-audit-2026-11-25.md`](navigation-audit-2026-11-25.md).
+**Dated audits (snapshots):**
+[`design-audit-2026-11-25.md`](design-audit-2026-11-25.md) ·
+[`navigation-audit-2026-11-25.md`](navigation-audit-2026-11-25.md) ·
+[`styling-system-decision-2026-11-25.md`](styling-system-decision-2026-11-25.md).

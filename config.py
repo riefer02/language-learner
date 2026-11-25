@@ -116,7 +116,7 @@ class Config:
         "script-src 'self'; "
         "style-src 'self'; "
         "img-src 'self' data:; "
-        "media-src 'self'; "
+        "media-src 'self' blob:; "
         "font-src 'self'; "
         "connect-src 'self'; "
         "base-uri 'self'; "

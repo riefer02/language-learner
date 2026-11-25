@@ -62,14 +62,15 @@ def settings():
             pass
         language_code = request.form.get("language")
         selected_code = None
-        if language_code in {"ko", "am"}:
-            selected = Language.query.filter_by(code=language_code).first()
-            if selected is not None:
-                selected_code = selected.code
-                user.target_language_id = selected.id
-                session.pop("review_limit", None)
-                session.pop("review_count", None)
-                session.pop("review_mode", None)
+        selected = Language.query.filter_by(
+            code=language_code, is_active=True
+        ).first()
+        if selected is not None:
+            selected_code = selected.code
+            user.target_language_id = selected.id
+            session.pop("review_limit", None)
+            session.pop("review_count", None)
+            session.pop("review_mode", None)
         user.reminder_enabled = request.form.get("reminder_enabled") == "on"
         db.session.commit()
         if selected_code is None:
@@ -83,9 +84,9 @@ def settings():
             )
         )
 
-    languages = Language.query.filter(
-        Language.code.in_(["ko", "am"])
-    ).order_by(Language.id.asc()).all()
+    languages = Language.query.filter_by(is_active=True).order_by(
+        Language.id.asc()
+    ).all()
     return render_template(
         "settings.html",
         user=user,

@@ -9,6 +9,10 @@ I go next?”. The nav mixes four different kinds of work under **Practice**,
 **Words** carries four overlapping lookup surfaces, and courses hide their own
 progress. The fix is not more pages; it is fewer doors and one obvious lookup.
 
+**Update, 25 November:** the IA below shipped. A later styling pass also added
+one `ASSET_VERSION`, shared header typography, the token sweep, and a style
+contract test; see `styling-system-decision-2026-11-25.md`.
+
 ## What was wrong
 
 | Finding | Why it hurt |
@@ -81,8 +85,8 @@ wanted later, write it when the last drill is answered, not when the page loads.
 3. **Scenes stepper.** The 3-step roleplay still says “Step 1 of 3” without
    nodes. A visual stepper would orient; jumping ahead would spoil the scene, so
    only completed steps should be clickable.
-4. **Asset versioning.** The manual `?v=` chain is still the top infrastructure
-   debt from the design audit; one `ASSET_VERSION` would retire it.
+4. **Asset versioning.** Shipped 25 Nov: one `ASSET_VERSION` drives every
+   static include, and the style contract rejects hardcoded versions.
 
 ## Verification
 

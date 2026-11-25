@@ -1,4 +1,4 @@
-# Project Status — 23 November 2026
+# Project Status — 25 November 2026
 
 **Verdict:** a working single-user alpha with a real-time Korean voice teacher,
 a Korean + Amharic review core, a dictionary and personal term library, and a
@@ -354,9 +354,10 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   `flask content-check <item_id> [--uncheck]`. Nothing is rewritten
   automatically; the accept path warns when the target text and cached audio
   need separate regeneration.
-- Accepted item reports mark `item.review_status = native_checked`, shown as a
-  quiet **Native-checked** line on the review answer and in My terms. The
-  default is `unchecked`; a model never sets it.
+- Accepting an item report marks `item.review_status = native_checked` only
+  when the suggested text exactly matches the current target. A differing
+  suggestion or a bare complaint leaves it `unchecked`; edit first, then run
+  `flask content-check <item_id>`. A model never sets it.
 - 268 tests pass; ruff clean. Verified live in Chrome: submit, row, CLI output,
   and cleanup.
 
@@ -440,3 +441,26 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   [`styling-system-decision-2026-11-25.md`](styling-system-decision-2026-11-25.md).
 - 281 tests pass; ruff clean. Header consistency checked at 390px across Today,
   My terms, Resources, Settings, and Progress.
+
+### Adversarial review fixes (25 November 2026)
+
+- Fixed a token-sweep bug that silently deleted five warm backgrounds; the style
+  contract now catches truncated `var(--token)` values, raw `rgb()/white`
+  declarations, and actually scans the whole stylesheet for duplicate selectors.
+- First-visit help renders **inline** instead of covering the form; `?` opens the
+  panel on later visits. The panel fits 390/1000px.
+- Header lookup runs once (`run=1`), strips the one-shot flag, and blocked
+  autoplay no longer shows a false error alert.
+- `box-sizing` fixes the 22px input overflow; the last nav submenu is
+  right-aligned; review keyboard ignores audio/video/sliders, Space is native,
+  and 1–4 has a persisted off switch; grade digit contrast and unnamed
+  landmark/label issues are fixed.
+- New-card caps and weekly/retention stats are language-scoped. Settings
+  URL/form language sync is fixed; unknown `/en`-style prefixes 404; unprefixed
+  pages use the preference; Amharic dead ends, manifest, teacher route,
+  `/conversations/new`, review-session reset, and TOPIK goal are fixed; CSP
+  allows blob media.
+- Content-report acceptance semantics, relative SQLite paths, non-string `lang`
+  validation, gloss-bearing snapshots, scaled translation output budgets, and
+  CSRF request ids are fixed.
+- **299 tests pass**; ruff clean.

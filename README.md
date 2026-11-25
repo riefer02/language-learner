@@ -58,7 +58,7 @@ Microphone access requires `localhost` or HTTPS.
 |---|---|
 | `/<lang>/` | Redirects to Today |
 | `/<lang>/learn` | Today: what is due, my terms, next action (`ko`, `am`) |
-| `/<lang>/translate` | Translate a phrase and generate audio |
+| `/<lang>/translate` | Look up a word or phrase and generate audio |
 | `/<lang>/learn/review` | FSRS retrieval card and grading |
 | `/<lang>/learn/teacher` | Live voice lesson, transcript, debrief (Korean) |
 | `/am/learn/fidel` | Amharic fidel bootcamp |

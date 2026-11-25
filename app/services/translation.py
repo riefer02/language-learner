@@ -125,6 +125,7 @@ def _request_translation(text, target_code="ko"):
         romanization_rule = "use a simple Latin transliteration"
     client = get_openai_client()
     model = _translation_model()
+    max_tokens = min(1200, max(220, len(text) * 4))
     response = call_with_retries(
         lambda: client.chat.completions.create(
             model=model,
@@ -144,7 +145,7 @@ def _request_translation(text, target_code="ko"):
                 },
                 {"role": "user", "content": text},
             ],
-            **_chat_options(model, max_tokens=220, temperature=0.3),
+            **_chat_options(model, max_tokens=max_tokens, temperature=0.3),
         )
     )
     return _parse_translation_response(response, target_code)

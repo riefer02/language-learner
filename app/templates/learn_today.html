@@ -5,8 +5,12 @@
   <header class="dash-head">
     <p class="learn-eyebrow">Today · {{ language.name if language else "Korean" }}</p>
     <h2>{{ today_label }}</h2>
+    {% set goal_label = user.goal|capitalize %}
+    {% if language and language.code == 'am' and user.goal == 'topik' %}
+    {% set goal_label = 'Everyday' %}
+    {% endif %}
     <p class="learn-meta">
-      {{ user.goal|capitalize }} path · {{ user.daily_minutes }} minutes a day
+      {{ goal_label }} path · {{ user.daily_minutes }} minutes a day
     </p>
   </header>
 
@@ -28,7 +32,7 @@
       <a class="btn btn-primary btn-large" href="{{ url_for('learn.review') }}">
         Start review
       </a>
-      <div class="session-modes" aria-label="Session length">
+      <div class="session-modes" role="group" aria-label="Session length">
         <span>Session:</span>
         {% for mode in session_modes %}
         <a href="{{ url_for('learn.review', mode=mode) }}">{{ mode }} min</a>
@@ -128,7 +132,11 @@
     </ul>
     {% else %}
     <p class="learn-meta">
+      {% if language and language.code == 'am' %}
+      Save a word from the dictionary.
+      {% else %}
       Save a word from the dictionary, or say “save that” to Teacher.
+      {% endif %}
     </p>
     {% endif %}
   </section>

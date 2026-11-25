@@ -23,7 +23,7 @@
         <div>
           {% if term.item %}
           <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text }}</strong>
-          <span class="learn-meta">{{ term.item.transliteration }}</span>
+          <span class="learn-meta" lang="en">{{ term.item.transliteration }}</span>
           <p>{{ term.item.gloss }}</p>
           {% if term.item.review_status == "native_checked" %}
           <p class="learn-meta">Native-checked.</p>
@@ -51,22 +51,21 @@
     <div class="empty-state">
       <p>
         No saved terms yet. Search the
-        <a href="{{ url_for('main.dictionary') }}">dictionary</a>, or say
-        “save that” during a teacher call.
+        <a href="{{ url_for('main.dictionary') }}">dictionary</a>{% if not (language and language.code == 'am') %}, or say “save that” during a teacher call{% endif %}.
       </p>
     </div>
     {% endif %}
   </section>
 
   {% if phrases.items %}
-  <h3>Phrases you translated</h3>
+  <h3>Phrases you looked up</h3>
   <div id="phrases-container">
     {% for phrase in phrases.items %}
     <div class="phrase-card" data-id="{{ phrase.id }}">
       <div class="phrase-english" lang="en">{{ phrase.source_text }}</div>
       <div class="phrase-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ phrase.target_text }}</div>
       {% if phrase.target_transliteration %}
-      <div class="phrase-romanization">{{ phrase.target_transliteration }}</div>
+      <div class="phrase-romanization" lang="en">{{ phrase.target_transliteration }}</div>
       {% endif %}
       <div class="audio-player">
         <audio

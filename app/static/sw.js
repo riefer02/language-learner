@@ -1,5 +1,5 @@
 // Kiku service worker: app shell caching + push reminders.
-const CACHE_NAME = "kiku-shell-v1";
+const CACHE_NAME = "kiku-shell-v2";
 const SHELL = [
   "/offline",
   "/static/css/style.css",
@@ -45,7 +45,9 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request))
+    caches
+      .match(request, { ignoreSearch: true })
+      .then((cached) => cached || fetch(request))
   );
 });
 

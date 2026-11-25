@@ -530,6 +530,25 @@ def test_generate_audio_rejects_blank_text(app):
         audio_service.generate_audio("   ", "/tmp/never-written.mp3")
 
 
+def test_translate_text_scales_the_output_budget(app):
+    fake = FakeOpenAIClient(
+        [
+            chat_response(
+                '{"translation": "안녕하세요", '
+                '"romanization": "annyeonghaseyo"}'
+            )
+        ]
+    )
+    app.extensions["openai_client"] = fake
+    long_text = "a" * 500
+
+    with app.app_context():
+        translation_service.translate_text(long_text, "ko")
+
+    call = fake.completions.calls[0]
+    assert call["max_completion_tokens"] == 1200
+
+
 def test_translate_text_targets_amharic(app):
     fake = FakeOpenAIClient([chat_response(
             '{"translation": "ቡናው የት አለ?", "romanization": "bunaw yät alä?"}'

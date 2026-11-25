@@ -155,7 +155,9 @@ def today():
             if language and language.code == "am"
             else next_scene(user.id)
         ),
-        weekly=weekly_recap(user.id),
+        weekly=weekly_recap(
+            user.id, language_id=language.id if language else None
+        ),
         session_modes=sorted(_session_limits()),
         language=language,
         today_label=datetime.now(learner_timezone()).strftime("%A, %d %B"),
@@ -595,8 +597,12 @@ def progress():
         can_dos=can_do_artifacts(
             user.id, language_id=language.id if language else None
         ),
-        weekly=weekly_recap(user.id),
-        retention=retention_signal(user.id),
+        weekly=weekly_recap(
+            user.id, language_id=language.id if language else None
+        ),
+        retention=retention_signal(
+            user.id, language_id=language.id if language else None
+        ),
         language=language,
     )
 
@@ -707,7 +713,11 @@ def submit_review(card_id):
     was_new = (card.reps or 0) == 0
     if was_new:
         daily_limit = current_app.config.get("NEW_CARDS_PER_DAY", 10)
-        if new_cards_seen_today(user.id, now) >= daily_limit:
+        language_id = card.item.language_id if card.item else None
+        if (
+            new_cards_seen_today(user.id, now, language_id=language_id)
+            >= daily_limit
+        ):
             abort(409, description="Today's new-card limit has been reached")
 
     result = apply_rating(card, rating, now=now, elapsed_ms=elapsed_ms)

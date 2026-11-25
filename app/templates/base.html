@@ -79,6 +79,7 @@
           method="get"
           action="{{ url_for('main.index') }}"
           role="search"
+          aria-label="Header lookup"
         >
           <label class="sr-only" for="nav-lookup-q">
             Look up a word or phrase
@@ -91,6 +92,7 @@
             maxlength="500"
             autocomplete="off"
           />
+          <input type="hidden" name="run" value="1" />
           <button
             type="submit"
             class="nav-lookup-submit"
@@ -193,9 +195,9 @@
           </li>
           {% endif %}
 
-          <li class="nav-group">
+          <li class="nav-group nav-group-last">
             <details
-              {% if request.endpoint in ['main.library', 'main.dictionary', 'main.index', 'main.resources'] %}class="is-active"{% endif %}
+              {% if request.endpoint in ['main.library', 'main.dictionary', 'main.index'] %}class="is-active"{% endif %}
             >
               <summary>Words</summary>
               <ul class="nav-submenu">

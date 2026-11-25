@@ -3,7 +3,7 @@
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from flask import current_app, g, request
+from flask import abort, current_app, g, request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
@@ -53,9 +53,17 @@ def current_language(user=None):
 def request_language():
     """Resolve a language for unprefixed APIs from ``?lang`` or JSON."""
     code = request.args.get("lang")
+    if code is not None and code != "" and (
+        not isinstance(code, str) or len(code) > 16
+    ):
+        abort(400, description="Invalid language code")
     if not code and request.is_json:
         payload = request.get_json(silent=True) or {}
         code = payload.get("lang")
+        if code is not None and code != "" and (
+            not isinstance(code, str) or len(code) > 16
+        ):
+            abort(400, description="Invalid language code")
     if code:
         language = Language.query.filter_by(code=code, is_active=True).first()
         if language is not None:

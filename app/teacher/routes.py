@@ -6,8 +6,10 @@ from flask import (
     Blueprint,
     current_app,
     jsonify,
+    redirect,
     render_template,
     request,
+    url_for,
 )
 from flask_wtf.csrf import validate_csrf
 from werkzeug.exceptions import BadRequest
@@ -44,6 +46,8 @@ def panel():
         return _error("The teacher is disabled", 404)
     user = get_or_create_local_user()
     language = current_language(user)
+    if language is not None and language.code != "ko":
+        return redirect(url_for("learn.today"))
     sessions = (
         TeacherSession.query.filter_by(user_id=user.id)
         .order_by(TeacherSession.started_at.desc())

@@ -1,6 +1,6 @@
 """Home, language entry points, and legacy URL redirects."""
 
-from flask import abort, redirect, render_template, request, url_for
+from flask import abort, redirect, render_template, request, session, url_for
 
 from app import db
 from app.learning.service import current_language, get_or_create_local_user
@@ -33,6 +33,8 @@ def set_language():
         abort(400, description="Unknown language")
     user = get_or_create_local_user()
     user.target_language_id = language.id
+    for key in ("review_mode", "review_limit", "review_count"):
+        session.pop(key, None)
     db.session.commit()
     return redirect(url_for("learn.today", lang_code=language.code))
 
@@ -67,12 +69,16 @@ def legacy_resources():
 
 
 @main.route("/conversations")
-@main.route("/conversations/new")
 @main.route("/conversations/<int:conversation_id>")
 def legacy_conversations(conversation_id=None):
     if conversation_id is None:
         return _legacy_redirect("/conversations")
     return _legacy_redirect(f"/conversations/{conversation_id}")
+
+
+@main.route("/conversations/new")
+def legacy_new_conversation():
+    return _legacy_redirect("/conversations/new")
 
 
 @main.route("/learn")
@@ -96,4 +102,5 @@ def index():
         "index.html",
         language=language,
         q=(request.args.get("q") or "").strip()[:500],
+        run=request.args.get("run") == "1",
     )

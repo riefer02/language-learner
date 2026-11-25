@@ -1,10 +1,15 @@
 {# Page-level instructions behind a single ? control.
-   data-first-visit opens it once; app.js remembers the key. #}
+   The first visit shows the same content inline, then it lives behind the ?. #}
 {% macro page_help(key, label="How this page works") %}
+{% set body = caller() %}
 <details class="page-help" data-first-visit="{{ key }}">
   <summary aria-label="{{ label }}">?</summary>
   <div class="page-help-panel">
-    {{ caller() }}
+    <div class="page-help-content">{{ body }}</div>
   </div>
 </details>
+<div class="page-help-first" data-first-visit-block="{{ key }}" hidden>
+  <div class="page-help-content">{{ body }}</div>
+  <button type="button" class="link-button" data-first-visit-done>Got it</button>
+</div>
 {% endmacro %}

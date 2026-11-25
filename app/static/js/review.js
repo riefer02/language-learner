@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const form = document.querySelector(".grade-form");
   const answer = document.querySelector(".review-answer");
   const card = document.querySelector(".review-card");
+  const shortcutToggle = document.getElementById("shortcuts-toggle");
   const elapsedInput = document.getElementById("elapsed-ms");
   const startedAt = Date.now();
   const gradeButtons = form
@@ -44,6 +45,28 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function shortcutsEnabled() {
+    try {
+      return window.localStorage.getItem("kiku-review-shortcuts") !== "0";
+    } catch (_error) {
+      return true;
+    }
+  }
+
+  if (shortcutToggle) {
+    shortcutToggle.checked = shortcutsEnabled();
+    shortcutToggle.addEventListener("change", function () {
+      try {
+        window.localStorage.setItem(
+          "kiku-review-shortcuts",
+          shortcutToggle.checked ? "1" : "0"
+        );
+      } catch (_error) {
+        /* ignore */
+      }
+    });
+  }
+
   if (form && elapsedInput) {
     form.addEventListener("submit", function () {
       elapsedInput.value = String(Date.now() - startedAt);
@@ -51,8 +74,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.addEventListener("keydown", function (event) {
       if (
-        event.target.matches("input, textarea, select, button") ||
-        (event.target.matches("summary") && event.code === "Space") ||
+        event.target.closest(
+          "input, textarea, select, button, audio, video, [role='slider']"
+        ) ||
+        event.target.matches("summary") ||
         event.metaKey ||
         event.ctrlKey ||
         event.altKey
@@ -60,9 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      if (event.code === "Space" && answer) {
-        event.preventDefault();
-        answer.open = !answer.open;
+      if (!shortcutsEnabled()) {
         return;
       }
 

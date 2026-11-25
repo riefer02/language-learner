@@ -18,7 +18,7 @@ from config import config
 
 # One query string for every static asset; bump this on a release so Chrome
 # never mixes a new template with an old CSS or JS file.
-ASSET_VERSION = "20261125r2"
+ASSET_VERSION = "20261125r3"
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -69,6 +69,8 @@ def _ensure_sqlite_directory(app):
     database = url.database
     if not database or database == ":memory:":
         return
+    if not os.path.isabs(database):
+        database = os.path.join(app.root_path, database)
     directory = os.path.dirname(os.path.abspath(database))
     if os.path.isdir(directory):
         return
@@ -361,7 +363,6 @@ def create_app(config_name=None, overrides=None):
     # point. Newer setuptools no longer ships pkg_resources, so Flask 2.0's
     # discovery can miss it; register the command explicitly instead.
     app.cli.add_command(db_cli)
-    csrf.init_app(app)
 
     secret = app.config.get("SECRET_KEY") or ""
     if not app.config.get("TESTING") and len(secret) < 32:
@@ -406,6 +407,10 @@ def create_app(config_name=None, overrides=None):
             else uuid.uuid4().hex[:12]
         )
 
+    # Register CSRF after the request-id hook so a rejected form still carries
+    # a request id in its JSON response.
+    csrf.init_app(app)
+
     app.before_request(_check_basic_auth)
 
     @app.url_value_preprocessor
@@ -417,11 +422,10 @@ def create_app(config_name=None, overrides=None):
 
         language = Language.query.filter_by(code=code, is_active=True).first()
         if language is None:
-            # Reject a known-but-inactive language; allow a missing row only in
-            # a schema that has no language seed (tests/bootstrap).
-            known = {"ko", "en", "am", "es", "ja"}
+            # Allow a missing row only for an empty schema (tests/bootstrap);
+            # once languages exist, an unknown prefix is a 404, not Korean.
             existing = Language.query.filter_by(code=code).first()
-            if existing is not None or code not in known:
+            if existing is not None or Language.query.count() > 0:
                 abort(404)
         g.lang_code = code
         g.language = language
@@ -433,7 +437,16 @@ def create_app(config_name=None, overrides=None):
         if endpoint in app.view_functions and app.url_map.is_endpoint_expecting(
             endpoint, "lang_code"
         ):
-            values["lang_code"] = getattr(g, "lang_code", None) or "ko"
+            code = getattr(g, "lang_code", None)
+            if not code:
+                from app.learning.service import current_language
+
+                try:
+                    language = current_language()
+                    code = language.code if language else "ko"
+                except Exception:  # noqa: BLE001 - error pages must not fail here
+                    code = "ko"
+            values["lang_code"] = code
 
     from flask_wtf.csrf import generate_csrf
 

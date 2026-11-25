@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 from app.learning.scheduler import ensure_utc, utcnow
-from app.models import CanDoArtifact, Event, ReviewLog, User
+from app.models import CanDoArtifact, Event, Item, ReviewCard, ReviewLog, User
 
 
 def record_event(user_id, name, **props):
@@ -26,18 +26,23 @@ def record_event(user_id, name, **props):
     return event
 
 
-def retention_signal(user_id):
+def retention_signal(user_id, language_id=None):
     """Delayed-review retention from real review gaps.
 
     For each review, compare the gap from the previous review of the same card.
     A 7+ day gap is evidence of delayed retention; a 30+ day gap is the longer
     horizon. This is not a proctored test, and it is not a proficiency score.
     """
-    logs = (
-        ReviewLog.query.filter(ReviewLog.user_id == user_id)
-        .order_by(ReviewLog.card_id.asc(), ReviewLog.reviewed_at.asc())
-        .all()
-    )
+    query = ReviewLog.query.filter(ReviewLog.user_id == user_id)
+    if language_id is not None:
+        query = query.filter(
+            ReviewLog.card.has(
+                ReviewCard.item.has(Item.language_id == language_id)
+            )
+        )
+    logs = query.order_by(
+        ReviewLog.card_id.asc(), ReviewLog.reviewed_at.asc()
+    ).all()
 
     buckets = {"day7": [], "day30": []}
     previous = {}
@@ -69,7 +74,7 @@ def retention_signal(user_id):
     }
 
 
-def weekly_recap(user_id, now=None):
+def weekly_recap(user_id, now=None, language_id=None):
     """Last 7 learner-local days plus a 30-day recall-success estimate."""
     from app.learning.service import learner_timezone, local_day_bounds
 
@@ -77,15 +82,18 @@ def weekly_recap(user_id, now=None):
     tz = learner_timezone()
     start, _end, _today = local_day_bounds(now - timedelta(days=6))
 
-    logs = (
-        ReviewLog.query.filter(
-            ReviewLog.user_id == user_id,
-            ReviewLog.reviewed_at >= start,
-            ReviewLog.reviewed_at <= now,
-        )
-        .order_by(ReviewLog.reviewed_at.asc())
-        .all()
+    log_query = ReviewLog.query.filter(
+        ReviewLog.user_id == user_id,
+        ReviewLog.reviewed_at >= start,
+        ReviewLog.reviewed_at <= now,
     )
+    if language_id is not None:
+        log_query = log_query.filter(
+            ReviewLog.card.has(
+                ReviewCard.item.has(Item.language_id == language_id)
+            )
+        )
+    logs = log_query.order_by(ReviewLog.reviewed_at.asc()).all()
 
     counts = {}
     for log in logs:
@@ -105,13 +113,17 @@ def weekly_recap(user_id, now=None):
     peak = max([item["count"] for item in activity] + [1])
 
     thirty_start = now - timedelta(days=30)
-    recent = (
-        ReviewLog.query.filter(
-            ReviewLog.user_id == user_id,
-            ReviewLog.reviewed_at >= thirty_start,
-        )
-        .all()
+    recent_query = ReviewLog.query.filter(
+        ReviewLog.user_id == user_id,
+        ReviewLog.reviewed_at >= thirty_start,
     )
+    if language_id is not None:
+        recent_query = recent_query.filter(
+            ReviewLog.card.has(
+                ReviewCard.item.has(Item.language_id == language_id)
+            )
+        )
+    recent = recent_query.all()
     recall_success = (
         round(
             sum(1 for log in recent if (log.rating or 0) >= 3)
@@ -122,10 +134,15 @@ def weekly_recap(user_id, now=None):
         else None
     )
 
-    can_dos = CanDoArtifact.query.filter(
+    can_do_query = CanDoArtifact.query.filter(
         CanDoArtifact.user_id == user_id,
         CanDoArtifact.created_at >= start,
-    ).count()
+    )
+    if language_id is not None:
+        can_do_query = can_do_query.filter(
+            CanDoArtifact.language_id == language_id
+        )
+    can_dos = can_do_query.count()
 
     return {
         "reviews": len(logs),

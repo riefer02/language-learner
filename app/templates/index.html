@@ -14,7 +14,7 @@
     <ol>
       <li>Type the English word or phrase you want.</li>
       <li>Listen to the generated audio before you repeat it.</li>
-      <li>Open your library to replay it later, or review it in Learn.</li>
+      <li>Open My terms to replay it later, or review it in Learn.</li>
     </ol>
     <p>
       Kiku translates the whole phrase for the situation, not word by word.
@@ -28,6 +28,7 @@
   <form
     id="phrase-form"
     data-lang="{{ language.code if language else 'ko' }}"
+    data-run="{{ '1' if run else '0' }}"
   >
     <div class="form-group">
       <label for="english-text">English word or phrase</label>
@@ -87,7 +88,7 @@
       </button>
     </div>
     <div class="tutorial-actions">
-      <a class="btn" href="{{ url_for('main.library') }}">Open library</a>
+      <a class="btn" href="{{ url_for('main.library') }}">Open My terms</a>
       <a class="btn" href="{{ url_for('learn.today') }}">Open Learn</a>
     </div>
   </div>

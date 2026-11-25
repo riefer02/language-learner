@@ -59,6 +59,7 @@ def test_fidel_pages_render(client):
 
 
 def test_settings_switches_target_language(app, client):
+    client.get("/ko/learn")
     with app.app_context():
         seed_amharic()
         language = Language.query.filter_by(code="am").one()
@@ -85,6 +86,7 @@ def test_settings_switches_target_language(app, client):
 def test_korean_only_pages_redirect_for_amharic(app, client):
     from app.learning.service import get_or_create_local_user
 
+    client.get("/ko/learn")
     with app.app_context():
         seed_amharic()
         user = get_or_create_local_user()
@@ -92,11 +94,11 @@ def test_korean_only_pages_redirect_for_amharic(app, client):
         user.target_language_id = amharic.id
         db.session.commit()
 
-    scenes = client.get("/ko/learn/scenes")
+    scenes = client.get("/am/learn/scenes")
     assert scenes.status_code == 302
-    assert scenes.headers["Location"].endswith("/ko/learn/")
+    assert scenes.headers["Location"].endswith("/am/learn/")
 
-    conversations = client.get("/ko/conversations/new")
+    conversations = client.get("/am/conversations/new")
     assert conversations.status_code == 302
 
 
@@ -106,8 +108,8 @@ def test_amharic_url_prefix_is_explicit(app, client):
 
     page = client.get("/am/learn")
     assert page.status_code == 200
-    assert b"Today" in page.data
-    assert b"Amharic" in page.data
+    assert "Today · Amharic".encode() in page.data
+    assert b"dash-hero" in page.data
 
     fidel = client.get("/am/learn/fidel")
     assert fidel.status_code == 200

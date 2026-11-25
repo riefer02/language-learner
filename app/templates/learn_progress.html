@@ -11,7 +11,7 @@
     </p>
   </div>
 
-  <div class="learn-stats" aria-label="Learning summary">
+  <div class="learn-stats" role="group" aria-label="Learning summary">
     <div class="learn-stat">
       <b>{{ summary.learned }}</b>
       <span>cards practiced</span>
@@ -55,7 +55,7 @@
       <div><b>{{ weekly.can_dos }}</b><span>tasks completed</span></div>
       <div><b>{{ weekly.active_days }}/7</b><span>active days</span></div>
     </div>
-    <div class="activity-chart" aria-label="Reviews per day over the last seven days">
+    <div class="activity-chart" role="img" aria-label="Reviews per day over the last seven days">
       {% for day in weekly.activity %}
       <div class="activity-day">
         <span>{{ day.label }}</span>
@@ -117,10 +117,17 @@
       {% endfor %}
     </ul>
     {% else %}
+    {% if language and language.code == 'am' %}
+    <p>
+      Finish a fidel lesson to keep building your Amharic foundation.
+      <a href="{{ url_for('learn.fidel') }}">Open Fidel</a>.
+    </p>
+    {% else %}
     <p>
       Complete a mission scene to earn your first proof of what you can do.
       <a href="{{ url_for('learn.scenes') }}">Open scenes</a>.
     </p>
+    {% endif %}
     {% endif %}
   </section>
 

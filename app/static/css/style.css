@@ -18,6 +18,9 @@
   --surface: #ffffff;
   --surface-muted: #f8fafc;
   --surface-tint: #eef4fc;
+  --surface-warm: #fff7ed;
+  --surface-warm-soft: #fff6e5;
+  --code-background: var(--surface-muted);
   --border: rgba(74, 111, 165, 0.22);
   --border-strong: rgba(74, 111, 165, 0.38);
 
@@ -294,6 +297,13 @@ input[type="text"] {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+}
+
+input[type="text"],
+input[type="search"],
+textarea,
+select {
+  box-sizing: border-box;
 }
 
 input[type="text"]:focus {
@@ -758,7 +768,7 @@ audio {
 .learn-primary {
   padding: 20px;
   border-radius: 10px;
-  background: var(--surface)7ed;
+  background: var(--surface-warm);
   border: 1px solid #fed7aa;
   margin-bottom: 24px;
 }
@@ -767,43 +777,6 @@ audio {
   margin: 10px 0 0;
   font-size: 0.9rem;
   color: var(--muted);
-}
-
-.learn-done-line {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.next-mission {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
-  padding: 16px 18px;
-  background: white;
-  border: 1px solid var(--grey);
-  border-radius: 10px;
-}
-
-.next-mission .learn-eyebrow {
-  margin-bottom: 2px;
-}
-
-.next-mission .learn-meta {
-  margin-top: 4px;
-}
-
-.next-mission .btn {
-  flex: 0 0 auto;
-}
-
-@media (max-width: 560px) {
-  .next-mission {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 }
 
 .week-stats {
@@ -1106,7 +1079,7 @@ audio {
 .grade small {
   margin: 0;
   font-size: 0.64rem;
-  opacity: 0.75;
+  opacity: 1;
 }
 
 .grade-again {
@@ -1147,6 +1120,25 @@ audio {
   text-align: center;
   font-size: 0.72rem;
   color: var(--muted);
+}
+
+.review-shortcut-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-weight: 500;
+}
+
+.review-shortcut-toggle input {
+  width: auto;
+  margin: 0;
+}
+
+.review-shell .review-ratings,
+.review-shell .review-shortcuts,
+.review-shell .content-flag {
+  scroll-margin-bottom: 7rem;
 }
 
 .review-ratings {
@@ -1370,7 +1362,7 @@ progress {
 
 .choice:has(input:checked) {
   border-color: var(--accent);
-  background: var(--surface)7ed;
+  background: var(--surface-warm);
   box-shadow: 0 0 0 1px var(--accent);
 }
 
@@ -1695,7 +1687,7 @@ progress {
 
 .hangul-notes {
   padding: 16px 18px;
-  background: var(--surface)7ed;
+  background: var(--surface-warm);
   border: 1px solid #fed7aa;
   border-radius: 10px;
 }
@@ -1823,7 +1815,7 @@ progress {
 }
 
 .push-panel code {
-  background: var(--code-background, #f4f4f5);
+  background: var(--code-background);
   padding: 2px 5px;
   border-radius: 4px;
   font-size: 0.85em;
@@ -2215,7 +2207,7 @@ progress {
 .scene-hint-details {
   margin: 12px 0;
   padding: 10px 12px;
-  background: var(--surface)7ed;
+  background: var(--surface-warm);
   border: 1px solid #fed7aa;
   border-radius: 6px;
   font-size: 0.86rem;
@@ -2521,7 +2513,7 @@ progress {
 }
 
 .teacher-warning {
-  background: var(--surface)6e5;
+  background: var(--surface-warm-soft);
   border: 1px solid #f0c36d;
   border-radius: 12px;
   padding: 0.85rem 1rem;
@@ -2843,8 +2835,8 @@ progress {
   flex: 1 1 160px;
   min-width: 0;
   max-width: 280px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.38);
+  background: var(--surface);
+  border: 1px solid var(--surface);
   border-radius: var(--radius-pill);
   padding: 2px 2px 2px 12px;
 }
@@ -2854,18 +2846,18 @@ progress {
   min-width: 0;
   border: 0;
   background: transparent;
-  color: var(--surface);
+  color: var(--ink-700);
   font: inherit;
   font-size: var(--text-sm);
   padding: 6px 0;
 }
 
 .nav-lookup input::placeholder {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--ink-500);
 }
 
 .nav-lookup input:focus-visible {
-  outline: 2px solid var(--surface);
+  outline: 2px solid var(--focus);
   outline-offset: 1px;
   border-radius: var(--radius-pill);
 }
@@ -2879,8 +2871,8 @@ progress {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--surface);
-  color: var(--primary);
+  background: var(--primary);
+  color: var(--surface);
   font: inherit;
   font-size: 1.05rem;
   font-weight: 800;
@@ -2889,7 +2881,7 @@ progress {
 }
 
 .nav-lookup-submit:focus-visible {
-  outline: 3px solid var(--surface);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -3019,6 +3011,7 @@ nav button:focus-visible {
 /* Page header with one-time help tucked behind a ? control. */
 .page-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
@@ -3114,29 +3107,42 @@ nav button:focus-visible {
   box-shadow: var(--shadow-lg);
 }
 
-.page-help-panel h3 {
+.page-help-content h3 {
   margin: 0 0 var(--space-2);
   font-size: var(--text-lg);
 }
 
-.page-help-panel h3 + p {
+.page-help-content h3 + p {
   margin-top: 0;
 }
 
-.page-help-panel ol,
-.page-help-panel ul {
+.page-help-content ol,
+.page-help-content ul {
   margin: 0 0 var(--space-2);
   padding-left: 1.2rem;
   color: var(--ink-600);
 }
 
-.page-help-panel li {
+.page-help-content li {
   margin-bottom: var(--space-1);
 }
 
-.page-help-panel p {
+.page-help-content p {
   margin: var(--space-2) 0 0;
   color: var(--ink-600);
+}
+
+.page-help-first {
+  flex: 1 1 100%;
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.page-help-first .link-button {
+  margin-top: var(--space-2);
 }
 
 .help-tip summary {
@@ -3178,37 +3184,6 @@ nav button:focus-visible {
 
 .help-tip.content-flag .form-group {
   margin-bottom: var(--space-3);
-}
-
-.tutorial-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--primary);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.1rem;
-  margin: 1rem 0 1.25rem;
-  box-shadow: var(--shadow-md);
-}
-
-.tutorial-head {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  align-items: flex-start;
-}
-
-.tutorial-head h3 {
-  margin: 0 0 0.25rem;
-}
-
-.tutorial-steps {
-  margin: var(--space-2) 0 0;
-  padding-left: 1.2rem;
-  color: var(--ink-600);
-}
-
-.tutorial-steps li {
-  margin: 0.3rem 0;
 }
 
 .tutorial-actions {
@@ -3307,7 +3282,7 @@ abbr[title] {
 .language-label {
   color: var(--surface);
   font-size: var(--text-xs);
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .language-switch select {
@@ -3320,6 +3295,12 @@ abbr[title] {
   font-size: var(--text-sm);
   font-weight: 650;
   cursor: pointer;
+}
+
+.language-switch .btn {
+  background: var(--surface);
+  border-color: var(--surface);
+  color: var(--primary);
 }
 
 .language-switch select option {
@@ -3398,6 +3379,11 @@ abbr[title] {
   background: var(--surface-tint);
 }
 
+.nav-group-last .nav-submenu {
+  left: auto;
+  right: 0;
+}
+
 .nav-submenu a[aria-current="page"] {
   background: var(--primary-soft);
   color: var(--primary-ink);
@@ -3459,14 +3445,6 @@ abbr[title] {
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   box-shadow: var(--shadow-sm);
-}
-
-.term-list-compact {
-  margin-top: var(--space-3);
-}
-
-.term-list-compact .term-card:last-child {
-  border-bottom: 0;
 }
 
 /* ---- Design-system reference page ---- */

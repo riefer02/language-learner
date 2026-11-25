@@ -14,7 +14,9 @@ def _first_item_id(app):
 
 def test_content_report_captures_snapshot(client, app):
     client.get("/ko/learn")
-    item_id, target = _first_item_id(app)
+    with app.app_context():
+        item = Item.query.order_by(Item.id.asc()).first()
+        item_id, target, gloss = item.id, item.target_text, item.gloss
 
     response = client.post(
         "/api/content-reports",
@@ -33,7 +35,7 @@ def test_content_report_captures_snapshot(client, app):
     with app.app_context():
         report = ContentReport.query.one()
         assert report.item_id == item_id
-        assert report.snapshot_text == target
+        assert report.snapshot_text == f"{target} — {gloss}"
         assert report.surface == "review"
         assert report.kind == "register"
         assert report.suggested_text == "괜찮습니다"
@@ -114,13 +116,14 @@ def test_content_report_uses_page_language_over_preference(client, app):
 
 def test_content_report_cli_lists_and_accepts(client, app, runner):
     client.get("/ko/learn")
-    item_id, _target = _first_item_id(app)
+    item_id, target = _first_item_id(app)
     client.post(
         "/api/content-reports",
         json={
             "surface": "review",
             "item_id": item_id,
             "kind": "meaning",
+            "suggested_text": target,
         },
     )
 

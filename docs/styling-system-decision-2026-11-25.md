@@ -5,7 +5,7 @@ which one?
 
 ## What the front end actually looks like
 
-Measured from `app/static/css/style.css` and `app/templates`:
+Measured before Phase 1a (the audit baseline):
 
 | Signal | Count |
 |---|---|
@@ -19,6 +19,10 @@ Measured from `app/static/css/style.css` and `app/templates`:
 | Button families | 9 |
 | Asset version values | 5 (`20261123`, `20261125`, `20261125b/c/m`) |
 | Inline `style=` attributes | 0 (good) |
+
+Current after Phase 1a: **3,600 lines**, **518 top-level class rules**, **42
+unique hex total (13 outside `:root`)**, **509 raw px**, and 0 duplicate
+top-level selectors.
 
 The inconsistency is not mainly color. It is that each page grew its own
 header, card, button, and spacing model on top of a token layer that was only
@@ -108,12 +112,15 @@ stylesheet without removing the old page CSS.
 - Page-header typography unified across `page-head`, `page-hero`,
   `learn-header`, and `dash-head`: same h2 size, margins, eyebrow, and body
   color. (`review-top` is a utility bar, not a page header.)
-- Token sweep: unique hex outside `:root` went from **34 to 14**; hex
-  declarations outside `:root` from **126 to 19**. Added semantic
+- Token sweep: unique hex outside `:root` went from **34 to 13**; hex
+  declarations outside `:root` from **126 to 18**. Added semantic
   `--warning-*` and `--info-*` tokens for the grade palette.
+- The stylesheet is now 3,600 lines with 518 top-level class rules; raw `px`
+  outside the scale is 509, and `rgb()`/named `white` are budgeted too.
 - Merged the duplicate `.nav-container` and `.link-button` blocks.
-- Added `tests/test_style_contract.py`: budgets raw hex/px, forbids duplicate
-  top-level selectors, and forbids hardcoded `?v=` values.
+- Added `tests/test_style_contract.py`: budgets raw hex/px/rgb/white, forbids
+  duplicate top-level selectors, truncated token values, and hardcoded `?v=`
+  values.
 
 ## Phase 1b — next
 

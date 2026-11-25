@@ -26,18 +26,13 @@
     {
       "name": "Review",
       "short_name": "Review",
-      "url": "/ko/learn/review",
+      "url": "/learn/review",
       "icons": [
         {
           "src": "/static/icons/icon-192.png",
           "sizes": "192x192"
         }
       ]
-    },
-    {
-      "name": "Mission scenes",
-      "short_name": "Scenes",
-      "url": "/ko/learn/scenes"
     }
   ]
 }

@@ -138,35 +138,57 @@ def register_learning_cli(app):
         type=click.Choice(["accepted", "rejected"]),
     )
     @click.option("--note", "resolution_note", default=None)
-    def content_report_close_command(report_id, decision, resolution_note):
+    @click.option(
+        "--force",
+        is_flag=True,
+        help="Change a report that is not currently open.",
+    )
+    def content_report_close_command(
+        report_id, decision, resolution_note, force
+    ):
         """Mark a content report accepted or rejected.
 
-        Accepting a report attached to an item marks that item native-checked.
-        It does not rewrite the text; edit the item (and clear cached audio when
-        the target text changed) as a separate, deliberate step.
+        Accepting a report does **not** mark the current text native-checked
+        unless the suggestion exactly matches it. Edit the item first, then run
+        ``flask content-check <item_id>``; cached audio still needs its own
+        regeneration when target_text changes.
         """
         report = db.session.get(ContentReport, report_id)
         if report is None:
             raise click.ClickException(f"No content report #{report_id}.")
+        if report.status != "open" and not force:
+            raise click.ClickException(
+                f"Report #{report.id} is already {report.status}; "
+                "pass --force to change it."
+            )
+        previous_status = report.status
         report.status = decision
         report.resolved_at = datetime.now(UTC)
         if resolution_note:
             report.resolution_note = resolution_note.strip()[:1000]
 
-        if decision == "accepted" and report.item_id:
+        if decision == "accepted" and report.item_id and report.kind != "audio":
             item = db.session.get(Item, report.item_id)
-            if item is not None and report.kind != "audio":
-                item.review_status = "native_checked"
-                item.reviewed_at = datetime.now(UTC)
-                if (
-                    report.suggested_text
-                    and report.suggested_text != item.target_text
-                ):
+            if item is not None:
+                suggestion = (report.suggested_text or "").strip()
+                if suggestion and suggestion == item.target_text:
+                    item.review_status = "native_checked"
+                    item.reviewed_at = datetime.now(UTC)
+                else:
                     click.echo(
-                        "Note: the suggestion differs from the current target "
-                        "text. Review the item and, if target_text changed, "
-                        "clear audio_path, then run `flask generate-item-audio`."
+                        "Not marking native-checked: accepting a report does "
+                        "not confirm the current text. Edit the item if needed, "
+                        "then run `flask content-check <item_id>`."
                     )
+        if (
+            decision == "rejected"
+            and previous_status == "accepted"
+            and report.item_id
+        ):
+            click.echo(
+                "If this report set the native-check, clear it with "
+                "`flask content-check <item_id> --uncheck`."
+            )
         db.session.commit()
         click.echo(f"Report #{report.id} marked {report.status}.")
 

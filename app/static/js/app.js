@@ -19,8 +19,12 @@ function playAudioWithFallback(audioElement) {
 
   if (playPromise !== undefined) {
     playPromise.catch((error) => {
+      // Autoplay can be blocked before a gesture; leave the controls visible
+      // instead of showing a failure alert for a successful lookup.
+      if (error && error.name === "NotAllowedError") {
+        return;
+      }
       console.error("Audio playback error:", error);
-      // Show a message to the user, if appropriate
       const errorContainer = document.getElementById("error-message");
       if (errorContainer) {
         errorContainer.textContent = "Audio playback failed. Please try again.";
@@ -109,48 +113,36 @@ document.addEventListener("keydown", function (e) {
   });
 })();
 
-// Dismissible first-run guidance. State is local to the browser.
-(function () {
-  document.querySelectorAll("[data-dismissible]").forEach(function (card) {
-    const key = card.getAttribute("data-dismissible");
-    try {
-      if (key && window.localStorage.getItem(key) === "1") {
-        card.hidden = true;
-        return;
-      }
-    } catch (_error) {
-      /* localStorage can be unavailable in private mode. */
-    }
-    const button = card.querySelector("[data-dismiss]");
-    if (button) {
-      button.addEventListener("click", function () {
-        card.hidden = true;
-        try {
-          if (key) window.localStorage.setItem(key, "1");
-        } catch (_error) {
-          /* ignore */
-        }
-      });
-    }
-  });
-})();
-
-// One-time page help: open on the first visit, then live behind the ? control.
+// One-time page help: show it inline on the first visit, then behind the ?.
 (function () {
   document.querySelectorAll("details[data-first-visit]").forEach(function (details) {
     const key = details.getAttribute("data-first-visit");
+    const block = details.nextElementSibling;
+    const hasBlock = block && block.hasAttribute("data-first-visit-block");
     let seen = false;
     try {
       seen = window.localStorage.getItem(key) === "1";
     } catch (_error) {
       /* localStorage can be unavailable in private mode. */
     }
-    if (seen) return;
-    details.open = true;
-    try {
-      window.localStorage.setItem(key, "1");
-    } catch (_error) {
-      /* ignore */
+    if (!seen) {
+      details.hidden = true;
+      if (hasBlock) block.hidden = false;
+      try {
+        window.localStorage.setItem(key, "1");
+      } catch (_error) {
+        /* ignore */
+      }
+    }
+    if (hasBlock) {
+      const done = block.querySelector("[data-first-visit-done]");
+      if (done) {
+        done.addEventListener("click", function () {
+          block.hidden = true;
+          details.hidden = false;
+          details.open = false;
+        });
+      }
     }
   });
 
@@ -166,6 +158,8 @@ document.addEventListener("keydown", function (e) {
     if (event.key !== "Escape") return;
     document.querySelectorAll("details.page-help[open]").forEach(function (details) {
       details.open = false;
+      const summary = details.querySelector("summary");
+      if (summary) summary.focus();
     });
   });
 })();
@@ -239,9 +233,10 @@ document.addEventListener("keydown", function (e) {
         if (!response.ok) {
           throw new Error(data.error || "Could not send the report.");
         }
+        // The learner never sees these reports again, so say where they go.
         if (status) {
           status.textContent =
-            "Reported. It is in the review queue — thanks.";
+            "Reported. It is queued for triage — thanks.";
         }
         if (button) button.textContent = "Reported";
         form.reset();

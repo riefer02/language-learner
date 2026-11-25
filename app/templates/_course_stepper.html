@@ -1,5 +1,5 @@
-{# Clickable course progress. Every node is a link, the current one is
-   announced as the step. Labels collapse to the current node on small screens. #}
+{# Clickable course progress: one numbered node per lesson; every node is a
+   link and the current one is announced as the step. #}
 <div class="course-stepper" role="navigation" aria-label="{{ stepper_label }} lessons">
   <ol>
     {% for item in stepper_lessons %}

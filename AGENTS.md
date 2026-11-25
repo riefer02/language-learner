@@ -94,11 +94,11 @@ load-bearing decision because FSRS is keyed by `(user, item, skill)`.
   titles are `<h2>`; sections are `<h3>`.
 - Use semantic tokens (`--primary`, `--surface`, `--space-*`, `--radius-*`,
   `--text-*`). Never add a new raw hex value; see `docs/DESIGN.md`.
-- Reuse the existing classes: `page-hero`, `language-badge`, `surface-card`,
-  `tutorial-card` (with `data-dismissible` + `[data-dismiss]`), `help-tip`
-  (native `<details>`), `empty-state`, `chip-row`, `learn-meta`.
-- Home is Today. Translate lives at `/<lang>/translate`. “My terms” is the
-  saved-term library; keep it in the Words nav group and on Today.
+- Reuse the existing classes: `page-head` (title + `?` help), `surface-card`,
+  `help-tip` (native `<details>`), `empty-state`, `chip-row`, `learn-meta`.
+- Home is Today. Look up lives at `/<lang>/translate` (the route keeps its old
+  name). “My terms” is the saved-term library; keep it in the Words nav group
+  and on Today.
 - Header groups are Learn / Practice / Words / Settings. Do not go back to a
   flat list of eight links.
 - Prefer an existing component and add it to `/design` when you introduce one.
@@ -115,7 +115,8 @@ load-bearing decision because FSRS is keyed by `(user, item, skill)`.
 1. Add items/script data under `app/languages/`.
 2. Seed `Language`, `LanguageScript`, `Course`, `Deck`, `Item`, `ItemForm`,
    `ItemGloss`, `DeckItem`, then `ensure_review_cards(user, language_id)`.
-3. Add it to the settings language list; scope every new query; run tests.
+3. Add capability flags for script/teacher/scenes surfaces; settings derives
+   active languages from `Language.is_active`. Scope every new query; run tests.
 4. Do not claim speech support unless the provider actually supports the language.
 
 **Change the teacher**

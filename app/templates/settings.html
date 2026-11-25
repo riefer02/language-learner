@@ -19,12 +19,12 @@
       <legend>Your path</legend>
       <label for="settings-language">Learning language</label>
       <select id="settings-language" name="language">
-        {% for language in languages %}
+        {% for option in languages %}
         <option
-          value="{{ language.code }}"
-          {% if user.target_language_id == language.id %}selected{% endif %}
+          value="{{ option.code }}"
+          {% if language and language.id == option.id %}selected{% endif %}
         >
-          {{ language.name }}
+          {{ option.name }}
         </option>
         {% endfor %}
       </select>

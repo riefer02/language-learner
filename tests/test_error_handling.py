@@ -78,6 +78,26 @@ def test_sqlite_directory_is_created_at_startup(tmp_path):
         db.session.execute(text("SELECT 1"))
 
 
+def test_relative_sqlite_path_resolves_against_app_root(tmp_path):
+    """Flask-SQLAlchemy resolves relative SQLite paths from app.root_path."""
+    from app import _ensure_sqlite_directory
+
+    class RelativeApp:
+        root_path = str(tmp_path)
+        config = {  # noqa: RUF012 - simple test double
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///nested/kiku.db"
+        }
+
+        class logger:
+            @staticmethod
+            def warning(*_args, **_kwargs):
+                pass
+
+    _ensure_sqlite_directory(RelativeApp())
+
+    assert (tmp_path / "nested").is_dir()
+
+
 def test_empty_database_uri_is_not_parsed():
     """``DATABASE_URL=`` in .env must not crash the directory guard."""
     from app import _ensure_sqlite_directory
