@@ -230,6 +230,15 @@ def test_legacy_database_backfills_and_downgrades(tmp_path):
         deck_item = connection.execute("SELECT * FROM deck_item").fetchone()
 
         assert item["language_id"] == korean_id
+        item_columns = set(item.keys())
+        assert "review_status" in item_columns
+        assert (
+            connection.execute(
+                "SELECT name FROM sqlite_master "
+                "WHERE type = 'table' AND name = 'content_report'"
+            ).fetchone()
+            is not None
+        )
         assert item["key_normalized"] == "커피"
         assert form["text"] == "커피"
         assert form["normalized_text"] == "커피"
@@ -259,11 +268,13 @@ def test_legacy_database_backfills_and_downgrades(tmp_path):
         }
         assert "item_form" not in tables
         assert "language" not in tables
+        assert "content_report" not in tables
         item = connection.execute("SELECT * FROM item").fetchone()
         phrase = connection.execute("SELECT * FROM phrase").fetchone()
         assert item["korean"] == "커피"
         assert item["english"] == "coffee"
         assert "language_id" not in item
+        assert "review_status" not in set(item.keys())
         assert phrase["korean_text"] == "커피"
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
     finally:

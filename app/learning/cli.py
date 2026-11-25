@@ -2,6 +2,7 @@
 
 import json
 import uuid
+from datetime import UTC, datetime
 
 import click
 from flask import current_app
@@ -9,7 +10,7 @@ from flask import current_app
 from app import db
 from app.learning.analytics import metrics_summary
 from app.learning.seed_data import seed_content
-from app.models import Item
+from app.models import ContentReport, Item
 from app.models_language import Language
 from app.services.audio import generate_audio
 from app.utils.media import AudioBatch, remove_files, safe_audio_filename
@@ -80,6 +81,109 @@ def register_learning_cli(app):
             ).count(),
         }
         click.echo(json.dumps(payload, indent=2))
+
+    @app.cli.command("content-reports")
+    @click.option(
+        "--status",
+        "report_status",
+        default="open",
+        show_default=True,
+        type=click.Choice(["open", "accepted", "rejected", "all"]),
+    )
+    @click.option("--limit", default=50, show_default=True, type=int)
+    def content_reports_command(report_status, limit):
+        """List learner-flagged content corrections."""
+        query = ContentReport.query
+        if report_status != "all":
+            query = query.filter(ContentReport.status == report_status)
+        reports = (
+            query.order_by(
+                ContentReport.created_at.desc(), ContentReport.id.desc()
+            )
+            .limit(max(1, limit))
+            .all()
+        )
+        if not reports:
+            click.echo("No content reports.")
+            return
+        for report in reports:
+            click.echo(
+                f"#{report.id} [{report.status}] "
+                f"{report.surface}/{report.kind}"
+            )
+            click.echo(f"  shown:    {report.snapshot_text or '(none)'}")
+            if report.suggested_text:
+                click.echo(f"  suggest:  {report.suggested_text}")
+            if report.context:
+                click.echo(f"  context:  {report.context}")
+            if report.note:
+                click.echo(f"  note:     {report.note}")
+            if report.item_id:
+                click.echo(f"  item:     #{report.item_id}")
+            if report.phrase_id:
+                click.echo(f"  phrase:   #{report.phrase_id}")
+            if report.scene_slug:
+                click.echo(
+                    f"  scene:    {report.scene_slug} step {report.step_index}"
+                )
+            if report.resolution_note:
+                click.echo(f"  resolved: {report.resolution_note}")
+
+    @app.cli.command("content-report-close")
+    @click.argument("report_id", type=int)
+    @click.option(
+        "--status",
+        "decision",
+        required=True,
+        type=click.Choice(["accepted", "rejected"]),
+    )
+    @click.option("--note", "resolution_note", default=None)
+    def content_report_close_command(report_id, decision, resolution_note):
+        """Mark a content report accepted or rejected.
+
+        Accepting a report attached to an item marks that item native-checked.
+        It does not rewrite the text; edit the item (and clear cached audio when
+        the target text changed) as a separate, deliberate step.
+        """
+        report = db.session.get(ContentReport, report_id)
+        if report is None:
+            raise click.ClickException(f"No content report #{report_id}.")
+        report.status = decision
+        report.resolved_at = datetime.now(UTC)
+        if resolution_note:
+            report.resolution_note = resolution_note.strip()[:1000]
+
+        if decision == "accepted" and report.item_id:
+            item = db.session.get(Item, report.item_id)
+            if item is not None and report.kind != "audio":
+                item.review_status = "native_checked"
+                item.reviewed_at = datetime.now(UTC)
+                if (
+                    report.suggested_text
+                    and report.suggested_text != item.target_text
+                ):
+                    click.echo(
+                        "Note: the suggestion differs from the current target "
+                        "text. Review the item and, if target_text changed, "
+                        "clear audio_path, then run `flask generate-item-audio`."
+                    )
+        db.session.commit()
+        click.echo(f"Report #{report.id} marked {report.status}.")
+
+    @app.cli.command("content-check")
+    @click.argument("item_id", type=int)
+    @click.option(
+        "--uncheck", is_flag=True, help="Clear a previous native-check."
+    )
+    def content_check_command(item_id, uncheck):
+        """Mark an item as confirmed by a native speaker, or clear it."""
+        item = db.session.get(Item, item_id)
+        if item is None:
+            raise click.ClickException(f"No item #{item_id}.")
+        item.review_status = "unchecked" if uncheck else "native_checked"
+        item.reviewed_at = None if uncheck else datetime.now(UTC)
+        db.session.commit()
+        click.echo(f"Item #{item.id} is {item.review_status}.")
 
     @app.cli.command("generate-item-audio")
     @click.option("--limit", default=0, type=int, help="Only process N items.")

@@ -59,6 +59,9 @@ language ──< language_script >── script
   from the Korean-only app; language is implied by the item.
 - `review_log` is append-only history.
 - `term_card` is the personal library. Saving a term also ensures a review card.
+- `content_report` is a learner-flagged correction with a snapshot of what was
+  shown. Triage is manual and never rewrites content automatically.
+- `item.review_status` records provenance: `unchecked` or `native_checked`.
 - `can_do_artifact`, `scene_session`, `speech_attempt` are learner evidence.
 
 ### Teacher

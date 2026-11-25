@@ -40,7 +40,10 @@ def _parse_json(schema):
 
 def _check_csrf():
     if current_app.config.get("WTF_CSRF_ENABLED", True):
+        token = request.headers.get("X-CSRFToken") or request.form.get(
+            "csrf_token"
+        )
         try:
-            validate_csrf(request.form.get("csrf_token"))
+            validate_csrf(token)
         except Exception as error:
             raise BadRequest("Invalid or missing CSRF token") from error

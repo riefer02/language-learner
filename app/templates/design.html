@@ -67,6 +67,34 @@
     <p>Say what is missing, why it matters, and the next action.</p>
     <a class="btn" href="{{ url_for('main.dictionary') }}">Next action</a>
   </div>
+
+  <h4>Scene reply</h4>
+  <p class="learn-meta">
+    Listening companion on a mission step, composed from <code>.help-tip</code>.
+    Collapsed by default so it supplements retrieval instead of replacing it.
+    On a scene step, opening it plays the line and the button replays it.
+  </p>
+  <details class="help-tip scene-reply">
+    <summary>Hear a natural reply</summary>
+    <div class="scene-reply-body">
+      <p class="scene-reply-korean" lang="ko">아이스 아메리카노 한 잔 주세요</p>
+      <p class="scene-reply-romanization">aiseu amerikano han jan juseyo</p>
+      <p class="scene-reply-english" lang="en">One iced Americano, please</p>
+    </div>
+  </details>
+
+  <h4>Content flag</h4>
+  <p class="learn-meta">
+    Quiet correction form, flat until opened. On a review answer or saved term
+    it opens a short form and posts to <code>/api/content-reports</code>.
+  </p>
+  <details class="help-tip content-flag">
+    <summary>Something's off?</summary>
+    <p>
+      Real pages ask for the issue kind, the native speaker's version, where it
+      was said, and an optional note.
+    </p>
+  </details>
 </section>
 
 <section class="surface-card" aria-labelledby="forms-heading">

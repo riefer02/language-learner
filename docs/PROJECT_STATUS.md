@@ -326,3 +326,36 @@ read-only. Fixes shipped:
 
 Documented debt: Flask 2.0 / Werkzeug 2.0 / SQLAlchemy 1.4 upgrades, single
 process rate limiting, no license yet, and the remaining legacy CSS rules.
+
+### Design audit and scene listening companion (25 November 2026)
+
+- Added a collapsed **“Hear a natural reply”** companion to every mission scene
+  step. It shows the canonical reply with transliteration, gloss, and notes, and
+  plays it through the existing speech fallback. Opening it plays once; the
+  button replays. Collapsed by default so production practice stays retrieval-
+  first. Covered by a new scene test.
+- Wrote [`design-audit-2026-11-25.md`](design-audit-2026-11-25.md): page framing
+  and accessibility are sound; the debt is documentation drift (Settings and
+  Browse in `DESIGN.md` no longer match the nav), 34 hex values still outside
+  `:root`, manual asset versions, and two duplicate selector blocks.
+- 257 tests pass; ruff clean.
+
+### Content reports and native-check provenance (25 November 2026)
+
+- Review answers, saved terms, and translated phrases now offer a
+  **“Something’s off?”** disclosure: issue kind, the native speaker’s version,
+  where/to whom it was said, and a note. It posts to `/api/content-reports`
+  without leaving the page.
+- New `content_report` table (migration `0016`) stores a snapshot of what was
+  shown, so a report survives an item or phrase edit. Reports are scoped to the
+  page language, not the learner’s stored preference.
+- Triage is CLI-only: `flask content-reports`,
+  `flask content-report-close <id> --status accepted|rejected`, and
+  `flask content-check <item_id> [--uncheck]`. Nothing is rewritten
+  automatically; the accept path warns when the target text and cached audio
+  need separate regeneration.
+- Accepted item reports mark `item.review_status = native_checked`, shown as a
+  quiet **Native-checked** line on the review answer and in My terms. The
+  default is `unchecked`; a model never sets it.
+- 267 tests pass; ruff clean. Verified live in Chrome: submit, row, CLI output,
+  and cleanup.

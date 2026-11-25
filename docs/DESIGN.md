@@ -90,6 +90,8 @@ Live reference: **`/design`** (not linked from the learner nav).
 | `.learn-meta` | Secondary text |
 | `.term-list` / `.term-card` | Saved terms |
 | `.fidel-glyph`, `.fidel-progress-bar` | Fidel trainer |
+| `.scene-reply` (with `.help-tip`) | Collapsed natural reply + audio on a scene step |
+| `.content-flag` (with `.help-tip`) | Quiet correction form; flat until opened |
 
 ## Page composition
 
@@ -132,3 +134,5 @@ Live reference: **`/design`** (not linked from the learner nav).
 4. Check desktop and 390px mobile, keyboard focus, and console errors.
 5. Bump the `?v=` query on changed CSS/JS includes.
 6. Update this file and `AGENTS.md` if a convention changed.
+
+**Latest audit:** [`design-audit-2026-11-25.md`](design-audit-2026-11-25.md).

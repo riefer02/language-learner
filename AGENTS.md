@@ -66,6 +66,9 @@ load-bearing decision because FSRS is keyed by `(user, item, skill)`.
   never call `apply_rating` to fabricate a review. Only the review page grades.
 - **Teacher:** the OpenAI key stays server-side; tools are allowlisted; drill
   item IDs are intersected with the session's language; raw audio is never stored.
+- **Content corrections:** capture into `content_report` with a snapshot of what
+  was shown; triage through the CLI. Never auto-rewrite item text or audio from
+  a report, and never infer `native_checked` from a model.
 - **TTS:** `gpt-audio-1.5` must *read* the text. Keep the literal-read guard in
   `generate_audio`; a conversational reply is a bug, not audio.
 - **Migrations:** never edit an applied migration. SQLite cannot batch-rebuild

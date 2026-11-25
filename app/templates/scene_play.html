@@ -43,6 +43,35 @@
     </div>
   </div>
 
+  {# Receptive companion to the production prompt: the learner can see and
+     hear one natural line before saying their own. Collapsed by default so it
+     supplements retrieval rather than replacing it. #}
+  {% set reply = step.get('target_item') %}
+  {% set reply_text = reply.target_text if reply else step['expected'][0] %}
+  <details class="help-tip scene-reply" data-speak-on-open>
+    <summary>Hear a natural reply</summary>
+    <div class="scene-reply-body">
+      <p class="scene-reply-korean" lang="ko">{{ reply_text }}</p>
+      {% if reply and reply.transliteration %}
+      <p class="scene-reply-romanization">{{ reply.transliteration }}</p>
+      {% endif %}
+      {% if reply and reply.gloss %}
+      <p class="scene-reply-english" lang="en">{{ reply.gloss }}</p>
+      {% endif %}
+      {% if reply and reply.notes %}
+      <p class="scene-reply-notes">{{ reply.notes }}</p>
+      {% endif %}
+      <button
+        type="button"
+        class="btn speak-btn"
+        data-speak="{{ reply_text }}"
+        aria-label="Hear a natural reply: {{ reply_text }}"
+      >
+        Hear the reply
+      </button>
+    </div>
+  </details>
+
   {% if error %}
   <div class="scene-error" role="alert">{{ error }}</div>
   {% endif %}
@@ -109,5 +138,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/scene.js') }}?v=20261123"></script>
+<script src="{{ url_for('static', filename='js/scene.js') }}?v=20261125"></script>
 {% endblock %}

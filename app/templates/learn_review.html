@@ -92,6 +92,16 @@
         {% if item.notes %}
         <p class="review-notes">{{ item.notes }}</p>
         {% endif %}
+        {% if item.review_status == "native_checked" %}
+        <p class="learn-meta">
+          Native-checked{% if item.reviewed_at %} {{ item.reviewed_at.strftime('%d %b %Y') }}{% endif %}.
+        </p>
+        {% else %}
+        <p class="learn-meta">Starter content — not native-checked.</p>
+        {% endif %}
+        {% with surface="review", item_id=item.id, uid="review-" ~ card.id %}
+          {% include "_content_flag.html" %}
+        {% endwith %}
       </div>
     </details>
   </div>

@@ -27,6 +27,20 @@ def test_scene_start_renders_first_character_line(client):
     assert "어서 오세요".encode() in response.data
 
 
+def test_scene_step_offers_natural_reply_audio(client):
+    step = get_scene("cafe-order")["steps"][0]
+    reply = step["target_item"]["target_text"]
+
+    response = client.get("/ko/learn/scenes/cafe-order")
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "Hear a natural reply" in html
+    assert f'<p class="scene-reply-korean" lang="ko">{reply}</p>' in html
+    assert f'data-speak="{reply}"' in html
+    assert 'aria-label="Hear a natural reply' in html
+
+
 def test_correct_answer_advances_scene(client, app):
     scene = get_scene("cafe-order")
     client.get("/ko/learn/scenes/cafe-order")

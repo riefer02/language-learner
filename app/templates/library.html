@@ -25,12 +25,22 @@
           <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text }}</strong>
           <span class="learn-meta">{{ term.item.transliteration }}</span>
           <p>{{ term.item.gloss }}</p>
+          {% if term.item.review_status == "native_checked" %}
+          <p class="learn-meta">Native-checked.</p>
+          {% else %}
+          <p class="learn-meta">Starter content.</p>
+          {% endif %}
           {% else %}
           <strong>Removed term</strong>
           <p class="learn-meta">The item is no longer in this deck.</p>
           {% endif %}
           {% if term.context_sentence %}
           <p class="learn-meta">“{{ term.context_sentence }}”</p>
+          {% endif %}
+          {% if term.item %}
+          {% with surface="library", item_id=term.item.id, uid="term-" ~ term.id %}
+            {% include "_content_flag.html" %}
+          {% endwith %}
           {% endif %}
         </div>
         <span class="learn-meta">{{ term.source }}</span>
@@ -70,6 +80,9 @@
           Repeat
         </button>
       </div>
+      {% with surface="translate", phrase_id=phrase.id, uid="phrase-" ~ phrase.id %}
+        {% include "_content_flag.html" %}
+      {% endwith %}
     </div>
     {% endfor %}
   </div>

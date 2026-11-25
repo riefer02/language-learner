@@ -166,3 +166,54 @@ document.addEventListener("keydown", function (e) {
     });
   });
 })();
+
+// Content reports: capture a correction without leaving the page. The server
+// keeps a snapshot and triage stays manual, so nothing here edits content.
+(function () {
+  const forms = document.querySelectorAll("form[data-content-flag]");
+  if (!forms.length) return;
+  const csrf =
+    (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
+
+  forms.forEach(function (form) {
+    form.hidden = false;
+    const status = form.querySelector(".content-flag-status");
+    const button = form.querySelector('button[type="submit"]');
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const payload = {};
+      new FormData(form).forEach(function (value, key) {
+        if (typeof value === "string" && value.trim()) {
+          payload[key] = value.trim();
+        }
+      });
+      if (button) button.disabled = true;
+      if (status) status.textContent = "Sending…";
+      try {
+        const response = await fetch("/api/content-reports", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrf,
+          },
+          body: JSON.stringify(payload),
+        });
+        const data = await response.json().catch(function () {
+          return {};
+        });
+        if (!response.ok) {
+          throw new Error(data.error || "Could not send the report.");
+        }
+        if (status) {
+          status.textContent =
+            "Reported. It is in the review queue — thanks.";
+        }
+        if (button) button.textContent = "Reported";
+        form.reset();
+      } catch (error) {
+        if (status) status.textContent = error.message;
+        if (button) button.disabled = false;
+      }
+    });
+  });
+})();

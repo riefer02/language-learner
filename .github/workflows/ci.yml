@@ -73,6 +73,7 @@ jobs:
               "teacher_turn",
               "drill",
               "drill_attempt",
+              "content_report",
               "alembic_version",
           }
           missing = expected - tables
@@ -96,6 +97,8 @@ jobs:
           }
           if not {"target_text", "gloss", "transliteration"} <= item_columns:
               raise SystemExit("language-neutral item columns are missing")
+          if "review_status" not in item_columns:
+              raise SystemExit("native-check status is missing after migration")
           if "korean" in item_columns:
               raise SystemExit("legacy item.korean column still exists")
           phrase_columns = {

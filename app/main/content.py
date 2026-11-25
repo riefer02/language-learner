@@ -17,8 +17,8 @@ from app.learning.service import (
     request_language,
 )
 from app.main import main
-from app.main.helpers import _check_csrf
-from app.models import Item, Phrase
+from app.main.helpers import _check_csrf, _error
+from app.models import ContentReport, Item, Phrase
 
 
 @main.route("/<lang_code>/library")
@@ -176,3 +176,119 @@ def resources():
         counts=counts,
         language=language,
     )
+
+
+REPORT_SURFACES = {
+    "review",
+    "library",
+    "dictionary",
+    "translate",
+    "teacher",
+    "scene",
+}
+REPORT_KINDS = {
+    "meaning",
+    "naturalness",
+    "register",
+    "spelling",
+    "audio",
+    "other",
+}
+
+
+def _report_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+@main.route("/api/content-reports", methods=["POST"])
+def api_content_report():
+    """Capture a learner correction without changing the content.
+
+    The row keeps a snapshot of what was shown, so triage stays readable even
+    after the item or phrase is edited. Applying a correction is a deliberate
+    CLI/human step, never an automatic rewrite.
+    """
+    _check_csrf()
+    if not request.is_json:
+        return _error("Request body must be JSON", 415)
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return _error("Request body must be a JSON object", 400)
+
+    surface = str(payload.get("surface") or "").strip()
+    if surface not in REPORT_SURFACES:
+        return _error("Unknown surface", 400)
+    kind = str(payload.get("kind") or "").strip()
+    if kind not in REPORT_KINDS:
+        return _error("Unknown issue kind", 400)
+
+    item_id = _report_int(payload.get("item_id")) or None
+    phrase_id = _report_int(payload.get("phrase_id")) or None
+    scene_slug = str(payload.get("scene_slug") or "").strip()[:80] or None
+    step_index = _report_int(payload.get("step_index"))
+    if step_index is not None and not 0 <= step_index <= 50:
+        return _error("Invalid step index", 400)
+    if not any((item_id, phrase_id, scene_slug)):
+        return _error("A report needs an item, phrase, or scene step", 400)
+
+    user = get_or_create_local_user()
+    language = request_language()
+
+    item = db.session.get(Item, item_id) if item_id else None
+    if item_id and item is None:
+        return _error("Item not found", 404)
+    if (
+        item is not None
+        and language is not None
+        and item.language_id not in (None, language.id)
+    ):
+        return _error("Item is outside the active language", 400)
+
+    phrase = db.session.get(Phrase, phrase_id) if phrase_id else None
+    if phrase_id and phrase is None:
+        return _error("Phrase not found", 404)
+    if (
+        phrase is not None
+        and language is not None
+        and phrase.target_language_id not in (None, language.id)
+    ):
+        return _error("Phrase is outside the active language", 400)
+
+    if item is not None:
+        snapshot = item.target_text
+    elif phrase is not None:
+        snapshot = phrase.target_text or phrase.source_text
+    else:
+        snapshot = str(payload.get("snapshot_text") or "").strip()[:500]
+    if not snapshot:
+        return _error("A report needs the text it is about", 400)
+
+    if item is not None:
+        report_language_id = item.language_id
+    elif language is not None:
+        report_language_id = language.id
+    else:
+        report_language_id = None
+
+    report = ContentReport(
+        user_id=user.id,
+        language_id=report_language_id,
+        item_id=item.id if item is not None else None,
+        phrase_id=phrase.id if phrase is not None else None,
+        scene_slug=scene_slug,
+        step_index=step_index,
+        surface=surface,
+        snapshot_text=snapshot,
+        kind=kind,
+        suggested_text=(
+            str(payload.get("suggested_text") or "").strip()[:300] or None
+        ),
+        context=str(payload.get("context") or "").strip()[:200] or None,
+        note=str(payload.get("note") or "").strip()[:1000] or None,
+    )
+    db.session.add(report)
+    db.session.commit()
+    return jsonify({"id": report.id, "status": report.status}), 201

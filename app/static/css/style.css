@@ -1849,6 +1849,28 @@ progress {
   padding: 7px 10px;
 }
 
+/* Composed with .help-tip: a collapsed listening companion on a scene step.
+   Selectors are scoped under .scene-reply so they beat `.help-tip p`. */
+.scene-reply-body {
+  padding-top: var(--space-2);
+}
+
+.scene-reply .scene-reply-korean {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.scene-reply .scene-reply-romanization {
+  font-style: italic;
+  color: var(--ink-500);
+}
+
+.scene-reply .speak-btn {
+  margin-top: var(--space-2);
+}
+
 .scene-error {
   margin: 0 0 12px;
   padding: 10px 14px;
@@ -2436,6 +2458,11 @@ progress {
   padding-bottom: 0.5rem;
 }
 
+.term-card > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
 .term-card p {
   margin: 0.2rem 0;
 }
@@ -2636,6 +2663,31 @@ nav button:focus-visible {
 
 .help-tip ul {
   padding-left: 1.15rem;
+}
+
+/* Quiet correction form: flat until opened, then a small panel. */
+.help-tip.content-flag {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+.help-tip.content-flag > summary {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-500);
+}
+
+.help-tip.content-flag[open] {
+  max-width: 34rem;
+  padding: var(--space-3);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+}
+
+.help-tip.content-flag .form-group {
+  margin-bottom: var(--space-3);
 }
 
 .tutorial-card {

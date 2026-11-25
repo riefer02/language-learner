@@ -1,0 +1,83 @@
+{# Capture a correction where the learner sees the content. Reports are
+   snapshots; nothing here edits the item or phrase. #}
+<details class="help-tip content-flag">
+  <summary>Something's off?</summary>
+  <noscript>
+    <p class="learn-meta">Reporting needs JavaScript.</p>
+  </noscript>
+  <form data-content-flag hidden>
+    {% if g.language %}
+    <input type="hidden" name="lang" value="{{ g.language.code }}" />
+    {% endif %}
+    <input type="hidden" name="surface" value="{{ surface }}" />
+    {% if item_id is defined and item_id %}
+    <input type="hidden" name="item_id" value="{{ item_id }}" />
+    {% endif %}
+    {% if phrase_id is defined and phrase_id %}
+    <input type="hidden" name="phrase_id" value="{{ phrase_id }}" />
+    {% endif %}
+    {% if scene_slug is defined and scene_slug %}
+    <input type="hidden" name="scene_slug" value="{{ scene_slug }}" />
+    {% endif %}
+    {% if step_index is defined and step_index is not none %}
+    <input type="hidden" name="step_index" value="{{ step_index }}" />
+    {% endif %}
+    <input
+      type="hidden"
+      name="snapshot_text"
+      value="{{ snapshot_text|default('') }}"
+    />
+
+    <div class="form-group">
+      <label for="flag-kind-{{ uid }}">What is wrong?</label>
+      <select id="flag-kind-{{ uid }}" name="kind" required>
+        <option value="">Choose one</option>
+        <option value="meaning">The meaning is off</option>
+        <option value="naturalness">
+          A native speaker would say it differently
+        </option>
+        <option value="register">Wrong politeness or register</option>
+        <option value="spelling">Spelling or spacing</option>
+        <option value="audio">The audio is wrong</option>
+        <option value="other">Something else</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="flag-suggested-{{ uid }}">
+        What would a native speaker say?
+      </label>
+      <input
+        id="flag-suggested-{{ uid }}"
+        name="suggested_text"
+        type="text"
+        maxlength="300"
+        placeholder="Optional, but the most useful part"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="flag-context-{{ uid }}">Where or to whom?</label>
+      <input
+        id="flag-context-{{ uid }}"
+        name="context"
+        type="text"
+        maxlength="200"
+        placeholder="e.g. to a shop clerk"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="flag-note-{{ uid }}">Anything else?</label>
+      <textarea
+        id="flag-note-{{ uid }}"
+        name="note"
+        rows="2"
+        maxlength="1000"
+      ></textarea>
+    </div>
+
+    <button type="submit" class="btn">Send report</button>
+    <p class="content-flag-status learn-meta" role="status" aria-live="polite"></p>
+  </form>
+</details>

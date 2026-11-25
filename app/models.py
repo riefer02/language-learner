@@ -148,6 +148,14 @@ class Item(db.Model):
     superseded_by_id = db.Column(
         db.Integer, db.ForeignKey("item.id", use_alter=True), nullable=True
     )
+    # unchecked | native_checked. Set by human triage, never inferred.
+    review_status = db.Column(
+        db.String(16),
+        nullable=False,
+        default="unchecked",
+        server_default="unchecked",
+    )
+    reviewed_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
         return f"<Item {self.target_text}>"
@@ -164,6 +172,7 @@ class Item(db.Model):
             "audio_path": self.audio_path,
             "notes": self.notes,
             "default_skill": self.default_skill,
+            "review_status": self.review_status,
         }
 
 
@@ -417,6 +426,79 @@ class Event(db.Model):
             "id": self.id,
             "name": self.name,
             "props": self.props,
+            "created_at": self.created_at.isoformat()
+            if self.created_at
+            else None,
+        }
+
+
+class ContentReport(db.Model):
+    """A learner-flagged correction for one piece of content.
+
+    The snapshot keeps the report readable after the item or phrase changes or
+    disappears. Triage only changes ``status``; content edits stay deliberate
+    and manual so review cards and cached audio cannot drift silently.
+    """
+
+    __tablename__ = "content_report"
+    __table_args__ = (
+        db.Index("ix_content_report_status_created", "status", "created_at"),
+        db.Index("ix_content_report_user_created", "user_id", "created_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    language_id = db.Column(
+        db.Integer, db.ForeignKey("language.id", ondelete="SET NULL"), nullable=True
+    )
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("item.id", ondelete="SET NULL"), nullable=True
+    )
+    phrase_id = db.Column(
+        db.Integer, db.ForeignKey("phrase.id", ondelete="SET NULL"), nullable=True
+    )
+    # Scenes live in code, not the database; this points at the step to edit.
+    scene_slug = db.Column(db.String(80), nullable=True)
+    step_index = db.Column(db.Integer, nullable=True)
+    # review | library | dictionary | translate | teacher | scene
+    surface = db.Column(db.String(24), nullable=False)
+    snapshot_text = db.Column(db.Text, nullable=True)
+    # meaning | naturalness | register | spelling | audio | other
+    kind = db.Column(db.String(24), nullable=False)
+    suggested_text = db.Column(db.String(300), nullable=True)
+    context = db.Column(db.String(200), nullable=True)
+    note = db.Column(db.Text, nullable=True)
+    # open | accepted | rejected
+    status = db.Column(
+        db.String(16),
+        nullable=False,
+        default="open",
+        server_default="open",
+    )
+    resolution_note = db.Column(db.Text, nullable=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+    )
+    resolved_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "surface": self.surface,
+            "kind": self.kind,
+            "status": self.status,
+            "snapshot_text": self.snapshot_text,
+            "suggested_text": self.suggested_text,
+            "context": self.context,
+            "note": self.note,
+            "item_id": self.item_id,
+            "phrase_id": self.phrase_id,
+            "scene_slug": self.scene_slug,
+            "step_index": self.step_index,
             "created_at": self.created_at.isoformat()
             if self.created_at
             else None,

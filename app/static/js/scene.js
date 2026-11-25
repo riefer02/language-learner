@@ -16,6 +16,21 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // Play from the summary's click so the call happens inside a real user
+  // activation; browsers can drop speech started from a queued toggle event.
+  // The button stays available for a second listen, and browsers without
+  // speech synthesis disable it cleanly.
+  const replyDetails = document.querySelectorAll("details[data-speak-on-open]");
+  replyDetails.forEach(function (details) {
+    const summary = details.querySelector("summary");
+    if (!summary) return;
+    summary.addEventListener("click", function () {
+      if (details.open) return; // closing; stay quiet
+      const button = details.querySelector("[data-speak]");
+      if (button) button.click();
+    });
+  });
+
   const input = document.getElementById("scene-answer");
   if (input) {
     input.focus();
