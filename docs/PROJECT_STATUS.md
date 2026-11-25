@@ -473,6 +473,17 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 - “Not sure” asks the model for both forms when the phrase has a gender
   contrast; the result and library show which addressee a saved phrase used.
 - Migration `0018` stores `phrase.addressee`; older phrases have no addressee.
-- **303 tests pass**; ruff clean. Verified live with `How are you?`:
+- **299 tests pass**; ruff clean.
+
+### Settings nav alignment and cache truth (25 November 2026)
+
+- The plain **Settings** link now uses the same inline-flex box, padding,
+  font weight, and 12px gap as the Learn/Practice/Words summaries. Measured
+  identical on desktop (top 11, height 38) and mobile (16px, height 50).
+- Root cause of “the fix keeps not showing”: the service worker cached the
+  unversioned CSS/JS and matched with `ignoreSearch`, so it served the previous
+  release’s stylesheet for every new `?v=`. It now caches only same-origin
+  `/static/` files by **exact URL**; `ASSET_VERSION` works again.
+- 303 tests pass; ruff clean. Verified live with `How are you?`:
   - A woman → `እንዴት ነሽ?` / `Endet nesh?`
   - Not sure → `እንዴት ነህ? (እንዴት ነሽ?)`

@@ -148,7 +148,9 @@ Live reference: **`/design`** (not linked from the learner nav).
 3. Add the component to `/design` with a short usage note.
 4. Check desktop and 390px mobile, keyboard focus, and console errors.
 5. Bump `ASSET_VERSION` in `app/__init__.py`; every template shares one
-   `?v=` query string. Never hardcode a version in a page.
+   `?v=` query string. Never hardcode a version in a page. The service worker
+   caches same-origin `/static/` files by exact URL, so versioned assets are
+   immutable and old releases cannot be served.
 6. Update this file and `AGENTS.md` if a convention changed.
 
 **Dated audits (snapshots):**

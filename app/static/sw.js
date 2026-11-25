@@ -1,9 +1,7 @@
 // Kiku service worker: app shell caching + push reminders.
-const CACHE_NAME = "kiku-shell-v2";
+const CACHE_NAME = "kiku-shell-v3";
 const SHELL = [
   "/offline",
-  "/static/css/style.css",
-  "/static/js/app.js",
   "/static/icons/icon-192.png",
   "/static/icons/icon-512.png",
   "/static/manifest.webmanifest",
@@ -44,10 +42,25 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  const url = new URL(request.url);
+  // Only cache same-origin static files, by their exact URL. Versioned assets
+  // are immutable; ignoring the query string would serve last release's CSS/JS.
+  if (url.origin !== self.location.origin || !url.pathname.startsWith("/static/")) {
+    return;
+  }
+
   event.respondWith(
-    caches
-      .match(request, { ignoreSearch: true })
-      .then((cached) => cached || fetch(request))
+    caches.match(request).then(
+      (cached) =>
+        cached ||
+        fetch(request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+    )
   );
 });
 
