@@ -6,6 +6,7 @@ from flask import current_app, jsonify, request
 
 from app import db
 from app.languages.variants import (
+    addressee_label,
     normalize_addressee,
     normalize_register,
     register_label,
@@ -103,6 +104,7 @@ def api_translate():
             "target_text": target_text,
             "romanization": result.romanization,
             "addressee": addressee,
+            "addressee_label": addressee_label(target_code, addressee),
             "register": register,
             "register_label": register_label(target_code, register),
             "target_lang": target_code,

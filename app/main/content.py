@@ -4,7 +4,7 @@ from flask import abort, jsonify, redirect, render_template, request, url_for
 from sqlalchemy import or_
 
 from app import db
-from app.languages.variants import REGISTER_LABELS
+from app.languages.variants import ADDRESSEE_LABELS, REGISTER_LABELS
 from app.learning.dictionary import (
     list_terms,
     save_term,
@@ -50,6 +50,7 @@ def library():
         register_labels=(
             REGISTER_LABELS.get(language.code, {}) if language else {}
         ),
+        addressee_labels=ADDRESSEE_LABELS,
     )
 
 

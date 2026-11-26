@@ -532,8 +532,9 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   internal `formality` name.
 - Formal Amharic now overrides the gendered second-person instruction instead
   of sending both contradictory rules.
-- Register labels come from one source (`register_label` / `REGISTER_LABELS`);
-  the JS and templates no longer carry their own copies.
+- Register and addressee labels come from one source
+  (`register_label`/`addressee_label`); the JS and templates no longer carry
+  their own copies.
 - 329 tests pass; ruff clean.
 
 ### Settings nav alignment and cache truth (25 November 2026)

@@ -131,7 +131,7 @@
       lang="{{ 'am' if language and language.code == 'am' else 'ko' }}"
     >{{ phrase.target_text if phrase else '' }}</div>
     <div class="phrase-romanization" lang="en"{% if not phrase or not phrase.target_transliteration %} hidden{% endif %}>{{ phrase.target_transliteration if phrase and phrase.target_transliteration else '' }}</div>
-    <p class="phrase-addressee learn-meta"{% if not phrase or selected_addressee == 'any' %} hidden{% endif %}>{% if selected_addressee == 'male' %}To a man{% elif selected_addressee == 'female' %}To a woman{% elif selected_addressee == 'group' %}To a group{% endif %}</p>
+    <p class="phrase-addressee learn-meta"{% if not phrase_addressee_label %} hidden{% endif %}>{{ phrase_addressee_label }}</p>
     <p class="phrase-register learn-meta"{% if not phrase_register_label %} hidden{% endif %}>{{ phrase_register_label }}</p>
     <div class="audio-player">
       <audio

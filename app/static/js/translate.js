@@ -127,13 +127,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const addresseeOut = resultDiv.querySelector(".phrase-addressee");
       if (addresseeOut) {
-        const labels = {
-          male: "To a man",
-          female: "To a woman",
-          group: "To a group",
-        };
-        const label = labels[data.addressee];
-        addresseeOut.textContent = label || "";
+        const label = data.addressee_label || "";
+        addresseeOut.textContent = label;
         addresseeOut.hidden = !label;
       }
 

@@ -669,7 +669,12 @@ def test_translate_uses_the_language_default_register(app):
 
 
 def test_register_and_addressee_are_normalized_per_language():
-    from app.languages.variants import normalize_addressee, normalize_register
+    from app.languages.variants import (
+        addressee_label,
+        normalize_addressee,
+        normalize_register,
+        register_label,
+    )
 
     assert normalize_register("am", "polite") == "formal"
     assert normalize_register("am", None) == "formal"
@@ -678,6 +683,10 @@ def test_register_and_addressee_are_normalized_per_language():
     assert normalize_addressee("ko", "female") == "any"
     assert normalize_addressee("am", "female") == "female"
     assert normalize_addressee("es", "female") == "any"
+    assert addressee_label("am", "female") == "To a woman"
+    assert addressee_label("ko", "female") == ""
+    assert register_label("am", "casual") == "Everyday"
+    assert register_label("am", "polite") == ""
 
 
 def test_translate_text_scales_the_output_budget(app):

@@ -311,11 +311,23 @@ def normalize_register(code, value):
 # Languages whose second person changes with the addressee's gender or number.
 ADDRESSEE_LANGUAGES = {"am"}
 
+ADDRESSEE_LABELS = {
+    "male": "To a man",
+    "female": "To a woman",
+    "group": "To a group",
+}
+
 
 def normalize_addressee(code, value):
     if code in ADDRESSEE_LANGUAGES and value in {"male", "female", "group"}:
         return value
     return "any"
+
+
+def addressee_label(code, value):
+    if code not in ADDRESSEE_LANGUAGES:
+        return ""
+    return ADDRESSEE_LABELS.get(value, "")
 
 
 def register_label(code, value):

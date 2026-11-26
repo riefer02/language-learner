@@ -4,6 +4,7 @@ from flask import abort, redirect, render_template, request, session, url_for
 
 from app import db
 from app.languages.variants import (
+    addressee_label,
     normalize_addressee,
     normalize_register,
     register_choices,
@@ -133,6 +134,7 @@ def index():
     phrase_register_label = register_label(
         code, phrase.register if phrase is not None else None
     )
+    phrase_addressee_label = addressee_label(code, selected_addressee)
 
     return render_template(
         "index.html",
@@ -149,4 +151,5 @@ def index():
         selected_register=selected_register,
         selected_addressee=selected_addressee,
         phrase_register_label=phrase_register_label,
+        phrase_addressee_label=phrase_addressee_label,
     )
