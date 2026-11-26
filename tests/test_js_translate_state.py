@@ -12,7 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_translate_state_javascript_contract():
     result = subprocess.run(
-        ["node", "--test", "tests/js/translate_state.test.js"],
+        [
+            "node",
+            "--test",
+            "tests/js/translate_state.test.js",
+            "tests/js/sw.test.js",
+        ],
         cwd=ROOT,
         check=False,
         capture_output=True,

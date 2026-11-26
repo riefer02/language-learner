@@ -545,7 +545,9 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   cannot erase registers chosen later.
 - `translate_state.js` holds the pure history decisions (phrase URL, duplicate
   result guard, fragment-safe reload) and is covered by a Node `node:test`
-  contract run from pytest.
+  contract run from pytest. A second Node test exercises the service worker's
+  fetch handler: audio bypasses Cache Storage, exact-URL assets are cached, and
+  206/cross-origin responses are not.
 - Added review-template edge tests: an ungendered Korean card has no
   “Other ways to say it” block, and duplicate alternate text is suppressed.
 - Review alternates are ordered by their `register` metadata (formal, polite,
