@@ -16,6 +16,24 @@ def _man_name_card(app):
     return language, item
 
 
+def test_every_curated_alternate_matches_a_seeded_item(app, client):
+    from app.languages.variants import ALTERNATES
+    from app.models_language import Language
+
+    client.get("/ko/learn")
+    with app.app_context():
+        seed_amharic()
+        targets = {}
+        for language in Language.query.all():
+            targets[language.code] = {
+                item.target_text
+                for item in Item.query.filter_by(language_id=language.id).all()
+            }
+
+    for code, groups in ALTERNATES.items():
+        assert set(groups) <= targets.get(code, set())
+
+
 def test_variant_audio_filename_is_stable_and_language_scoped():
     amharic = variant_audio_filename("am", "ስምሽ ማን ነው?")
     assert amharic == variant_audio_filename("am", "ስምሽ ማን ነው?")

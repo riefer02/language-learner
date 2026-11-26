@@ -551,8 +551,10 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 - Added review-template edge tests: an ungendered Korean card has no
   “Other ways to say it” block, and duplicate alternate text is suppressed.
 - Review alternates are ordered by their `register` metadata (formal, polite,
-  casual) instead of relying on dictionary order.
-- 333 tests pass; ruff clean.
+  casual) instead of relying on dictionary order. A guard test keeps every
+  `ALTERNATES` key present in the seeded deck, so a content rename cannot
+  silently drop a form.
+- 334 tests pass; ruff clean.
 
 ### Settings nav alignment and cache truth (25 November 2026)
 
