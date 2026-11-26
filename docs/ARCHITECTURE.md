@@ -150,6 +150,13 @@ Korean defaults to `polite` (해요) and offers formal (합니다) and casual (�
 Amharic defaults to `casual` (አንተ/አንቺ) and offers formal (እርስዎ). The chosen
 speech level changes the prompt, the cache key, and the saved phrase.
 
+`GET /<lang>/translate?phrase=<uuid>` is the canonical, replay-free URL for a
+saved result: it renders the phrase (text, romanization, addressee, register,
+audio) from SQLite and never calls the model or generates audio. Look up pushes
+this URL into history after a successful request, so Back and Forward move
+between results at no cost. The old `?q=…&run=1` header shortcut stays a
+one-shot and is replaced by the phrase URL when it succeeds.
+
 `generate_audio` uses `gpt-audio-1.5` with a `<read>` contract and rejects
 conversational output whose transcript does not match the input.
 

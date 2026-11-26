@@ -39,6 +39,9 @@
 </div>
 
 <section class="phrase-input" aria-label="Look up">
+  {% if phrase_error %}
+  <p class="learn-meta" role="status">{{ phrase_error }}</p>
+  {% endif %}
   <form
     id="phrase-form"
     data-lang="{{ language.code if language else 'ko' }}"
@@ -67,7 +70,7 @@
       <label for="register">How formal?</label>
       <select id="register" name="register">
         {% for value, label in registers %}
-        <option value="{{ value }}"{% if value == default_register %} selected{% endif %}>{{ label }}</option>
+        <option value="{{ value }}"{% if phrase and phrase.register == value %} selected{% elif not phrase and value == default_register %} selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
       <small class="learn-meta">
@@ -83,10 +86,10 @@
     <div class="form-group">
       <label for="addressee">Who are you speaking to?</label>
       <select id="addressee" name="addressee">
-        <option value="any">Not sure — show both</option>
-        <option value="male">A man</option>
-        <option value="female">A woman</option>
-        <option value="group">A group</option>
+        <option value="any"{% if not phrase or not phrase.addressee or phrase.addressee == 'any' %} selected{% endif %}>Not sure — show both</option>
+        <option value="male"{% if phrase and phrase.addressee == 'male' %} selected{% endif %}>A man</option>
+        <option value="female"{% if phrase and phrase.addressee == 'female' %} selected{% endif %}>A woman</option>
+        <option value="group"{% if phrase and phrase.addressee == 'group' %} selected{% endif %}>A group</option>
       </select>
       <small class="learn-meta">
         Amharic changes with the person you address.
@@ -109,22 +112,28 @@
   </div>
 </section>
 
-<section id="result" class="result hidden" aria-live="polite">
+<section
+  id="result"
+  class="result{% if not phrase %} hidden{% endif %}"
+  data-phrase-uuid="{{ phrase.uuid if phrase else '' }}"
+  aria-live="polite"
+>
   <div class="phrase-card">
     <p class="review-label">Your word or phrase</p>
-    <div class="phrase-english" lang="en"></div>
+    <div class="phrase-english" lang="en">{{ phrase.source_text if phrase else '' }}</div>
     <div
       class="phrase-korean"
       lang="{{ 'am' if language and language.code == 'am' else 'ko' }}"
-    ></div>
-    <div class="phrase-romanization" lang="en" hidden></div>
-    <p class="phrase-addressee learn-meta" hidden></p>
-    <p class="phrase-register learn-meta" hidden></p>
+    >{{ phrase.target_text if phrase else '' }}</div>
+    <div class="phrase-romanization" lang="en"{% if not phrase or not phrase.target_transliteration %} hidden{% endif %}>{{ phrase.target_transliteration if phrase and phrase.target_transliteration else '' }}</div>
+    <p class="phrase-addressee learn-meta"{% if not phrase or not phrase.addressee or phrase.addressee == 'any' %} hidden{% endif %}>{% if phrase and phrase.addressee == 'male' %}To a man{% elif phrase and phrase.addressee == 'female' %}To a woman{% elif phrase and phrase.addressee == 'group' %}To a group{% endif %}</p>
+    <p class="phrase-register learn-meta"{% if not phrase or not phrase.register %} hidden{% endif %}>{% if phrase and phrase.register == 'formal' %}Formal{% elif phrase and phrase.register == 'polite' %}Everyday polite{% elif phrase and phrase.register == 'casual' %}Casual{% endif %}</p>
     <div class="audio-player">
       <audio
         controls
         preload="auto"
-        aria-label="Play pronunciation for this phrase"
+        {% if phrase %}src="{{ phrase.audio_path }}"{% endif %}
+        aria-label="Play pronunciation for {{ phrase.target_text if phrase else 'this phrase' }}"
       ></audio>
       <button
         type="button"

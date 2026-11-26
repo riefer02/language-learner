@@ -18,7 +18,7 @@ from config import config
 
 # One query string for every static asset; bump this on a release so Chrome
 # never mixes a new template with an old CSS or JS file.
-ASSET_VERSION = "20261125r9"
+ASSET_VERSION = "20261125r10"
 
 db = SQLAlchemy()
 migrate = Migrate()

@@ -492,6 +492,18 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   እንደምን ነህ? → እንደምን ነዎት?), so Korean and Amharic teach the contrast.
 - **313 tests pass**; ruff clean.
 
+### Saved-result URLs (25 November 2026)
+
+- A successful Look up now pushes `?phrase=<uuid>` into browser history.
+  Back and Forward walk through the phrases you just looked at, and reload
+  works because the server renders the saved phrase from SQLite.
+- This path performs no model call and generates no audio, so history
+  navigation cannot re-bill or create duplicate phrases. A missing or
+  wrong-language phrase falls back to the form with a short notice.
+- The header’s `?q=…&run=1` shortcut remains one-shot and is replaced by the
+  saved phrase URL on success.
+- 316 tests pass; ruff clean.
+
 ### Settings nav alignment and cache truth (25 November 2026)
 
 - The plain **Settings** link now uses the same inline-flex box, padding,

@@ -126,6 +126,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Show result
       resultDiv.classList.remove("hidden");
+
+      // Make the URL the state of the result we are showing. The id points at
+      // the saved phrase, so back/forward and reload render from SQLite and
+      // never re-call the model or regenerate audio.
+      const phraseUuid = data.uuid || "";
+      resultDiv.dataset.phraseUuid = phraseUuid;
+      if (phraseUuid && window.history && window.history.pushState) {
+        const phraseUrl =
+          location.pathname + "?phrase=" + encodeURIComponent(phraseUuid);
+        const oneShot = form && form.dataset.run === "1";
+        if (oneShot) {
+          window.history.replaceState({ phrase: phraseUuid }, "", phraseUrl);
+          form.dataset.run = "0";
+        } else {
+          const params = new URLSearchParams(location.search);
+          if (!params.get("phrase") && !params.get("q")) {
+            // Keep the typed query on the entry we are leaving, so Back shows
+            // the form filled in rather than empty.
+            window.history.replaceState(
+              null,
+              "",
+              location.pathname + "?q=" + encodeURIComponent(englishText)
+            );
+          }
+          window.history.pushState({ phrase: phraseUuid }, "", phraseUrl);
+        }
+      }
     } catch (error) {
       console.error("Error:", error);
       showError(error.message || "Failed to translate. Please try again.");
@@ -155,4 +182,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   }
+
+  // History entries are canonical phrase URLs, so back/forward is a server
+  // render from SQLite: no model call and no new audio.
+  window.addEventListener("popstate", function () {
+    window.location.reload();
+  });
 });

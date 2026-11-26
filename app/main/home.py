@@ -7,6 +7,7 @@ from app.languages.variants import default_register, register_choices
 from app.learning.service import current_language, get_or_create_local_user
 from app.main import main
 from app.main.helpers import _check_csrf
+from app.models import Phrase
 from app.models_language import Language
 
 
@@ -100,11 +101,35 @@ def legacy_welcome(rest=""):
 def index():
     language = current_language()
     code = language.code if language else "ko"
+
+    # ``?phrase=<uuid>`` is the canonical, replay-free state for a saved
+    # result. It renders from SQLite so back/forward and reload never call the
+    # model or generate audio again.
+    phrase_id = (request.args.get("phrase") or "").strip()[:64]
+    phrase = None
+    phrase_error = ""
+    if phrase_id:
+        candidate = Phrase.query.filter_by(uuid=phrase_id).first()
+        if (
+            candidate is not None
+            and language is not None
+            and candidate.target_language_id == language.id
+        ):
+            phrase = candidate
+        else:
+            phrase_error = "That saved phrase is not available in this language."
+
     return render_template(
         "index.html",
         language=language,
-        q=(request.args.get("q") or "").strip()[:500],
-        run=request.args.get("run") == "1",
+        q=(
+            phrase.source_text
+            if phrase is not None
+            else (request.args.get("q") or "").strip()[:500]
+        ),
+        run=request.args.get("run") == "1" and phrase is None,
+        phrase=phrase,
+        phrase_error=phrase_error,
         registers=register_choices(code),
         default_register=default_register(code),
     )

@@ -435,3 +435,59 @@ def test_translate_api_defaults_to_the_everyday_polite_register(client):
 
     assert response.status_code == 200
     assert response.get_json()["register"] == "polite"
+
+
+def test_phrase_url_renders_a_saved_result_without_translating(client, app):
+    from app.models import Phrase
+    from app.utils import caching
+
+    caching._cache.clear()
+    client.get("/ko/learn")
+    created = client.post(
+        "/api/translate",
+        json={"text": "Hello", "formality": "formal"},
+    ).get_json()
+
+    with app.app_context():
+        before = Phrase.query.count()
+
+    page = client.get(f"/ko/translate?phrase={created['uuid']}")
+
+    assert page.status_code == 200
+    assert b'id="result"' in page.data
+    assert f'data-phrase-uuid="{created["uuid"]}"'.encode() in page.data
+    assert b'value="Hello"' in page.data
+    assert created["target_text"].encode() in page.data
+    assert created["romanization"].encode() in page.data
+    assert b"Formal" in page.data
+    assert created["audio_path"].encode() in page.data
+
+    with app.app_context():
+        assert Phrase.query.count() == before
+
+
+def test_phrase_url_is_scoped_to_the_page_language(client, app):
+    from app.languages.seed import seed_amharic
+    from app.utils import caching
+
+    caching._cache.clear()
+    client.get("/ko/learn")
+    created = client.post("/api/translate", json={"text": "Hello"}).get_json()
+    with app.app_context():
+        seed_amharic()
+
+    page = client.get(f"/am/translate?phrase={created['uuid']}")
+
+    assert page.status_code == 200
+    assert b"not available in this language" in page.data
+    assert created["target_text"].encode() not in page.data
+
+
+def test_missing_phrase_url_falls_back_to_the_form(client):
+    client.get("/ko/learn")
+
+    page = client.get("/ko/translate?phrase=not-a-real-phrase")
+
+    assert page.status_code == 200
+    assert b"not available in this language" in page.data
+    assert b'data-phrase-uuid=""' in page.data
