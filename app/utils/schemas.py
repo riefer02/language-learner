@@ -51,6 +51,13 @@ class TranslationRequest(BaseModel):
         return _required_text(value, "text")
 
 
+class VariantAudioRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
+
+    item_id: int = Field(gt=0)
+    text: str = Field(min_length=1, max_length=300)
+
+
 class GenericTranslationResponse(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 

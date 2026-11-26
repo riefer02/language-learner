@@ -73,6 +73,7 @@ def test_review_card_shows_every_addressee_form(client, app):
     assert "ስምሽ ማን ነው?".encode() in page.data
     assert "ስማችሁ ማን ነው?".encode() in page.data
     assert "ስምዎ ማን ነው?".encode() in page.data
+    assert b"data-variant-audio" in page.data
 
 
 def test_review_variants_include_korean_formality(client, app):

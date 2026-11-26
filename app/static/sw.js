@@ -1,5 +1,5 @@
 // Kiku service worker: app shell caching + push reminders.
-const CACHE_NAME = "kiku-shell-v3";
+const CACHE_NAME = "kiku-shell-v4";
 const SHELL = [
   "/offline",
   "/static/icons/icon-192.png",
@@ -45,22 +45,34 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   // Only cache same-origin static files, by their exact URL. Versioned assets
   // are immutable; ignoring the query string would serve last release's CSS/JS.
-  if (url.origin !== self.location.origin || !url.pathname.startsWith("/static/")) {
+  // Audio is served with Range requests (206) and can be large, so it stays out
+  // of Cache Storage and is handled by the browser's media cache instead.
+  if (
+    url.origin !== self.location.origin ||
+    !url.pathname.startsWith("/static/") ||
+    url.pathname.startsWith("/static/audio/")
+  ) {
     return;
   }
 
   event.respondWith(
-    caches.match(request).then(
-      (cached) =>
-        cached ||
-        fetch(request).then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-    )
+    (async () => {
+      const cached = await caches.match(request);
+      if (cached) {
+        return cached;
+      }
+      const response = await fetch(request);
+      if (response.ok && response.status === 200) {
+        const copy = response.clone();
+        try {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, copy);
+        } catch (_error) {
+          // A cache failure must not break the asset response.
+        }
+      }
+      return response;
+    })()
   );
 });
 

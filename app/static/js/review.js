@@ -1,5 +1,10 @@
-// Review keyboard shortcuts and a no-cost Korean audio fallback.
+// Review keyboard shortcuts, stored audio, and a Korean speech fallback.
 document.addEventListener("DOMContentLoaded", function () {
+  const csrfToken =
+    (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
+  const reviewShell = document.querySelector(".review-shell");
+  const languageCode =
+    (reviewShell && reviewShell.dataset.languageCode) || "ko";
   const form = document.querySelector(".grade-form");
   const answer = document.querySelector(".review-answer");
   const card = document.querySelector(".review-card");
@@ -108,6 +113,52 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  document.querySelectorAll("[data-variant-audio]").forEach(function (button) {
+    button.addEventListener("click", async function () {
+      const text = button.getAttribute("data-text");
+      const itemId = button.getAttribute("data-item-id");
+      if (!text || !itemId) {
+        return;
+      }
+      const original = button.textContent;
+      button.disabled = true;
+      button.textContent = "Generating…";
+      try {
+        const response = await fetch(
+          "/api/variants/audio?lang=" + encodeURIComponent(languageCode),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrfToken,
+            },
+            body: JSON.stringify({ item_id: Number(itemId), text: text }),
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Audio generation failed");
+        }
+
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.preload = "none";
+        audio.className = "review-audio";
+        audio.src = data.audio_path;
+        audio.setAttribute("aria-label", "Play pronunciation for " + text);
+        button.replaceWith(audio);
+        const started = audio.play();
+        if (started && started.catch) {
+          started.catch(function () {});
+        }
+      } catch (error) {
+        console.error("Variant audio failed:", error);
+        button.disabled = false;
+        button.textContent = original;
+      }
+    });
+  });
 
   document.querySelectorAll("[data-speak]").forEach(function (button) {
     button.addEventListener("click", function () {

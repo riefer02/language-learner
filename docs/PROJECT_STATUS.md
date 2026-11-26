@@ -504,6 +504,21 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   saved phrase URL on success.
 - 316 tests pass; ruff clean.
 
+### Stored audio for every alternate form (26 November 2026)
+
+- Every **Other ways to say it** form now plays stored audio instead of browser
+  speech synthesis. The Amharic gendered forms use their item audio; curated
+  register forms use a content-hashed `variant_<lang>_<hash>.mp3`.
+- `flask generate-variant-audio --language am` (and `ko`) pre-generates the
+  forms; `POST /api/variants/audio` generates one missing form on demand after
+  allowlisting it against the card. Generated forms are available on reload.
+- The saved-result page no longer re-bills if you press Enter without changing
+  the phrase or options; it points at the visible result instead. The library
+  now links each saved phrase to its canonical `?phrase=<uuid>` URL.
+- The service worker excludes `/static/audio/` (Range/206 responses) and awaits
+  cache writes, so generated audio is not cached as a partial response.
+- 323 tests pass; ruff clean.
+
 ### Settings nav alignment and cache truth (25 November 2026)
 
 - The plain **Settings** link now uses the same inline-flex box, padding,

@@ -92,6 +92,9 @@
           Repeat
         </button>
       </div>
+      <p class="learn-library-link">
+        <a href="{{ url_for('main.index', phrase=phrase.uuid) }}">Open saved result</a>
+      </p>
       {% with surface="translate", phrase_id=phrase.id, uid="phrase-" ~ phrase.id %}
         {% include "_content_flag.html" %}
       {% endwith %}

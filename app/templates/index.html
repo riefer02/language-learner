@@ -68,12 +68,12 @@
     {% if registers %}
     <div class="form-group">
       <label for="register">How formal?</label>
-      <select id="register" name="register">
+      <select id="register" name="register" aria-describedby="register-help">
         {% for value, label in registers %}
-        <option value="{{ value }}"{% if phrase and phrase.register == value %} selected{% elif not phrase and value == default_register %} selected{% endif %}>{{ label }}</option>
+        <option value="{{ value }}"{% if value == selected_register %} selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <small class="learn-meta">
+      <small id="register-help" class="learn-meta">
         {% if language and language.code == 'ko' %}
         Everyday polite is safe with strangers; casual is for close friends.
         {% else %}
@@ -85,13 +85,13 @@
     {% if language and language.code == 'am' %}
     <div class="form-group">
       <label for="addressee">Who are you speaking to?</label>
-      <select id="addressee" name="addressee">
-        <option value="any"{% if not phrase or not phrase.addressee or phrase.addressee == 'any' %} selected{% endif %}>Not sure — show both</option>
-        <option value="male"{% if phrase and phrase.addressee == 'male' %} selected{% endif %}>A man</option>
-        <option value="female"{% if phrase and phrase.addressee == 'female' %} selected{% endif %}>A woman</option>
-        <option value="group"{% if phrase and phrase.addressee == 'group' %} selected{% endif %}>A group</option>
+      <select id="addressee" name="addressee" aria-describedby="addressee-help">
+        <option value="any"{% if selected_addressee == 'any' %} selected{% endif %}>Not sure — show both</option>
+        <option value="male"{% if selected_addressee == 'male' %} selected{% endif %}>A man</option>
+        <option value="female"{% if selected_addressee == 'female' %} selected{% endif %}>A woman</option>
+        <option value="group"{% if selected_addressee == 'group' %} selected{% endif %}>A group</option>
       </select>
-      <small class="learn-meta">
+      <small id="addressee-help" class="learn-meta">
         Amharic changes with the person you address.
       </small>
     </div>
@@ -100,6 +100,8 @@
       Look up &amp; generate audio
     </button>
   </form>
+
+  <p id="lookup-notice" class="learn-meta" role="status" hidden></p>
 
   <div
     id="loading"
@@ -116,6 +118,9 @@
   id="result"
   class="result{% if not phrase %} hidden{% endif %}"
   data-phrase-uuid="{{ phrase.uuid if phrase else '' }}"
+  data-phrase-source="{{ phrase.source_text if phrase else '' }}"
+  data-phrase-register="{{ selected_register if phrase else '' }}"
+  data-phrase-addressee="{{ selected_addressee if phrase else 'any' }}"
   aria-live="polite"
 >
   <div class="phrase-card">
@@ -131,7 +136,7 @@
     <div class="audio-player">
       <audio
         controls
-        preload="auto"
+        preload="{{ 'none' if phrase else 'auto' }}"
         {% if phrase %}src="{{ phrase.audio_path }}"{% endif %}
         aria-label="Play pronunciation for {{ phrase.target_text if phrase else 'this phrase' }}"
       ></audio>

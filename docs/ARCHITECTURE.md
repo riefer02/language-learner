@@ -103,6 +103,13 @@ Gendered Amharic items (`… (to a man/woman/group)`) and register alternates fr
 `review_variants(item, language_code)`, so every review shows the curated forms,
 not just the one the card happened to pick.
 
+Alternate forms use stored audio, never browser speech synthesis: gendered forms
+are real items and use `item.audio_path`; curated register forms use a stable
+`variant_<lang>_<hash>.mp3`. `flask generate-variant-audio` pre-generates them;
+`POST /api/variants/audio` generates one missing form on demand after checking it
+belongs to the card. `media-audit`/`media-gc` count existing variant files as
+referenced.
+
 ### Teacher (voice)
 
 ```

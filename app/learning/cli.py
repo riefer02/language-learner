@@ -311,3 +311,93 @@ def register_learning_cli(app):
             batch.cleanup()
 
         click.echo(f"Generated audio for {generated} item(s).")
+
+    @app.cli.command("generate-variant-audio")
+    @click.option("--limit", default=0, type=int, help="Only process N forms.")
+    @click.option("--voice", default=None, help="Override the configured TTS voice.")
+    @click.option(
+        "--force",
+        is_flag=True,
+        help="Regenerate audio even when a stored file already exists.",
+    )
+    @click.option(
+        "--dry-run",
+        is_flag=True,
+        help="List what would be generated without calling the API.",
+    )
+    @click.option(
+        "--language",
+        "language_code",
+        default=None,
+        help="Only forms in this language code (e.g. ko, am).",
+    )
+    def generate_variant_audio_command(
+        limit, voice, force, dry_run, language_code
+    ):
+        """Pre-generate audio for the 'Other ways to say it' forms.
+
+        The gendered Amharic forms are also real items, so this updates their
+        item audio too. Curated register forms get a stable file of their own.
+        """
+        from app.learning.service import review_variants
+        from app.services.variant_audio import generate_variant_audio
+
+        if language_code:
+            language = Language.query.filter_by(code=language_code).first()
+            if language is None:
+                raise click.ClickException(
+                    f"Unknown language code: {language_code}"
+                )
+            languages = [language]
+        else:
+            languages = Language.query.order_by(Language.id.asc()).all()
+
+        candidates = []
+        for language in languages:
+            seen = set()
+            items = (
+                Item.query.filter_by(language_id=language.id)
+                .order_by(Item.id.asc())
+                .all()
+            )
+            for item in items:
+                for variant in review_variants(item, language.code):
+                    text = variant["text"]
+                    if text in seen:
+                        continue
+                    seen.add(text)
+                    if not force and variant["audio_path"]:
+                        continue
+                    candidates.append((language, text))
+
+        if limit and limit > 0:
+            candidates = candidates[:limit]
+
+        if not candidates:
+            click.echo("No variant audio needs generation.")
+            return
+
+        if dry_run:
+            click.echo(
+                f"Dry run: would generate {len(candidates)} form(s)."
+            )
+            for language, text in candidates:
+                click.echo(f"  {language.code}: {text}")
+            return
+
+        voice = voice or current_app.config.get("TTS_VOICE_1", "onyx")
+        generated = 0
+        try:
+            for language, text in candidates:
+                path = generate_variant_audio(
+                    language, text, voice=voice, force=force
+                )
+                generated += 1
+                click.echo(f"  {language.code}: {text} → {path}")
+        except Exception as error:
+            current_app.logger.exception("Variant audio generation failed")
+            raise click.ClickException(
+                f"Variant audio failed after {generated} form(s): {error}"
+            ) from error
+
+        click.echo(f"Generated audio for {generated} form(s).")

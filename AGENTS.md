@@ -27,6 +27,7 @@ FLASK_APP=run.py venv/bin/python -m flask db upgrade
 FLASK_APP=run.py venv/bin/python -m flask seed-content
 FLASK_APP=run.py venv/bin/python -m flask seed-amharic
 FLASK_APP=run.py venv/bin/python -m flask generate-item-audio --language am
+FLASK_APP=run.py venv/bin/python -m flask generate-variant-audio --language am
 ```
 
 `.env` is read at process start. **Restart the server after changing it.**

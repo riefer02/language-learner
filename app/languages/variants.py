@@ -6,6 +6,9 @@ and review cards can show the contrast. These are hand-curated starter forms,
 not native-checked recordings.
 """
 
+import hashlib
+import os
+
 # (value, learner-facing label) in display order. The first entry is the
 # default for that language when the learner does not choose.
 REGISTER_CHOICES = {
@@ -74,8 +77,8 @@ ALTERNATES = {
             {
                 "label": "Casual",
                 "register": "casual",
-                "text": "미안",
-                "transliteration": "mian",
+                "text": "미안해",
+                "transliteration": "mianhae",
             },
         ],
         "네": [
@@ -299,3 +302,40 @@ def register_label(code, value):
 def alternates_for(code, target_text):
     """Return the curated alternate forms for one item."""
     return ALTERNATES.get(code, {}).get(target_text, [])
+
+
+def _audio_code(language_code):
+    return "".join(char for char in str(language_code) if char.isalnum()) or "xx"
+
+
+def variant_audio_filename(language_code, text):
+    """A stable filename for one form, independent of which card shows it."""
+    code = _audio_code(language_code)
+    digest = hashlib.sha256(f"{code}\0{text}".encode()).hexdigest()[:12]
+    return f"variant_{code}_{digest}.mp3"
+
+
+def variant_audio_url(audio_dir, language_code, text):
+    """Return the public URL when the stored variant audio exists and is non-empty."""
+    filename = variant_audio_filename(language_code, text)
+    try:
+        if os.path.getsize(os.path.join(audio_dir, filename)) > 0:
+            return f"/static/audio/{filename}"
+    except OSError:
+        return None
+    return None
+
+
+def all_variant_audio_filenames(audio_dir):
+    """Existing variant files, so ``media-gc`` does not treat them as orphans."""
+    filenames = set()
+    for code, groups in ALTERNATES.items():
+        for forms in groups.values():
+            for form in forms:
+                filename = variant_audio_filename(code, form["text"])
+                try:
+                    if os.path.getsize(os.path.join(audio_dir, filename)) > 0:
+                        filenames.add(filename)
+                except OSError:
+                    continue
+    return sorted(filenames)

@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app import db
-from app.languages.variants import alternates_for
+from app.languages.variants import alternates_for, variant_audio_url
 from app.learning.scheduler import ensure_utc, new_review_card, utcnow
 from app.models import Item, ReviewCard, ReviewLog, User
 from app.models_language import Language
@@ -92,6 +92,7 @@ def review_variants(item, language_code):
     """
     forms = []
     seen = {item.target_text} if item else set()
+    audio_dir = current_app.config["AUDIO_DIR"]
     for variant in addressee_variants(item):
         row = variant["item"]
         if row.target_text in seen:
@@ -102,7 +103,8 @@ def review_variants(item, language_code):
                 "label": variant["label"],
                 "text": row.target_text,
                 "transliteration": row.transliteration,
-                "audio_path": row.audio_path,
+                "audio_path": row.audio_path
+                or variant_audio_url(audio_dir, language_code, row.target_text),
             }
         )
     if item is not None:
@@ -115,7 +117,9 @@ def review_variants(item, language_code):
                     "label": alternate["label"],
                     "text": alternate["text"],
                     "transliteration": alternate.get("transliteration"),
-                    "audio_path": None,
+                    "audio_path": variant_audio_url(
+                        audio_dir, language_code, alternate["text"]
+                    ),
                 }
             )
     return forms

@@ -123,7 +123,7 @@ def index():
         "index.html",
         language=language,
         q=(
-            phrase.source_text
+            (phrase.source_text or "")
             if phrase is not None
             else (request.args.get("q") or "").strip()[:500]
         ),
@@ -132,4 +132,15 @@ def index():
         phrase_error=phrase_error,
         registers=register_choices(code),
         default_register=default_register(code),
+        selected_register=(
+            phrase.register
+            if phrase is not None
+            and phrase.register in {value for value, _ in register_choices(code)}
+            else default_register(code)
+        ),
+        selected_addressee=(
+            phrase.addressee
+            if phrase is not None and phrase.addressee
+            else "any"
+        ),
     )

@@ -18,7 +18,7 @@ from config import config
 
 # One query string for every static asset; bump this on a release so Chrome
 # never mixes a new template with an old CSS or JS file.
-ASSET_VERSION = "20261125r10"
+ASSET_VERSION = "20261126r3"
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -169,6 +169,7 @@ def _register_cli(app):
     @click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON.")
     def media_audit(as_json):
         """Report orphaned and missing audio files."""
+        from app.languages.variants import all_variant_audio_filenames
         from app.models import Conversation, Item, Phrase
         from app.utils.media import (
             audit_media,
@@ -184,8 +185,9 @@ def _register_cli(app):
         item_paths = [
             row[0] for row in db.session.query(Item.audio_path).all() if row[0]
         ]
+        variant_paths = all_variant_audio_filenames(app.config["AUDIO_DIR"])
         referenced = referenced_audio_filenames(
-            phrase_paths, conversation_paths, item_paths
+            phrase_paths, conversation_paths, item_paths, variant_paths
         )
         orphans, missing = audit_media(app.config["AUDIO_DIR"], referenced)
 
@@ -276,6 +278,7 @@ def _register_cli(app):
         """Safely remove unreferenced audio files."""
         import time
 
+        from app.languages.variants import all_variant_audio_filenames
         from app.models import Conversation, Item, Phrase
         from app.utils.media import audit_media, referenced_audio_filenames
 
@@ -288,8 +291,9 @@ def _register_cli(app):
         item_paths = [
             row[0] for row in db.session.query(Item.audio_path).all() if row[0]
         ]
+        variant_paths = all_variant_audio_filenames(app.config["AUDIO_DIR"])
         referenced = referenced_audio_filenames(
-            phrase_paths, conversation_paths, item_paths
+            phrase_paths, conversation_paths, item_paths, variant_paths
         )
         audio_dir = app.config["AUDIO_DIR"]
         orphans, _missing = audit_media(audio_dir, referenced)

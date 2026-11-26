@@ -6,6 +6,30 @@ document.addEventListener("DOMContentLoaded", function () {
   const loadingDiv = document.getElementById("loading");
   const translateBtn = document.getElementById("translate-btn");
   const resultAudio = resultDiv.querySelector("audio");
+  const noticeEl = document.getElementById("lookup-notice");
+  let oneShotRun = !!(form && form.dataset.run === "1");
+  let renderedUrl = location.pathname + location.search;
+
+  function showNotice(message) {
+    if (!noticeEl) {
+      return;
+    }
+    noticeEl.textContent = message || "";
+    noticeEl.hidden = !message;
+  }
+
+  ["english-text", "register", "addressee"].forEach(function (id) {
+    const field = document.getElementById(id);
+    if (!field) {
+      return;
+    }
+    field.addEventListener("input", function () {
+      showNotice("");
+    });
+    field.addEventListener("change", function () {
+      showNotice("");
+    });
+  });
 
   // The listener is attached once, before any src is assigned, so a cached
   // audio file cannot fire canplay before we are listening. autoplayPending is
@@ -32,6 +56,31 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
+    const addresseeInput = document.getElementById("addressee");
+    const addressee = addresseeInput ? addresseeInput.value : "any";
+    const registerInput = document.getElementById("register");
+    const register = registerInput ? registerInput.value : null;
+    const currentRegister = register || "";
+    const currentAddressee = addressee || "any";
+
+    showNotice("");
+    if (
+      !resultDiv.classList.contains("hidden") &&
+      resultDiv.dataset.phraseUuid &&
+      englishText === (resultDiv.dataset.phraseSource || "") &&
+      currentRegister === (resultDiv.dataset.phraseRegister || "") &&
+      currentAddressee === (resultDiv.dataset.phraseAddressee || "any")
+    ) {
+      showNotice(
+        "Already showing this result. Change the phrase or options to look up again."
+      );
+      resultDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    const oneShot = oneShotRun;
+    oneShotRun = false;
+
     // Show loading state
     translateBtn.disabled = true;
     resultDiv.classList.add("hidden");
@@ -40,10 +89,6 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const form = document.getElementById("phrase-form");
       const lang = (form && form.dataset.lang) || "ko";
-      const addresseeInput = document.getElementById("addressee");
-      const addressee = addresseeInput ? addresseeInput.value : "any";
-      const registerInput = document.getElementById("register");
-      const register = registerInput ? registerInput.value : null;
       const response = await fetch("/api/translate?lang=" + encodeURIComponent(lang), {
         method: "POST",
         headers: {
@@ -132,13 +177,14 @@ document.addEventListener("DOMContentLoaded", function () {
       // never re-call the model or regenerate audio.
       const phraseUuid = data.uuid || "";
       resultDiv.dataset.phraseUuid = phraseUuid;
+      resultDiv.dataset.phraseSource = englishText;
+      resultDiv.dataset.phraseRegister = data.register || currentRegister;
+      resultDiv.dataset.phraseAddressee = data.addressee || currentAddressee;
       if (phraseUuid && window.history && window.history.pushState) {
         const phraseUrl =
           location.pathname + "?phrase=" + encodeURIComponent(phraseUuid);
-        const oneShot = form && form.dataset.run === "1";
         if (oneShot) {
           window.history.replaceState({ phrase: phraseUuid }, "", phraseUrl);
-          form.dataset.run = "0";
         } else {
           const params = new URLSearchParams(location.search);
           if (!params.get("phrase") && !params.get("q")) {
@@ -152,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           window.history.pushState({ phrase: phraseUuid }, "", phraseUrl);
         }
+        renderedUrl = phraseUrl;
       }
     } catch (error) {
       console.error("Error:", error);
@@ -160,6 +207,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Hide loading state
       translateBtn.disabled = false;
       loadingDiv.classList.add("hidden");
+      oneShotRun = false;
     }
   });
 
@@ -173,6 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         form.dispatchEvent(new Event("submit", { cancelable: true }));
       }
+      form.dataset.run = "0";
       if (window.history && window.history.replaceState) {
         window.history.replaceState(
           null,
@@ -184,8 +233,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // History entries are canonical phrase URLs, so back/forward is a server
-  // render from SQLite: no model call and no new audio.
+  // render from SQLite: no model call and no new audio. Ignore same-document
+  // fragment traversals (such as the skip link), which do not change the page.
   window.addEventListener("popstate", function () {
-    window.location.reload();
+    const currentUrl = location.pathname + location.search;
+    if (currentUrl !== renderedUrl) {
+      window.location.reload();
+    }
   });
 });

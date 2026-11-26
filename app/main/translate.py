@@ -6,17 +6,18 @@ from flask import current_app, jsonify, request
 
 from app import db
 from app.languages.variants import default_register
-from app.learning.service import request_language
+from app.learning.service import request_language, review_variants
 from app.main import main
 from app.main.helpers import _error, _parse_json
-from app.models import Phrase
+from app.models import Item, Phrase
 from app.models_language import Language
 from app.services.ai import OpenAIConfigError
 from app.services.audio import generate_audio
 from app.services.translation import translate_text_with_romanization
+from app.services.variant_audio import generate_variant_audio
 from app.utils.media import AudioBatch, remove_files, safe_audio_filename
 from app.utils.rate_limit import rate_limit
-from app.utils.schemas import TranslationRequest
+from app.utils.schemas import TranslationRequest, VariantAudioRequest
 
 
 @main.route("/api/translate", methods=["POST"])
@@ -103,6 +104,57 @@ def api_translate():
         }
     )
     return jsonify(data)
+
+
+@main.route("/api/variants/audio", methods=["POST"])
+@rate_limit(
+    limit=lambda: current_app.config.get("RATE_LIMIT_VARIANT_AUDIO", 30),
+    window_seconds=lambda: current_app.config.get(
+        "RATE_LIMIT_WINDOW_SECONDS", 60
+    ),
+    scope="variant_audio",
+)
+def api_variant_audio():
+    """Generate and cache audio for one form on a review card.
+
+    The text is allowlisted against the card's curated variants (or its own
+    answer), so this cannot be used to generate arbitrary speech.
+    """
+    payload, error = _parse_json(VariantAudioRequest)
+    if error:
+        return error
+
+    language = request_language()
+    if language is None:
+        return _error("No active language", 404)
+
+    item = db.session.get(Item, payload.item_id)
+    if item is None or item.language_id != language.id:
+        return _error("That review card is not available", 404)
+
+    variants = review_variants(item, language.code)
+    match = next(
+        (variant for variant in variants if variant["text"] == payload.text),
+        None,
+    )
+    if match is None and payload.text != item.target_text:
+        return _error("That form is not part of this card", 400)
+    if match is not None and match["audio_path"]:
+        return jsonify({"audio_path": match["audio_path"], "text": payload.text})
+    if match is None and item.audio_path:
+        return jsonify({"audio_path": item.audio_path, "text": payload.text})
+
+    try:
+        audio_path = generate_variant_audio(language, payload.text)
+    except OpenAIConfigError:
+        return _error("Audio service is not configured", 503)
+    except ValueError as exc:
+        return _error(str(exc), 400)
+    except Exception:
+        current_app.logger.exception("Variant audio generation failed")
+        return _error("Could not generate audio", 500)
+
+    return jsonify({"audio_path": audio_path, "text": payload.text})
 
 
 @main.route("/api/phrases", methods=["GET"])

@@ -5,6 +5,7 @@
 <div
   class="review-shell"
   data-card-id="{{ card.id }}"
+  data-language-code="{{ language.code if language else 'ko' }}"
   data-tts-lang="{{ 'am-ET' if item_lang == 'am' else 'ko-KR' }}"
 >
   <div class="review-top">
@@ -38,8 +39,10 @@
       <button
         type="button"
         class="speak-btn"
-        data-speak="{{ item.target_text }}"
-        aria-label="Hear {{ item.target_text }} in {{ language.name if language else 'Korean' }}"
+        data-variant-audio
+        data-item-id="{{ item.id }}"
+        data-text="{{ item.target_text }}"
+        aria-label="Generate audio for {{ item.target_text }}"
       >
         Hear it
       </button>
@@ -73,8 +76,10 @@
           <button
             type="button"
             class="speak-btn"
-            data-speak="{{ item.target_text }}"
-            aria-label="Hear {{ item.target_text }} in {{ language.name if language else 'Korean' }}"
+            data-variant-audio
+            data-item-id="{{ item.id }}"
+            data-text="{{ item.target_text }}"
+            aria-label="Generate audio for {{ item.target_text }}"
           >
             Hear the answer
           </button>
@@ -122,8 +127,10 @@
               <button
                 type="button"
                 class="speak-btn"
-                data-speak="{{ variant.text }}"
-                aria-label="Hear {{ variant.text }} in {{ language.name if language else 'the target language' }}"
+                data-variant-audio
+                data-item-id="{{ item.id }}"
+                data-text="{{ variant.text }}"
+                aria-label="Generate audio for {{ variant.text }}"
               >
                 Hear it
               </button>
