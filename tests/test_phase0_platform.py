@@ -386,7 +386,7 @@ def test_translate_api_returns_romanization_and_saves_phrase(client):
     assert b"annyeonghaseyo" in library.data
 
 
-def test_translate_api_records_the_addressee(client):
+def test_translate_api_ignores_addressee_for_korean(client):
     from app.utils import caching
 
     caching._cache.clear()
@@ -398,10 +398,10 @@ def test_translate_api_records_the_addressee(client):
     )
 
     assert response.status_code == 200
-    assert response.get_json()["addressee"] == "female"
+    assert response.get_json()["addressee"] == "any"
 
     library = client.get("/ko/library")
-    assert b"To a woman" in library.data
+    assert b"To a woman" not in library.data
 
 
 def test_translate_api_records_the_register(client):
@@ -417,12 +417,28 @@ def test_translate_api_records_the_register(client):
 
     assert response.status_code == 200
     assert response.get_json()["register"] == "formal"
+    assert response.get_json()["register_label"] == "Formal"
 
     library = client.get("/ko/library")
     assert b"Formal" in library.data
 
     phrases = client.get("/api/phrases").get_json()["phrases"]
     assert phrases[0]["register"] == "formal"
+
+
+def test_translate_api_accepts_register_as_the_request_key(client):
+    from app.utils import caching
+
+    caching._cache.clear()
+    client.get("/ko/learn")
+
+    response = client.post(
+        "/api/translate",
+        json={"text": "Thank you", "register": "formal"},
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["register"] == "formal"
 
 
 def test_translate_api_defaults_to_the_everyday_polite_register(client):
@@ -491,3 +507,39 @@ def test_missing_phrase_url_falls_back_to_the_form(client):
     assert page.status_code == 200
     assert b"not available in this language" in page.data
     assert b'data-phrase-uuid=""' in page.data
+
+
+def test_phrase_url_suppresses_the_one_shot_run(client):
+    client.get("/ko/learn")
+    created = client.post("/api/translate", json={"text": "Hello"}).get_json()
+
+    page = client.get(f"/ko/translate?phrase={created['uuid']}&run=1")
+
+    assert page.status_code == 200
+    assert b'data-run="0"' in page.data
+    assert created["target_text"].encode() in page.data
+
+
+def test_phrase_without_a_source_text_renders_an_empty_input(client, app):
+    from app import db
+    from app.models import Phrase
+    from app.models_language import Language
+
+    client.get("/ko/learn")
+    with app.app_context():
+        korean = Language.query.filter_by(code="ko").one()
+        phrase = Phrase(
+            audio_path="/static/audio/missing.mp3",
+            target_language_id=korean.id,
+            source_text=None,
+            target_text="안녕하세요",
+        )
+        db.session.add(phrase)
+        db.session.commit()
+        phrase_uuid = phrase.uuid
+
+    page = client.get(f"/ko/translate?phrase={phrase_uuid}")
+
+    assert page.status_code == 200
+    assert b'value="None"' not in page.data
+    assert b'value=""' in page.data

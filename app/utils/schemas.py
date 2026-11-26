@@ -3,6 +3,7 @@
 from typing import Literal
 
 from pydantic import (
+    AliasChoices,
     BaseModel,
     ConfigDict,
     Field,
@@ -42,8 +43,13 @@ class TranslationRequest(BaseModel):
 
     text: str = Field(min_length=1, max_length=500)
     addressee: Literal["male", "female", "group", "any"] = "any"
-    # Named formality, not ``register``: the latter shadows a BaseModel member.
-    formality: Literal["casual", "polite", "formal"] | None = None
+    # The response and database call this "register"; accept both names on the
+    # wire. A field literally named ``register`` shadows an ABCMeta member and
+    # makes Pydantic warn, so the internal field is ``formality``.
+    formality: Literal["casual", "polite", "formal"] | None = Field(
+        default=None,
+        validation_alias=AliasChoices("register", "formality"),
+    )
 
     @field_validator("text", mode="before")
     @classmethod

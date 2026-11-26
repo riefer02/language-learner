@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "Content-Type": "application/json",
           "X-CSRFToken": csrfToken,
         },
-        body: JSON.stringify({ text: englishText, addressee, formality: register }),
+        body: JSON.stringify({ text: englishText, addressee, register }),
       });
 
       const data = await response.json();
@@ -139,13 +139,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const registerOut = resultDiv.querySelector(".phrase-register");
       if (registerOut) {
-        const registerLabels = {
-          formal: "Formal",
-          polite: "Everyday polite",
-          casual: "Casual",
-        };
-        const label = registerLabels[data.register];
-        registerOut.textContent = label || "";
+        const label = data.register_label || "";
+        registerOut.textContent = label;
         registerOut.hidden = !label;
       }
 

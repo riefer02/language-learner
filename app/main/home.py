@@ -3,7 +3,12 @@
 from flask import abort, redirect, render_template, request, session, url_for
 
 from app import db
-from app.languages.variants import default_register, register_choices
+from app.languages.variants import (
+    normalize_addressee,
+    normalize_register,
+    register_choices,
+    register_label,
+)
 from app.learning.service import current_language, get_or_create_local_user
 from app.main import main
 from app.main.helpers import _check_csrf
@@ -119,6 +124,16 @@ def index():
         else:
             phrase_error = "That saved phrase is not available in this language."
 
+    selected_register = normalize_register(
+        code, phrase.register if phrase is not None else None
+    )
+    selected_addressee = normalize_addressee(
+        code, phrase.addressee if phrase is not None else None
+    )
+    phrase_register_label = register_label(
+        code, phrase.register if phrase is not None else None
+    )
+
     return render_template(
         "index.html",
         language=language,
@@ -131,16 +146,7 @@ def index():
         phrase=phrase,
         phrase_error=phrase_error,
         registers=register_choices(code),
-        default_register=default_register(code),
-        selected_register=(
-            phrase.register
-            if phrase is not None
-            and phrase.register in {value for value, _ in register_choices(code)}
-            else default_register(code)
-        ),
-        selected_addressee=(
-            phrase.addressee
-            if phrase is not None and phrase.addressee
-            else "any"
-        ),
+        selected_register=selected_register,
+        selected_addressee=selected_addressee,
+        phrase_register_label=phrase_register_label,
     )

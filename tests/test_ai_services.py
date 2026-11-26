@@ -543,7 +543,7 @@ def test_translate_amharic_female_prompt(app):
 
     with app.app_context():
         result = translation_service.translate_text_with_romanization(
-            "How are you?", "am", addressee="female"
+            "How are you?", "am", addressee="female", register="casual"
         )
 
     assert result.translation == "እንደምን ነሽ?"
@@ -561,7 +561,7 @@ def test_translate_amharic_unspecified_asks_for_both(app):
 
     with app.app_context():
         translation_service.translate_text_with_romanization(
-            "How are you?", "am", addressee="any"
+            "How are you?", "am", addressee="any", register="casual"
         )
 
     system = fake.completions.calls[0]["messages"][0]["content"]
@@ -615,7 +615,42 @@ def test_translate_amharic_formal_register_prompt(app):
     system = fake.completions.calls[0]["messages"][0]["content"]
     assert "formal/polite second person" in system
     assert "እርስዎ" in system
-    assert "Address one man" in system
+    assert "not gendered" in system
+    assert "Address one man" not in system
+    assert "-ህ/-ሽ" in system
+
+
+def test_translate_amharic_formal_ignores_female_forms(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"translation": "እንደምን ነዎት?", "romanization": "endemin newot?"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        translation_service.translate_text_with_romanization(
+            "How are you?", "am", addressee="female", register="formal"
+        )
+
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "not gendered" in system
+    assert "Address one woman" not in system
+    assert "feminine" not in system
+
+
+def test_translate_amharic_rejects_polite_register(app):
+    fake = FakeOpenAIClient(
+        [chat_response('{"translation": "እንደምን ነዎት?", "romanization": "endemin newot?"}')]
+    )
+    app.extensions["openai_client"] = fake
+
+    with app.app_context():
+        translation_service.translate_text_with_romanization(
+            "How are you?", "am", register="polite"
+        )
+
+    system = fake.completions.calls[0]["messages"][0]["content"]
+    assert "formal/polite second person" in system
+    assert "everyday informal" not in system
 
 
 def test_translate_uses_the_language_default_register(app):
@@ -628,7 +663,21 @@ def test_translate_uses_the_language_default_register(app):
         translation_service.translate_text_with_romanization("How are you?", "am")
 
     system = fake.completions.calls[0]["messages"][0]["content"]
-    assert "everyday informal second person" in system
+    assert "formal/polite second person" in system
+    assert "እርስዎ" in system
+    assert "everyday informal" not in system
+
+
+def test_register_and_addressee_are_normalized_per_language():
+    from app.languages.variants import normalize_addressee, normalize_register
+
+    assert normalize_register("am", "polite") == "formal"
+    assert normalize_register("am", None) == "formal"
+    assert normalize_register("ko", "formal") == "formal"
+    assert normalize_register("es", "formal") is None
+    assert normalize_addressee("ko", "female") == "any"
+    assert normalize_addressee("am", "female") == "female"
+    assert normalize_addressee("es", "female") == "any"
 
 
 def test_translate_text_scales_the_output_budget(app):

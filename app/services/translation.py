@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from flask import current_app
 from pydantic import ValidationError
 
-from app.languages.variants import default_register
+from app.languages.variants import normalize_addressee, normalize_register
 from app.services.ai import get_openai_client
 from app.utils.caching import cache_result
 from app.utils.retries import call_with_retries
@@ -117,6 +117,8 @@ def _conversation_model():
 
 
 def _register_rule(target_code, register):
+    if register not in {"casual", "polite", "formal"}:
+        return ""
     if target_code == "ko":
         if register == "formal":
             return (
@@ -131,8 +133,8 @@ def _register_rule(target_code, register):
     if target_code == "am":
         if register == "formal":
             return (
-                " Use formal/polite second person (እርስዎ, and እርሳቸው for"
-                " 'he/she' honorific) with formal verb agreement."
+                " Use formal/polite second person (እርስዎ) with formal verb"
+                " agreement."
             )
         return (
             " Use everyday informal second person (አንተ / አንቺ / እናንተ)."
@@ -150,7 +152,20 @@ def _request_translation(text, target_code="ko", addressee="any", register=None)
         romanization_rule = "use a simple Latin transliteration"
     addressee_rule = ""
     if target_code == "am":
-        if addressee == "male":
+        if register == "formal":
+            if addressee == "group":
+                addressee_rule = (
+                    " Address a group formally with the formal plural second "
+                    "person and formal agreement. The formal register is not "
+                    "gendered; do not use -ህ/-ሽ forms."
+                )
+            else:
+                addressee_rule = (
+                    " Address the listener formally with the formal second "
+                    "person (እርስዎ). The formal register is not gendered; do "
+                    "not use -ህ/-ሽ forms."
+                )
+        elif addressee == "male":
             addressee_rule = (
                 " Address one man: use masculine second-person forms "
                 "(for example -ህ, ነህ, ሁን)."
@@ -231,10 +246,8 @@ def translate_text_with_romanization(
     text, target_code="ko", addressee="any", register=None
 ):
     """Translate and return the text plus its learner-facing romanization."""
-    if addressee not in {"male", "female", "group", "any"}:
-        addressee = "any"
-    if register not in {"casual", "polite", "formal"}:
-        register = default_register(target_code)
+    addressee = normalize_addressee(target_code, addressee)
+    register = normalize_register(target_code, register)
     try:
         request = TranslationRequest.model_validate(
             {"text": text, "addressee": addressee, "formality": register}

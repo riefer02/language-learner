@@ -67,15 +67,14 @@
       {% if phrase.target_transliteration %}
       <div class="phrase-romanization" lang="en">{{ phrase.target_transliteration }}</div>
       {% endif %}
-      {% if phrase.addressee and phrase.addressee != 'any' %}
+      {% if language and language.code == 'am' and phrase.addressee and phrase.addressee != 'any' %}
       <p class="learn-meta">
         {% if phrase.addressee == 'male' %}To a man{% elif phrase.addressee == 'female' %}To a woman{% elif phrase.addressee == 'group' %}To a group{% endif %}
       </p>
       {% endif %}
-      {% if phrase.register %}
-      <p class="learn-meta">
-        {% if phrase.register == 'formal' %}Formal{% elif phrase.register == 'polite' %}Everyday polite{% elif phrase.register == 'casual' %}Casual{% endif %}
-      </p>
+      {% set phrase_register_label = register_labels.get(phrase.register, '') %}
+      {% if phrase_register_label %}
+      <p class="learn-meta">{{ phrase_register_label }}</p>
       {% endif %}
       <div class="audio-player">
         <audio

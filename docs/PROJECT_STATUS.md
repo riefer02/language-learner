@@ -483,8 +483,8 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 ### Formality for every language (25 November 2026)
 
 - Look up now asks **“How formal?”** for both languages: Korean everyday polite
-  (해요, default), formal (합니다), and casual (반말); Amharic everyday (default)
-  and formal (እርስዎ).
+  (해요, default), formal (합니다), and casual (반말); Amharic formal (default,
+  እርስዎ) and everyday (አንተ/አንቺ).
 - The choice changes the translation prompt and cache key, is stored as
   `phrase.register` (migration `0019`), and is shown in results and My terms.
 - Review cards now also surface curated register alternates from
@@ -518,6 +518,23 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 - The service worker excludes `/static/audio/` (Range/206 responses) and awaits
   cache writes, so generated audio is not cached as a partial response.
 - 323 tests pass; ruff clean.
+
+### Review fixes: safe defaults and normalized choices (26 November 2026)
+
+- Amharic now defaults to the **formal** register (እርስዎ); everyday
+  (አንተ/አንቺ) is an explicit choice. The Look up help no longer claims every
+  default is safe with strangers.
+- Register and addressee values are clamped per language: Amharic accepts
+  `formal`/`casual`; Korean keeps its three registers; a language without a
+  register stores no label. Non-Amharic phrases can no longer store a
+  gender addressee.
+- `POST /api/translate` accepts the documented `register` key as well as the
+  internal `formality` name.
+- Formal Amharic now overrides the gendered second-person instruction instead
+  of sending both contradictory rules.
+- Register labels come from one source (`register_label` / `REGISTER_LABELS`);
+  the JS and templates no longer carry their own copies.
+- 329 tests pass; ruff clean.
 
 ### Settings nav alignment and cache truth (25 November 2026)
 

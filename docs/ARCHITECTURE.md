@@ -154,8 +154,11 @@ gender contrast. The value is stored on the phrase and shown in the library.
 
 Every language can also set `register`: `casual`, `polite`, or `formal`.
 Korean defaults to `polite` (해요) and offers formal (합니다) and casual (반말);
-Amharic defaults to `casual` (አንተ/አንቺ) and offers formal (እርስዎ). The chosen
-speech level changes the prompt, the cache key, and the saved phrase.
+Amharic defaults to `formal` (እርስዎ) and offers everyday (አንተ/አንቺ). The chosen
+speech level changes the prompt, the cache key, and the saved phrase. The API
+accepts `register` (the internal field is `formality`; both names validate),
+and values the target language does not offer are clamped to its default. A
+language with no register choices stores no register label.
 
 `GET /<lang>/translate?phrase=<uuid>` is the canonical, replay-free URL for a
 saved result: it renders the phrase (text, romanization, addressee, register,

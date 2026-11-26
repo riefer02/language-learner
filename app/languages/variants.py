@@ -18,8 +18,8 @@ REGISTER_CHOICES = {
         ("casual", "Casual (반말)"),
     ],
     "am": [
-        ("casual", "Everyday (አንተ / አንቺ)"),
         ("formal", "Formal (እርስዎ)"),
+        ("casual", "Everyday (አንተ / አንቺ)"),
     ],
 }
 
@@ -291,8 +291,31 @@ def register_choices(code):
 def default_register(code):
     choices = REGISTER_CHOICES.get(code)
     if not choices:
-        return "polite"
+        return None
     return choices[0][0]
+
+
+def normalize_register(code, value):
+    """Clamp a register to one the language actually offers.
+
+    Unknown languages have no register, so the stored value is ``None`` rather
+    than a label the library would display incorrectly.
+    """
+    choices = REGISTER_CHOICES.get(code)
+    if not choices:
+        return None
+    allowed = {choice for choice, _ in choices}
+    return value if value in allowed else default_register(code)
+
+
+# Languages whose second person changes with the addressee's gender or number.
+ADDRESSEE_LANGUAGES = {"am"}
+
+
+def normalize_addressee(code, value):
+    if code in ADDRESSEE_LANGUAGES and value in {"male", "female", "group"}:
+        return value
+    return "any"
 
 
 def register_label(code, value):
