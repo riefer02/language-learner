@@ -158,7 +158,9 @@ Amharic defaults to `formal` (እርስዎ) and offers everyday (አንተ/አ�
 speech level changes the prompt, the cache key, and the saved phrase. The API
 accepts `register` (the internal field is `formality`; both names validate),
 and values the target language does not offer are clamped to its default. A
-language with no register choices stores no register label.
+language with no register choices stores no register label. Migration `0020`
+labels pre-formality Amharic phrases as `casual`; Korean legacy rows stay
+unrecorded and are shown without a register line.
 
 `GET /<lang>/translate?phrase=<uuid>` is the canonical, replay-free URL for a
 saved result: it renders the phrase (text, romanization, addressee, register,

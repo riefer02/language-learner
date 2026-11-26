@@ -35,6 +35,9 @@ REGISTER_LABELS = {
     },
 }
 
+# Formal first, then polite, then casual. Used to order review alternates.
+REGISTER_ORDER = {"formal": 0, "polite": 1, "casual": 2}
+
 # Alternate forms keyed by the language and the item's exact target text.
 # Each entry is a form the learner might hear instead of the default.
 ALTERNATES = {
@@ -335,8 +338,11 @@ def register_label(code, value):
 
 
 def alternates_for(code, target_text):
-    """Return the curated alternate forms for one item."""
-    return ALTERNATES.get(code, {}).get(target_text, [])
+    """Return the curated alternate forms for one item, formal first."""
+    forms = ALTERNATES.get(code, {}).get(target_text, [])
+    return sorted(
+        forms, key=lambda form: REGISTER_ORDER.get(form.get("register"), 99)
+    )
 
 
 def _audio_code(language_code):

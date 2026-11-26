@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const csrfToken =
     (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
+  const stateTools = window.KikuTranslateState || {};
   const form = document.getElementById("phrase-form");
   const resultDiv = document.getElementById("result");
   const loadingDiv = document.getElementById("loading");
@@ -66,10 +67,13 @@ document.addEventListener("DOMContentLoaded", function () {
     showNotice("");
     if (
       !resultDiv.classList.contains("hidden") &&
-      resultDiv.dataset.phraseUuid &&
-      englishText === (resultDiv.dataset.phraseSource || "") &&
-      currentRegister === (resultDiv.dataset.phraseRegister || "") &&
-      currentAddressee === (resultDiv.dataset.phraseAddressee || "any")
+      stateTools.isRenderedResult &&
+      stateTools.isRenderedResult(
+        resultDiv.dataset,
+        englishText,
+        currentRegister,
+        currentAddressee
+      )
     ) {
       showNotice(
         "Already showing this result. Change the phrase or options to look up again."
@@ -171,8 +175,9 @@ document.addEventListener("DOMContentLoaded", function () {
       resultDiv.dataset.phraseRegister = data.register || currentRegister;
       resultDiv.dataset.phraseAddressee = data.addressee || currentAddressee;
       if (phraseUuid && window.history && window.history.pushState) {
-        const phraseUrl =
-          location.pathname + "?phrase=" + encodeURIComponent(phraseUuid);
+        const phraseUrl = stateTools.phraseUrl
+          ? stateTools.phraseUrl(location.pathname, phraseUuid)
+          : location.pathname + "?phrase=" + encodeURIComponent(phraseUuid);
         if (oneShot) {
           window.history.replaceState({ phrase: phraseUuid }, "", phraseUrl);
         } else {
@@ -227,7 +232,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // fragment traversals (such as the skip link), which do not change the page.
   window.addEventListener("popstate", function () {
     const currentUrl = location.pathname + location.search;
-    if (currentUrl !== renderedUrl) {
+    const reload = stateTools.shouldReload
+      ? stateTools.shouldReload(currentUrl, renderedUrl)
+      : currentUrl !== renderedUrl;
+    if (reload) {
       window.location.reload();
     }
   });

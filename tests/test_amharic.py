@@ -90,6 +90,56 @@ def test_review_variants_include_korean_formality(client, app):
         assert forms["Casual"] == "안녕"
 
 
+def test_review_card_hides_variants_for_an_ungendered_item(client, app):
+    client.get("/ko/learn")
+    with app.app_context():
+        item = Item.query.filter_by(gloss="school").one()
+        user = get_or_create_local_user()
+        korean = Language.query.filter_by(code="ko").one()
+        user.target_language_id = korean.id
+        ReviewCard.query.filter(ReviewCard.item_id != item.id).update(
+            {"due_at": utcnow() + timedelta(days=30)}
+        )
+        ReviewCard.query.filter(ReviewCard.item_id == item.id).update(
+            {"due_at": utcnow() - timedelta(hours=1)}
+        )
+        db.session.commit()
+
+    page = client.get("/ko/learn/review")
+
+    assert page.status_code == 200
+    assert b"Other ways to say it" not in page.data
+
+
+def test_review_variants_drop_a_duplicate_target_text(app, monkeypatch):
+    from app.learning import service
+
+    with app.app_context():
+        seed_amharic()
+        item = Item.query.filter_by(gloss="What is your name? (to a man)").one()
+        item_text = item.target_text
+        monkeypatch.setattr(
+            service,
+            "alternates_for",
+            lambda code, text: [
+                {
+                    "label": "Duplicate",
+                    "text": item_text,
+                    "transliteration": None,
+                },
+                {
+                    "label": "New",
+                    "text": "አዲስ",
+                    "transliteration": "addis",
+                },
+            ],
+        )
+        variants = review_variants(item, "am")
+
+    assert all(variant["text"] != item_text for variant in variants)
+    assert any(variant["text"] == "አዲስ" for variant in variants)
+
+
 def test_review_card_shows_korean_register_forms(client, app):
     client.get("/ko/learn")
     with app.app_context():

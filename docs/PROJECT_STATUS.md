@@ -537,6 +537,21 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
   their own copies.
 - 329 tests pass; ruff clean.
 
+### Low-priority review cleanup (26 November 2026)
+
+- Migration `0020` labels pre-formality Amharic phrases (`register IS NULL`) as
+  `casual`, matching the informal prompt they were generated with; Korean
+  legacy rows stay unrecorded. The downgrade is intentionally a no-op so it
+  cannot erase registers chosen later.
+- `translate_state.js` holds the pure history decisions (phrase URL, duplicate
+  result guard, fragment-safe reload) and is covered by a Node `node:test`
+  contract run from pytest.
+- Added review-template edge tests: an ungendered Korean card has no
+  “Other ways to say it” block, and duplicate alternate text is suppressed.
+- Review alternates are ordered by their `register` metadata (formal, polite,
+  casual) instead of relying on dictionary order.
+- 333 tests pass; ruff clean.
+
 ### Settings nav alignment and cache truth (25 November 2026)
 
 - The plain **Settings** link now uses the same inline-flex box, padding,

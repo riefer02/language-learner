@@ -290,3 +290,65 @@ def test_legacy_database_backfills_and_downgrades(tmp_path):
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
     finally:
         connection.close()
+
+
+def test_amharic_phrases_get_the_legacy_register_backfill(tmp_path):
+    db_path = tmp_path / "am-register.db"
+    _flask(db_path, "db", "upgrade", "20261125_0019")
+
+    connection = sqlite3.connect(db_path)
+    try:
+        connection.execute(
+            "INSERT OR IGNORE INTO language "
+            "(code, name, native_name, direction, is_active, created_at, updated_at) "
+            "VALUES ('am', 'Amharic', 'አማርኛ', 'ltr', 1, "
+            "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+        )
+        amharic_id = connection.execute(
+            "SELECT id FROM language WHERE code = 'am'"
+        ).fetchone()[0]
+        connection.execute(
+            "INSERT OR IGNORE INTO language "
+            "(code, name, native_name, direction, is_active, created_at, updated_at) "
+            "VALUES ('ko', 'Korean', '한국어', 'ltr', 1, "
+            "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+        )
+        korean_id = connection.execute(
+            "SELECT id FROM language WHERE code = 'ko'"
+        ).fetchone()[0]
+        connection.execute(
+            "INSERT INTO phrase "
+            "(uuid, source_text, target_text, audio_path, "
+            "target_language_id, register, created_at) "
+            "VALUES ('legacy-am', 'how are you', 'እንደምን ነህ?', 'am.mp3', ?, "
+            "NULL, CURRENT_TIMESTAMP)",
+            (amharic_id,),
+        )
+        connection.execute(
+            "INSERT INTO phrase "
+            "(uuid, source_text, target_text, audio_path, "
+            "target_language_id, register, created_at) "
+            "VALUES ('legacy-ko', 'hello', '안녕하세요', 'ko.mp3', ?, "
+            "NULL, CURRENT_TIMESTAMP)",
+            (korean_id,),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+    _flask(db_path, "db", "upgrade", "head")
+
+    connection = sqlite3.connect(db_path)
+    try:
+        amharic_register = connection.execute(
+            "SELECT register FROM phrase WHERE uuid = 'legacy-am'"
+        ).fetchone()[0]
+        korean_register = connection.execute(
+            "SELECT register FROM phrase WHERE uuid = 'legacy-ko'"
+        ).fetchone()[0]
+
+        assert amharic_register == "casual"
+        assert korean_register is None
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+    finally:
+        connection.close()

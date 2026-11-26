@@ -671,6 +671,7 @@ def test_translate_uses_the_language_default_register(app):
 def test_register_and_addressee_are_normalized_per_language():
     from app.languages.variants import (
         addressee_label,
+        alternates_for,
         normalize_addressee,
         normalize_register,
         register_label,
@@ -687,6 +688,10 @@ def test_register_and_addressee_are_normalized_per_language():
     assert addressee_label("ko", "female") == ""
     assert register_label("am", "casual") == "Everyday"
     assert register_label("am", "polite") == ""
+    assert [form["label"] for form in alternates_for("ko", "안녕하세요")] == [
+        "Formal",
+        "Casual",
+    ]
 
 
 def test_translate_text_scales_the_output_budget(app):
