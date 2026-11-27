@@ -33,7 +33,7 @@
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <nav aria-label="Main navigation">
+    <nav class="site-nav" aria-label="Main navigation">
       <div class="nav-container">
         <h1 class="brand-heading">
           <a
@@ -149,6 +149,13 @@
                     >Fidel</a
                   >
                 </li>
+                <li>
+                  <a
+                    href="{{ url_for('learn.listen') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'learn.listen' else 'false' }}"
+                    >Listening</a
+                  >
+                </li>
                 {% else %}
                 <li>
                   <a
@@ -162,7 +169,6 @@
             </details>
           </li>
 
-          {% if not active_language or active_language.code != 'am' %}
           <li class="nav-group">
             <details
               {% if request.endpoint in ['teacher.panel', 'learn.scenes', 'learn.scene_detail', 'learn.sound_gym'] %}class="is-active"{% endif %}
@@ -176,6 +182,7 @@
                     >Teacher</a
                   >
                 </li>
+                {% if not active_language or active_language.code != 'am' %}
                 <li>
                   <a
                     href="{{ url_for('learn.scenes') }}"
@@ -190,10 +197,10 @@
                     >Sound Gym</a
                   >
                 </li>
+                {% endif %}
               </ul>
             </details>
           </li>
-          {% endif %}
 
           <li class="nav-group nav-group-last">
             <details
@@ -206,13 +213,6 @@
                     href="{{ url_for('main.index') }}"
                     aria-current="{{ 'page' if request.endpoint == 'main.index' else 'false' }}"
                     >Look up</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="{{ url_for('main.dictionary') }}"
-                    aria-current="{{ 'page' if request.endpoint == 'main.dictionary' else 'false' }}"
-                    >Dictionary</a
                   >
                 </li>
                 <li>

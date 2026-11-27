@@ -62,6 +62,9 @@ class Config:
     NEW_CARDS_PER_DAY = _env_int("NEW_CARDS_PER_DAY", 10)
     ONBOARDING_ENABLED = _env_bool("ONBOARDING_ENABLED", True)
     REVIEW_SESSION_LIMITS: ClassVar[dict] = {3: 4, 10: 20, 25: 50}
+    # Recognition graduates to production after this many good reviews.
+    PRODUCTION_HANDOFF_REPS = 3
+    PRODUCTION_HANDOFF_DAYS = 7
 
     # Speech checks are transcript-based evidence, not a pronunciation grade.
     SPEECH_SCORING_ENABLED = _env_bool("SPEECH_SCORING_ENABLED", True)
@@ -81,7 +84,25 @@ class Config:
     TEACHER_TRANSCRIBE_MODEL = os.environ.get(
         "TEACHER_TRANSCRIBE_MODEL", "gpt-transcribe"
     )
+    # 0 means "use the per-language budget" (Korean 600, Amharic 1200).
+    TEACHER_MAX_OUTPUT_TOKENS = _env_int("TEACHER_MAX_OUTPUT_TOKENS", 0)
+    # Turn detection: quieter threshold, longer silence window for learners.
+    TEACHER_VAD_THRESHOLD = float(os.environ.get("TEACHER_VAD_THRESHOLD", "0.4"))
+    TEACHER_VAD_PREFIX_MS = _env_int("TEACHER_VAD_PREFIX_MS", 300)
+    TEACHER_VAD_SILENCE_MS = _env_int("TEACHER_VAD_SILENCE_MS", 900)
+    # Off by default: barge-in cancelled replies the learner still needed.
+    TEACHER_INTERRUPT_RESPONSE = _env_bool("TEACHER_INTERRUPT_RESPONSE", False)
     TEACHER_MAX_SESSION_MINUTES = _env_int("TEACHER_MAX_SESSION_MINUTES", 15)
+    # Second provider (TEACHER_PROVIDER=gemini_live). Server side is complete;
+    # the browser transport is still WebRTC-only.
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+    GEMINI_TEACHER_MODEL = os.environ.get(
+        "GEMINI_TEACHER_MODEL", "models/gemini-3.8-live"
+    )
+    GEMINI_TEACHER_VOICE = os.environ.get("GEMINI_TEACHER_VOICE", "Puck")
+    GEMINI_TEACHER_TEXT_MODEL = os.environ.get(
+        "GEMINI_TEACHER_TEXT_MODEL", "gemini-3.1-flash-lite"
+    )
     TEACHER_DAILY_MINUTES = _env_int("TEACHER_DAILY_MINUTES", 20)
     TEACHER_TIMEOUT_SECONDS = float(
         os.environ.get("TEACHER_TIMEOUT_SECONDS", "20")
@@ -118,7 +139,9 @@ class Config:
         "img-src 'self' data:; "
         "media-src 'self' blob:; "
         "font-src 'self'; "
-        "connect-src 'self'; "
+        # The Gemini Live transport opens a WebSocket straight to Google; the
+        # OpenAI path only talks to this server.
+        "connect-src 'self' wss://generativelanguage.googleapis.com; "
         "base-uri 'self'; "
         "form-action 'self'; "
         "frame-ancestors 'none'"
@@ -182,6 +205,9 @@ class TestingConfig(Config):
     RATE_LIMIT_ENABLED = False
     REQUIRE_AUTH = False
     ONBOARDING_ENABLED = False
+    # Tests never inherit the machine's provider choice from .env.
+    TEACHER_PROVIDER = "openai_realtime"
+    GEMINI_API_KEY = None
     # Keep the legacy end-to-end tests able to drain the full seed deck.
     REVIEW_SESSION_LIMITS: ClassVar[dict] = {3: 100, 10: 100, 25: 100}
     # A file-backed SQLite database keeps every connection pointed at the same

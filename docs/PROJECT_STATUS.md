@@ -187,7 +187,9 @@ then.
 - Settings → Learning switches between Korean and Amharic; review and progress
   are scoped per language.
 - The voice teacher remains Korean-only because OpenAI Realtime does not
-  support Amharic speech; the UI states this.
+  support Amharic speech; the UI states this. *(Superseded 26 November: the
+  teacher now runs in Amharic, transcription through auto-detect. The spoken
+  quality is still unverified by a live call.)*
 - Amharic content is starter material pending native review.
 
 ### Live verification and completion pass (same day)
@@ -568,3 +570,484 @@ process rate limiting, no license yet, and the remaining legacy CSS rules.
 - 303 tests pass; ruff clean. Verified live with `How are you?`:
   - A woman → `እንዴት ነሽ?` / `Endet nesh?`
   - Not sure → `እንዴት ነህ? (እንዴት ነሽ?)`
+
+### Formal is not gendered: clearer variant labels (26 November 2026)
+
+- Two “good morning” rows in the library both read **To a woman** because the
+  lookup stored the picked addressee (female) on a *formal* phrase, and formal
+  Amharic is gender-neutral by design (the prompt forbids -ህ/-ሽ forms). The
+  cards now explain it instead of contradicting each other:
+  - formal + man/woman → **Anyone — formal is not gendered**
+  - casual + man/woman → **To a man** / **To a woman** (unchanged)
+- `UNGENDERED_REGISTERS` in `app/languages/variants.py` is the single source of
+  truth; `addressee_label()` takes the register and is used by the library
+  page, the saved-result card, and the `/api/translate` payload.
+- Look up’s addressee help is now live: switching to **Formal (እርስዎ)** states
+  that gender only changes the Everyday form. Bumped `ASSET_VERSION`.
+- `addressee` is still stored on the phrase (it records who you plan to speak
+  to); only the label changed.
+- 335 tests pass; ruff clean.
+
+### Scannable lookup history (26 November 2026)
+
+- “Phrases you looked up” no longer renders a full card per phrase — audio
+  player, Repeat, link, and the correction form above the fold — which made ten
+  lookups need several screens of scrolling.
+- Each phrase is now one compact `<details>` row: English and the target text on
+  the first line, the register as a `.chip` beneath it. Opening the row reveals
+  transliteration, the addressee label, audio + Repeat, **Open saved result**,
+  and **Something’s off?**.
+- Native disclosure, so it works without JavaScript, the whole row is the target,
+  and the global focus ring covers the keyboard path. Nested `<details>` keep the
+  correction form independent of the row.
+- New styles are token-based (`.phrase-list` / `.phrase-entry`, documented in
+  `docs/DESIGN.md` and on `/design`); the chevron is drawn from borders so no
+  glyph is announced. `ASSET_VERSION` bumped to `20261126r9`.
+- 336 tests pass; ruff clean.
+
+### One Words surface: tabs replace the Dictionary page (26 November 2026)
+
+- **Dictionary is gone as a destination.** Words is now **Look up** (create a
+  phrase) plus **My terms**, which carries three tabs: **Find words**, **Saved
+  words** (with count), **Looked up** (with count).
+- **Find words** is the old dictionary search and save form. Each result is one
+  row now: word, gloss, audio, `Add the sentence` behind a quiet disclosure,
+  **Save word**. That removed the always-open context input that made every
+  result two rows tall.
+- Tabs are server-rendered links with `aria-current="page"` (`.tab-bar` /
+  `.tab` / `.tab-count`), so they deep-link (`?tab=find|terms|lookups`) and work
+  without JavaScript. The bar scrolls instead of wrapping under 37.5rem.
+- The default tab is **Saved words** when anything is saved, otherwise **Looked
+  up**; **Find words** is reachable from either empty state and from the tab bar.
+- `/dictionary` (and the `main.dictionary` endpoint) 302-redirects to
+  `/library?tab=find`, preserving `q`, `type`, `browse`, `level`, and `saved`, so
+  old links, the Resources quick card, and the post-save redirect all still land.
+- The Words nav group is two items; `dictionary.html` was deleted and its markup
+  now lives in `app/templates/_find_words.html`.
+- 340 tests pass; ruff clean. `ASSET_VERSION` → `20261126r13`. Checked at 1456px
+  and 390px.
+
+### Phrase rows: play + open, more on the line (26 November 2026)
+
+- Each lookups row now carries a round **play button** so the audio plays
+  without opening the row, and a round **caret button** on the right as the
+  visible open control (the whole row still toggles). The play button sits
+  inside `<summary>`, so its click calls `preventDefault()`; verified the row
+  stays closed while a 1s clip plays, and the icon switches to pause bars.
+- Desktop rows show the transliteration and, for Amharic casual phrases, the
+  addressee (“To a woman”). Formal rows omit it because formal is not gendered;
+  the expanded body still says so in words. Both are hidden under 37.5rem to
+  keep the mobile row on one line.
+- `app.js` gained a delegated `.phrase-entry-play` handler (play/pause, `ended`
+  resets the icon); the row keeps working without JavaScript through the native
+  `<details>`.
+- 340 tests pass; ruff clean. `ASSET_VERSION` → `20261126r15`. Checked at
+  1456px and 390px.
+
+### Amharic voice teacher, shorter turns, suggested lines (26 November 2026)
+
+- The live Teacher now runs in **Amharic** as well as Korean. `TEACHER_LANGUAGES`
+  in `app/services/teacher.py` holds the per-language speech name, politeness
+  rule, greeting, and transcription setting; `_session_language()` resolves the
+  session's language and old rows fall back to Korean.
+  - Practice is visible for Amharic with **Teacher** only; Scenes and Sound Gym
+    stay Korean-only. `/am/learn/teacher` no longer redirects.
+  - Korean names its transcription language; Amharic relies on auto-detection so
+    an unsupported code cannot break a call.
+- Turns are short by construction: `max_output_tokens` went from **800 → 200**
+  (800 allowed roughly a minute of speech, which is why replies felt like
+  lectures) and the prompt now says “at most two short sentences and about 12
+  words”, with explanations pushed to the debrief.
+- New **“Show me a line I could say”** toggle on the Teacher page: when on, each
+  finished tutor turn requests one short line for the learner
+  (`POST /api/teacher/sessions/<id>/suggest`, 30/min, separate text call — never
+  the realtime session). The card shows the line, romanization, and English.
+  Off hides it and cancels any in-flight request; the preference is stored in
+  `localStorage`.
+- 345 tests pass; ruff clean. `ASSET_VERSION` → `20261126r16`. Panel checked in
+  Chrome at 1456px; a live Amharic call is still an unspent manual check.
+
+### Review fixes (26 November 2026)
+
+- **Accessibility:** the phrase play button is a sibling of `<details>`, not a
+  child of `<summary>`. Nesting it folded its label into the summary's accessible
+  name, so every row announced "Play pronunciation for …" twice. The accessibility
+  tree now reads `button "Play pronunciation for …"` then
+  `group "… Formal" [expanded=false]`, and the label flips to "Pause" while it
+  plays.
+- **Teacher history** is scoped to the active language; Amharic no longer lists
+  Korean sessions.
+- **Saving from Find words** keeps `q`, `type`, `browse`, and `level` in the
+  redirect instead of dropping the browse context.
+- **Suggestion endpoint** returns 409 (not 502) before anything is said, and an
+  in-flight suggestion can no longer repaint a session that has ended.
+- **Tab badges** use an exact `COUNT` (`count_terms`) instead of the 200-row
+  `list_terms` limit, so they stop being wrong past 200 saved words.
+- **Turn length is configurable** (`TEACHER_MAX_OUTPUT_TOKENS`, default 200) so
+  a language that needs more room does not need a code change.
+- **Header CSS scoped** from bare `nav` to `.site-nav`; a `<nav>` element no
+  longer inherits the blue bar. The tab bar and other future navs are safe.
+- The teacher scaffold is demoed on `/design`; its explainer hides when the
+  switch is off.
+- 348 tests pass; ruff clean. `ASSET_VERSION` → `20261126r18`.
+- Still open by choice: the toggle checkbox renders checked for one frame before
+  a stored "off" preference applies, and the Amharic voice quality remains
+  unverified until a live call.
+
+### Korean strings leaking into Amharic (26 November 2026)
+
+- `/am/learn/teacher` still said **“Connected. Say hello in Korean.”** The status
+  text was hardcoded in `teacher.js`; the page now carries
+  `data-speech-name` / `data-greeting` from `TEACHER_LANGUAGES` and announces
+  “Connected. Say ‘ሰላም’.” (Korean keeps 안녕하세요).
+- `create_drill` prompts said **“Say in Korean: …”** for every language; they now
+  name the session's language (“Say in Amharic: …”).
+- The `lookup_dictionary` tool description said “Korean dictionary”, and the
+  handler itself **was not language-scoped** — an Amharic session could be handed
+  Korean items. The query now filters `Item.language_id` to the session's
+  language (null-language rows still allowed, matching `_find_item`).
+- 351 tests pass; ruff clean. `ASSET_VERSION` → `20261126r19`.
+
+### Tutor translations and reply diagnostics (26 November 2026)
+
+- Every tutor line in the live transcript now carries a short **English
+  translation** underneath it, in italics. It is fetched from one text call per
+  tutor turn (`POST /api/teacher/sessions/<id>/coach`), which also returns the
+  suggested reply — so the English you read is the same call that suggests what
+  you could say, not a second model round trip.
+- The **“Show me a line I could say”** switch now only hides the suggested line;
+  translations stay on. The reply card still shows target text, romanization, and
+  English gloss.
+- **Silent failures are now visible.** A dropped or cut reply shows
+  “Kiku's reply was cut short” (response `incomplete`) or “Kiku could not answer
+  that” (`failed`) instead of nothing. If a learner turn gets no tutor turn for
+  15 seconds, the status explains that speaker feedback or a dropped call is the
+  likely cause. The first-visit help now recommends headphones.
+- `suggest_reply` / `/suggest` became `coach_reply` / `/coach` and return
+  `translation`, `target`, `romanization`, `gloss`.
+- 351 tests pass; ruff clean. `ASSET_VERSION` → `20261126r20`.
+- The “replies stopped” report itself is still unexplained in the logs: the fix
+  here is detection and guidance, not a proven root cause. One live session with
+  headphones would settle it.
+
+### Why the teacher went silent mid-lesson (26 November 2026)
+
+Found from the stored sessions rather than guesswork: in session 7 the learner
+took five turns in a row with **no tutor turn at all**, and every tutor turn
+that did land was 25–32 Ethiopic characters, cut mid-word ("…የሚበል",
+"…የገን", "እኔ ካል").
+
+- **Output budget was starving Amharic.** Ethiopic tokenizes badly; at the
+  200-token cap the model produced a few words, then stopped. Budgets are now
+  per language (`max_output_tokens`: Korean 600, Amharic 1200) and
+  `TEACHER_MAX_OUTPUT_TOKENS` still overrides both (0 = use per-language).
+  Brevity comes from the prompt ("about 12 words"), not from a cap that cuts
+  the audio off.
+- **The learner was cancelling the replies.** `interrupt_response` was on, so
+  each repeated attempt to say the same phrase cancelled the answer still being
+  generated — five learner turns, zero tutor turns. It is now off; a short reply
+  is allowed to finish.
+- **Transcription named the language.** Auto-detect returned Dhivehi (Thaana
+  script) for Amharic speech, which also poisoned the coach hint. The session
+  now sends `language: am` explicitly.
+- 351 tests pass; ruff clean. No front-end change.
+- Unverified until the next live call: whether `gpt-transcribe` accepts `am`
+  (if session creation fails, set `TEACHER_TRANSCRIBE_MODEL` to a model that
+  supports Amharic) and how the 1200-token budget sounds in practice.
+
+### Amharic transcription is not supported by the provider (26 November 2026)
+
+The “Realtime session rejected (400)” came from naming the language:
+`session.audio.input.transcription.language = "am"` is **not a valid value**. The
+provider's accepted list is `af, ar, az, be, bg, bs, ca, cs, cy, da, de, el, en,
+es, et, fa, fi, fr, gl, he, hi, hr, hu, hy, id, is, it, iw, ja, kk, kn, ko, lt,
+lv, mi, mk, mr, ms, ne, nl, no, pl, pt, ro, ru, sk, sl, sr, sv, sw, ta, th, tl,
+tr, uk, ur, vi, zh` — Amharic is absent, and `whisper-1` and `gpt-4o-transcribe`
+reject it in the realtime endpoint too. (Verified by posting the session config
+to `/v1/realtime/calls`: `am` → 400 `invalid_value`, no language → 201.)
+
+- `SUPPORTED_TRANSCRIPTION_LANGUAGES` mirrors that list. A language is sent only
+  when it is on it; Amharic relies on auto-detection (which can mislabel it —
+  one turn came back in Thaana script), so the coach hint now says learner turns
+  are rough phonetic transcripts and to read them for meaning.
+- Amharic session config now passes provider validation (201) alongside Korean.
+- Provider rejections now carry the provider's own message into the 502 the UI
+  shows, instead of “The realtime provider rejected the session”.
+- 351 tests pass; ruff clean. No front-end change.
+
+### Voice teacher hardening (26 November 2026)
+
+Evidence-driven pass over the live teacher; full write-up in
+`docs/research/11-teacher-session-forensics-2026-11-26.md`, best practices in
+`docs/research/10-realtime-voice-ux-2026.md`.
+
+- **Session accounting is correct.** `expire_if_over_limit` charges the cap
+  instead of wall-clock time. A browser closed mid-call used to leave the row
+  active and bill the whole gap, exhausting the daily minutes.
+- **Calls close on drop.** Data-channel close and `connectionstatechange`
+  `failed`/`disconnected` close the session server-side and reset the controls.
+- **The cap is visible.** `create_session` returns `expires_at` and
+  `max_minutes`; the client ends the lesson at the cap; the page no longer says
+  “Seven minutes” against a 15-minute limit.
+- **Turn detection is tuned for learners**: threshold 0.4, 900 ms silence,
+  configurable (`TEACHER_VAD_THRESHOLD`, `TEACHER_VAD_PREFIX_MS`,
+  `TEACHER_VAD_SILENCE_MS`).
+- **Amharic prompt** forbids English inside Amharic sentences, anchors to deck
+  phrases, and asks for slower repetition instead of translation.
+- **Transcript follows the conversation**: stick-to-bottom on new turns, live
+  partials, and late translations, with a 48 px threshold so scrolling up is
+  respected. `aria-live` moved off the list to a single `role="status"`
+  announcer; “Kiku is speaking…” is set once per response.
+- **Tool calls** get an 8 s abort, retry only when read-only, and any unexpected
+  handler error becomes a tool error rather than an HTML 500.
+- `env.example` documents the new knobs. 356 tests pass; ruff clean.
+  `ASSET_VERSION` → `20261126r23`.
+- Still open by design: Amharic voice quality (provider does not list the
+  language), session resume, and latency instrumentation.
+
+### Gemini Live provider seam (26 November 2026)
+
+- New `app/services/teacher_gemini.py`: Live `setup` payload built from the same
+  language-scoped prompt and tools, Gemini function declarations converted from
+  the shared schemas, and ephemeral-token minting with
+  `liveConnectConstraints` (config locked server-side, key never leaves the
+  server).
+- `TEACHER_PROVIDER=gemini_live` selects it; `create_session` skips SDP
+  validation for the websocket transport and the route merges the provider
+  handle (`transport`, `url`, `token`, `token_expires_at`) into the response.
+- The browser transport is **not wired**: selecting Gemini today shows an
+  explicit message instead of hanging. The OpenAI path is unchanged and remains
+  the default.
+- 361 tests pass (5 new, all fake-network); ruff clean. Written against the
+  published API shape, unverified without a key — see
+  `docs/research/12-gemini-live-adapter.md`.
+
+### Gemini Live transport completed (26 November 2026)
+
+- The browser transport landed: `teacher.js` branches on the page's
+  `data-provider`; the Gemini path opens the constrained WebSocket, captures
+  16 kHz PCM16 from the microphone through Web Audio, plays 24 kHz PCM chunks
+  with scheduled `AudioBufferSourceNode`s, maps `serverContent`,
+  `inputTranscription`/`outputTranscription`, `turnComplete`, `interrupted`,
+  `toolCall`, and `goAway`, and reuses the existing transcript, coach hint,
+  expiry, and debrief code.
+- Verified against the live API with a real key: token minted, `setup`
+  accepted, audio chunks and an Amharic transcript returned. Three payload
+  fields were wrong until the live endpoint rejected them —
+  `bidiGenerateContentSetup` (not `liveConnectConstraints`), `speechConfig`
+  inside `generationConfig`, and the `*_SENSITIVITY_HIGH/LOW` enum names.
+- `TEACHER_PROVIDER=gemini_live` is now a working switch; OpenAI stays the
+  default until a microphone test confirms the browser path.
+- 361 tests pass; ruff clean. `ASSET_VERSION` → `20261126r26`.
+
+### Speaker mode: state, mic level, countdown (26 November 2026)
+
+The design-review slice for the live Teacher:
+
+- **State chip** beside the call buttons — `Ready`, `Connecting`, `Listening`,
+  `Kiku speaking`, `Needs attention`, `Offline` — colour plus text (never colour
+  alone). The status line now carries detail only. Failure and drop states
+  survive teardown instead of snapping back to `Ready`.
+- **Microphone level meter** driven from the call's own mic stream
+  (`AnalyserNode` + RMS, `requestAnimationFrame`, `scaleX` so it is
+  compositor-only). Works for both transports: the Gemini path reuses its
+  `AudioContext`, the WebRTC path owns a short-lived one. It answers "is it
+  hearing me?" in the first second of a call.
+- **Countdown** to the server's `expires_at` (`mm:ss`, tabular numerals, red in
+  the last minute), so the 15-minute cap reads as a limit instead of a crash.
+- **Action emphasis follows the call**: `Start speaking` is primary before,
+  `End lesson` is primary during, restored on teardown.
+- 361 tests pass; ruff clean. `ASSET_VERSION` → `20261126r29`. Checked at 1456px
+  and 390px with simulated states (a live mic call is still the unverified part).
+
+### Code review pass on speaker mode (26 November 2026)
+
+Fixed during the review:
+
+- The lesson **countdown interval leaked**: `stopClock()` was only called when
+  re-scheduling, so a finished call kept a 1 s timer alive for the life of the
+  tab. `teardown()` now clears it.
+- **Closing the tab left the session row active**, which burned the rest of the
+  daily minutes. `pagehide` now posts `/close` with `fetch(..., keepalive)`.
+- The mic meter never **disconnected its `MediaStreamSource`**; it is tracked and
+  torn down now.
+- The state chip and the status line were **both live regions**, double
+  announcing every change. The chip is visual; the status line keeps
+  `role="status"` so error detail is still read.
+- **Prompt construction was duplicated** between providers (Gemini rebuilt the
+  whole OpenAI config just to read the instructions, then re-appended the style
+  line). `_instructions()` in `teacher.py` is now the single source, used by
+  both; verified by tests and a live Gemini `setupComplete`.
+- Removed a dead `pendingToolCalls` counter.
+
+Open findings, recorded but not fixed:
+
+- **Coach hint still uses the OpenAI text model** even when
+  `TEACHER_PROVIDER=gemini_live`; with only a Gemini key, translations and
+  suggested lines return 503.
+- The Gemini **`session_config` ships to the browser**, so the system prompt and
+  tool schemas are visible in devtools (the token already carries them
+  server-side; a minimal `setup` would close this).
+- Gemini **output sample rate is assumed 24 kHz**; parse the `mimeType` from
+  `inlineData` if the API ever negotiates something else.
+- **`ScriptProcessorNode`** is deprecated (works everywhere today; move to an
+  `AudioWorklet` after the live test).
+- No **Gemini session resume**: `goAway` only updates the status.
+- **Tool-call dedupe is OpenAI-only**; Gemini's `toolCall` has no idempotency
+  guard on the client.
+- No JS test harness in the repo, so `teacher.js` changes are verified by hand.
+
+361 tests pass; ruff clean.
+
+### Review fixes: provider-agnostic coach, worklet, CSP (26 November 2026)
+
+- **Coach hint uses the active provider.** `coach_reply()` calls Gemini's text
+  API when `TEACHER_PROVIDER=gemini_live`, so translations and suggested lines
+  no longer depend on an OpenAI key.
+- **The Gemini prompt stays server-side**: the token is constrained to the full
+  setup, and the browser now sends `{setup: {model}}` (verified live).
+- **`connect-src` allows `wss://generativelanguage.googleapis.com`** — the
+  previous CSP would have blocked the Gemini socket entirely.
+- **AudioWorklet mic tap** (`static/js/pcm-worklet.js`, 2048-frame batches) with
+  a ScriptProcessor fallback; playback parses the chunk's own sample rate.
+- `goAway` finishes the lesson and loads the debrief; Gemini tool calls are
+  deduped by call id; `teardown(keepState)` replaces DOM sniffing.
+- Tests never inherit the machine's provider: `TestingConfig` pins
+  `TEACHER_PROVIDER=openai_realtime` and clears `GEMINI_API_KEY`.
+- 363 tests pass; ruff clean. `ASSET_VERSION` → `20261126r32`.
+- Not covered here: session resume, and audio-rate behaviour of the worklet
+  (the headless tab throttles the audio graph, so batching is verified by code
+  inspection only).
+
+### Speaker polish and production handoff (26 November 2026)
+
+Speaker mode:
+
+- **Recent sessions is a summary, not a log.** Each row shows plan, date,
+  duration, and turn count; failed starts are labelled “didn't connect” with a
+  danger chip instead of a bare `0 turns · failed` line.
+- **The debrief replaces the call panel** when a lesson ends (no more debrief
+  stacked under a dead transcript), with **Start another lesson** to return to
+  the idle panel.
+- **In-call quick actions**: “Say that slower” and “Say that again” send a text
+  turn on either transport (OpenAI `conversation.item.create` + `response.create`;
+  Gemini `clientContent`), so a beginner does not need target-language speech to
+  ask for help.
+- History rows, quick actions, and the meter/chip states are all token-based;
+  `ASSET_VERSION` → `20261126r35`.
+
+Learning:
+
+- **Recognition graduates to production.** On a good review (rating ≥ 3) of a
+  recognizable lexeme whose recognize card has ≥ 3 reps and is scheduled ≥ 7
+  days out, `maybe_add_production_card()` queues the same item as a `produce`
+  card — once. Config: `PRODUCTION_HANDOFF_REPS`, `PRODUCTION_HANDOFF_DAYS`.
+  Three tests: graduation, thresholds, idempotency.
+- The new card is not announced in the UI yet; it simply appears in review.
+
+366 tests pass; ruff clean.
+
+### Listen-first review and an audio deck quiz (27 November 2026)
+
+Two of the highest-value learning gaps from the design review:
+
+- **Listen-first review.** Cards whose prompt is in the target language and that
+  ship recorded audio (Amharic today) get a **Listen first** toggle above the
+  card. On, the written prompt is blurred, the clip autoplays, and revealing the
+  answer unblurs it — a perception task instead of reading. The choice persists
+  in `localStorage` (`kiku-review-listen`), is off by default, and the toggle is
+  hidden when the card has no audio. Screen readers still read the prompt, so
+  this is a visual/audio scaffold rather than an audio-only lock.
+- **Listening practice** at `/<lang>/learn/listen` (Learn nav, Amharic only for
+  now, because Korean items carry no stored clips). Eight questions sampled from
+  the deck's audio items; each plays a clip and offers four English glosses.
+  Answers are scored server-side against a quiz held in the session; the result
+  page lists the misses with the correct word and gloss. `record_event` logs
+  opens and submissions. Tests cover the page, a perfect round, a wrong round,
+  and the no-audio redirect.
+- Documented in `docs/DESIGN.md` and demoed on `/design`.
+- 370 tests pass; ruff clean. `ASSET_VERSION` → `20261126r36`.
+
+Already in place before this pass: the Progress page's **7+/30+ day delayed
+retention** figures (`retention_signal`). Still missing is an *unrehearsed*
+cold check — its score would need its own table so it does not disturb FSRS.
+
+### Why no suggested lines appeared on Gemini (27 November 2026)
+
+Session 11 (Gemini, 41 s) stored **zero turns**, and the server log had no
+`/turns` or `/coach` calls. Two causes, both fixed:
+
+- **Gemini never sends a `finished` flag on transcription events.** The client
+  only finalized a line on `finished`, so nothing was appended, saved, or sent
+  to the coach hint. A live capture confirmed the payload is just
+  `{"text": "…"}` chunks plus `turnComplete`. `finalizeGeminiTurn()` now closes
+  both lines and persists them on `turnComplete`, then requests the coach hint.
+- **The Gemini text model was busy.** `gemini-3.8-flash` returned “currently
+  experiencing high demand”, which the client treated as a silent failure.
+  `json_completion()` now retries transient responses (429/5xx) on
+  `gemini-3.7-flash` and then `gemini-3.1-flash-lite`, and the suggestion card
+  says **“Couldn't suggest a line just now.”** with a **Try again** button
+  instead of disappearing.
+
+Verified live: the coach call returns `{"translation": "Good morning. How are
+you?", "target": "ደህና ነኝ፣ አመሰግናለሁ።", …}`. 371 tests pass (one new fallback test);
+ruff clean. `ASSET_VERSION` → `20261126r37`.
+
+### Suggested line arriving one turn late (27 November 2026)
+
+Session 12's log showed the coach call taking **12–23 seconds**: the hint asked
+`gemini-3.8-flash`, which was answering 503 “high demand” after ~8 s, then
+retried on another busy model. By the time the JSON came back the learner had
+already heard the next reply, so the card showed the answer to the previous
+turn.
+
+- The hint now defaults to **`gemini-3.1-flash-lite`** (measured 0.63–1.1 s for
+  the same prompt) with `thinkingBudget: 0`, `maxOutputTokens: 200`, an 8 s
+  per-attempt ceiling, and fallbacks to `gemini-3.8-flash` / `gemini-3.6-flash`
+  only if the lite model is unavailable.
+- The client **clears the card the moment a new tutor turn lands**, and a coach
+  response only paints if its turn is still the latest — so a late answer can no
+  longer masquerade as advice for the current question.
+- 371 tests pass; ruff clean. `ASSET_VERSION` → `20261126r38`.
+
+### Newest-first transcript, and honest teaching (27 November 2026)
+
+- **The transcript is newest-first.** Turns are inserted at the top (the
+  server-rendered empty state is removed on the first turn) instead of appended
+  with auto-scroll, so the live line is always visible and there is no scroll
+  position to chase. Live partials follow the same rule.
+- **Prompt: teach the sound.** Added to the shared teacher instructions:
+  recast an imperfect-but-understandable sentence once and ask for a repeat;
+  every few turns model one word slowly, syllable by syllable; and say plainly
+  when a word was not understood rather than guessing.
+- **Log review of session 13** (15:20, 3 turns): no warnings or errors; coach
+  calls returned in ~1 s three times and once in 8 s. The 17–29 s gaps between
+  turn batches line up with pauses in the audio, not server stalls. No server
+  failure to fix, so the “hang” remains a client/audio-side observation that a
+  live session with the browser console open would settle.
+- The learner transcript showing Spanish (“¿De qué hablan en Nantes?”) is the
+  provider gap: Amharic transcription is not supported, auto-detect guesses.
+  Kiku hears the audio; only the on-screen text and the coach hint read the
+  guess.
+- 372 tests pass; ruff clean. `ASSET_VERSION` → `20261126r39`.
+
+### Kiku ignoring what the learner said (27 November 2026)
+
+Session 14 showed the shape of the problem: the learner’s lines were transcribed
+as Spanish/Korean (`¿Qué?`, `De nada.`, `나는 내일…`) because Amharic speech
+recognition is unsupported, Kiku answered with generic questions instead of the
+learner’s content, and the suggested line was *“Sorry, I cannot speak Amharic.”*
+
+- **Prompt now scaffolds instead of guessing.** Kiku puts a short English gloss
+  in parentheses after every Amharic sentence until the learner answers in
+  Amharic twice in a row; if the learner answers in English, it acknowledges the
+  meaning, gives the Amharic phrase, and asks for a repeat instead of repeating
+  its own question. It is also told never to speak twice in a row.
+- **The coach hint prefers the tutor’s question.** It is told learner lines are
+  machine transcripts that are often wrong, to answer the tutor’s last question
+  when they look garbled, and never to suggest apologising for not speaking the
+  language or ending the conversation.
+- 373 tests pass (two new prompt assertions); ruff clean.
+- Root cause of the mismatched transcript remains the provider gap: Gemini’s
+  realtime transcription does not accept `am`. The model hears the audio; only
+  the on-screen transcript and the hint read the guess.

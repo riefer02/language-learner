@@ -71,6 +71,53 @@ document.addEventListener("click", function (e) {
   playAudioWithFallback(audio);
 });
 
+// Play a looked-up phrase straight from its collapsed row. The button lives
+// inside <summary>, so the click must not also open the row.
+document.addEventListener("click", function (e) {
+  const playBtn = e.target.closest(".phrase-entry-play");
+  if (!playBtn) {
+    return;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const entry = playBtn.closest(".phrase-entry");
+  const audio = entry ? entry.querySelector("audio") : null;
+  if (!audio) {
+    return;
+  }
+
+  function setLabel(playing) {
+    const label = playing
+      ? playBtn.dataset.labelPause
+      : playBtn.dataset.labelPlay;
+    if (label) {
+      playBtn.setAttribute("aria-label", label);
+    }
+  }
+
+  if (!audio.paused) {
+    audio.pause();
+    playBtn.classList.remove("is-playing");
+    setLabel(false);
+    return;
+  }
+
+  audio.currentTime = 0;
+  audio.addEventListener(
+    "ended",
+    function () {
+      playBtn.classList.remove("is-playing");
+      setLabel(false);
+    },
+    { once: true }
+  );
+  playBtn.classList.add("is-playing");
+  setLabel(true);
+  playAudioWithFallback(audio);
+});
+
 // Handle keyboard accessibility
 document.addEventListener("keydown", function (e) {
   // Space or Enter on repeat buttons

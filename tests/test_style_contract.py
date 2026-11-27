@@ -15,7 +15,7 @@ TEMPLATE_DIR = Path(__file__).resolve().parents[1] / "app" / "templates"
 # Current debt after the first token sweep. These may go down, never up.
 MAX_UNIQUE_HEX = 13
 MAX_HEX_DECLARATIONS = 18
-MAX_RAW_PX = 509
+MAX_RAW_PX = 508
 MAX_RAW_RGB = 33
 MAX_NAMED_WHITE = 40
 

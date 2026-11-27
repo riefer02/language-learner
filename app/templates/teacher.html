@@ -2,20 +2,32 @@
 {% block title %} - Teacher{% endblock %}
 {% block content %}
 {% from "_macros.html" import page_help %}
-<div class="teacher" id="teacher-app" data-session-active="0">
+<div
+  class="teacher"
+  id="teacher-app"
+  data-session-active="0"
+  data-provider="{{ provider }}"
+  data-worklet-url="{{ url_for('static', filename='js/pcm-worklet.js') }}?v={{ asset_version }}"
+  data-speech-name="{{ speech_name }}"
+  data-greeting="{{ speech_language }}"
+>
   <div class="page-head">
     <div>
       <p class="learn-eyebrow">Speaking teacher</p>
       <h2>Talk to Kiku.</h2>
       <p class="learn-meta">
-        Seven minutes. Microphone only. No raw audio stored.
+        Up to {{ max_minutes }} minutes. Microphone only. No raw audio stored.
       </p>
     </div>
     {% call page_help("kiku-help-teacher", "Before your first call") %}
       <h3>Before your first call</h3>
       <ol>
         <li>Allow the microphone when Chrome asks; the call uses it directly.</li>
-        <li>Say “안녕하세요” and let Kiku lead. Ask for a drill when you want one.</li>
+        <li>Say “{{ speech_language }}” and let Kiku lead. Ask for a drill when you want one.</li>
+        <li>
+          Use headphones if you can: on speakers Kiku can hear itself and cut
+          its own reply short.
+        </li>
         <li>At the end, check the debrief and add drills to your review queue.</li>
       </ol>
       <h3>What can I ask?</h3>
@@ -23,16 +35,15 @@
         <li>“What does this word mean?” — it searches your dictionary.</li>
         <li>“Give me two drills for these words.” — it creates short drills.</li>
         <li>“Save that.” — it adds the term with your sentence.</li>
-        <li>“Slower, please.” — it changes pace without leaving Korean.</li>
+        <li>“Slower, please.” — it changes pace without leaving the language.</li>
       </ul>
     {% endcall %}
   </div>
 
   {% if not voice_supported %}
   <div class="teacher-warning">
-    The live voice teacher is Korean-only for now. Amharic uses the review
-    deck and the fidel bootcamp; a spoken Amharic teacher needs speech models
-    that OpenAI does not currently offer.
+    The live voice teacher speaks Korean and Amharic for now. Other languages
+    use the review deck and drills.
   </div>
   {% endif %}
 
@@ -43,7 +54,7 @@
   </div>
   {% endif %}
 
-  <section class="teacher-panel" aria-label="Teacher call">
+  <section class="teacher-panel" id="teacher-call-panel" aria-label="Teacher call">
     <div class="teacher-controls">
       <label for="teacher-plan">Today's plan</label>
       <select id="teacher-plan">
@@ -64,31 +75,88 @@
       <button type="button" class="btn" id="teacher-stop" disabled>
         End lesson
       </button>
+      <div class="teacher-live" id="teacher-live">
+        <span class="teacher-state" id="teacher-state" data-state="idle"
+          >Ready</span
+        >
+        <span
+          class="teacher-countdown"
+          id="teacher-countdown"
+          hidden
+          aria-label="Time left in the lesson"
+        >00:00</span>
+      </div>
+      <div
+        class="teacher-meter"
+        id="teacher-meter"
+        role="img"
+        aria-label="Microphone level"
+        hidden
+      >
+        <span class="teacher-meter-fill" id="teacher-meter-fill"></span>
+      </div>
     </div>
 
     <p class="teacher-status" id="teacher-status" role="status">
       Ready when you are. Allow the microphone, then start.
     </p>
 
+    <div class="teacher-quick" id="teacher-quick" hidden>
+      <button type="button" class="btn" id="teacher-slower">Say that slower</button>
+      <button type="button" class="btn" id="teacher-repeat">Say that again</button>
+    </div>
+
+    <div class="teacher-suggest">
+      <label class="teacher-suggest-toggle" for="teacher-suggest-toggle">
+        <input type="checkbox" id="teacher-suggest-toggle" checked />
+        Show me a line I could say
+      </label>
+      <p class="learn-meta" id="teacher-suggest-help">
+        On while you are learning the pattern. Turn it off when you want to
+        answer on your own.
+      </p>
+      <div
+        class="teacher-suggestion"
+        id="teacher-suggestion"
+        aria-live="polite"
+        hidden
+      >
+        <p class="learn-meta">Try saying</p>
+        <p class="teacher-suggestion-target" id="teacher-suggestion-target"></p>
+        <p class="learn-meta" id="teacher-suggestion-romanization"></p>
+        <p class="learn-meta" id="teacher-suggestion-gloss"></p>
+        <p class="learn-meta" id="teacher-suggestion-error" hidden>
+          Couldn't suggest a line just now.
+        </p>
+        <button type="button" class="btn" id="teacher-suggestion-retry" hidden>
+          Try again
+        </button>
+      </div>
+    </div>
+
     <audio id="teacher-audio" autoplay controls hidden></audio>
 
     <div class="teacher-transcript-wrap">
       <h3 id="teacher-transcript-heading">Live transcript</h3>
       <p class="learn-meta">
-        You and Kiku appear here as you speak. Nothing is spoken until you
-        start the call.
+        You and Kiku appear here as you speak. Your lines are auto-transcribed
+        and can be rough; Kiku hears the audio, not this text.
       </p>
       <ol
         class="teacher-transcript"
         id="teacher-transcript"
         aria-labelledby="teacher-transcript-heading"
-        aria-live="polite"
-        aria-relevant="additions text"
       >
         <li class="teacher-empty learn-meta">
           Your words will appear here after you start.
         </li>
       </ol>
+      <p
+        class="sr-only"
+        id="teacher-announcer"
+        role="status"
+        aria-live="polite"
+      ></p>
     </div>
   </section>
 
@@ -102,19 +170,30 @@
       Drills that you finish become review cards. Saved terms are waiting in
       your library.
     </p>
+    <p>
+      <button type="button" class="btn btn-primary" id="teacher-again">
+        Start another lesson
+      </button>
+    </p>
   </section>
 
   {% if sessions %}
   <section class="teacher-history">
     <h3>Recent sessions</h3>
-    <ul>
+    <ul class="teacher-history-list">
       {% for item in sessions %}
       <li>
         <b>{{ item.plan_title }}</b>
         <span class="learn-meta">
-          {{ item.started_at.strftime('%d %b %H:%M') }} ·
-          {{ item.turn_count }} turns · {{ item.status }}
+          {{ item.when }}
+          {% if item.minutes %}· {{ item.minutes }} min{% endif %}
+          {% if item.turns %}· {{ item.turns }} turn{% if item.turns != 1 %}s{% endif %}{% endif %}
         </span>
+        {% if item.status_label %}
+        <span class="teacher-history-state" data-state="{{ item.status }}">
+          {{ item.status_label }}
+        </span>
+        {% endif %}
       </li>
       {% endfor %}
     </ul>

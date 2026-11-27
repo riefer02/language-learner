@@ -9,7 +9,7 @@ import hashlib
 import json
 import os
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import httpx
 from flask import current_app
@@ -26,8 +26,9 @@ from app.learning.service import (
     local_day_bounds,
 )
 from app.models import Item, ReviewCard
-from app.models_language import TermCard
+from app.models_language import Language, TermCard
 from app.models_teacher import Drill, DrillAttempt, TeacherSession, TeacherTurn
+from app.services.ai import OpenAIConfigError, get_openai_client
 from app.utils.text import normalize_text, similarity
 
 REALTIME_CALLS_URL = "https://api.openai.com/v1/realtime/calls"
@@ -52,6 +53,65 @@ PLANS = {
 }
 
 
+# Languages the live voice teacher can hold a conversation in. The prompt and
+# the transcription language follow the session's language; everything else
+# (tools, drills, debrief) is language-neutral.
+TEACHER_LANGUAGES = {
+    "ko": {
+        "name": "Korean",
+        "level_hint": "TOPIK 1-2",
+        "greeting": "안녕하세요",
+        "politeness": (
+            "Model polite 해요 forms; use casual 반말 only if the learner does."
+        ),
+        "transcription_language": "ko",
+        "max_output_tokens": 600,
+        "style": (
+            "Keep sentences short and repeatable, and stay in 해요 speech with a "
+            "beginner unless they use 반말 first."
+        ),
+    },
+    "am": {
+        "name": "Amharic",
+        "level_hint": "beginner",
+        "greeting": "ሰላም",
+        "politeness": (
+            "Use እርስዎ and plural agreement with adults the learner does not "
+            "know, and አንተ/አንቺ everyday forms only if the learner does."
+        ),
+        "transcription_language": "am",
+        # Ethiopic tokenizes badly: 200 tokens bought about five words and cut
+        # every reply mid-word, which read as "it stopped answering".
+        "max_output_tokens": 1200,
+        "style": (
+            "Use short, simple Amharic a beginner can repeat, anchored in the "
+            "learner's deck phrases: ሰላም, አመሰግናለሁ, እባክህ/እባክሽ, ደህና ሁን. Never mix "
+            "English words into an Amharic sentence except a two-word gloss in "
+            "parentheses. If the learner does not understand, repeat the same "
+            "sentence slower and simpler instead of switching to English for the "
+            "whole turn. Do not invent words; if you are unsure of a form, use a "
+            "simpler sentence you are sure of."
+        ),
+    },
+}
+
+SUPPORTED_TEACHER_LANGUAGES = frozenset(TEACHER_LANGUAGES)
+
+# Languages the realtime transcription endpoint accepts. Amharic is not on the
+# list (the provider answers 400 `invalid_value`), so Amharic sessions omit the
+# language and rely on auto-detection. Keep this in sync with the provider's
+# error message rather than guessing: a wrong code fails session creation.
+SUPPORTED_TRANSCRIPTION_LANGUAGES = frozenset(
+    {
+        "af", "ar", "az", "be", "bg", "bs", "ca", "cs", "cy", "da", "de", "el",
+        "en", "es", "et", "fa", "fi", "fr", "gl", "he", "hi", "hr", "hu", "hy",
+        "id", "is", "it", "iw", "ja", "kk", "kn", "ko", "lt", "lv", "mi", "mk",
+        "mr", "ms", "ne", "nl", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr",
+        "sv", "sw", "ta", "th", "tl", "tr", "uk", "ur", "vi", "zh",
+    }
+)
+
+
 class TeacherError(RuntimeError):
     """Base error for teacher operations."""
 
@@ -62,6 +122,10 @@ class TeacherConfigError(TeacherError):
 
 class TeacherProviderError(TeacherError):
     """Raised when the realtime provider rejects a session."""
+
+
+class TeacherNotReadyError(TeacherError):
+    """Raised when an action needs the session to have said something first."""
 
 
 class TeacherLimitError(TeacherError):
@@ -89,32 +153,57 @@ def _item_payload(item):
     }
 
 
-def _session_config(session, learner_name="Learner"):
-    model = current_app.config.get(
-        "TEACHER_MODEL", "gpt-realtime-2.1-mini"
-    )
-    voice = current_app.config.get("TEACHER_VOICE", "marin")
-    transcribe_model = current_app.config.get(
-        "TEACHER_TRANSCRIBE_MODEL", "gpt-transcribe"
-    )
-    plan = PLANS.get(session.plan_slug, PLANS["free_talk"])
+def _session_language(session):
+    """Return ``(code, spec)`` for the language this session teaches.
 
-    instructions = (
-        f"You are Kiku, a warm Korean speaking tutor. The learner is {learner_name}, "
-        "an English-speaking beginner (TOPIK 1-2). Today's plan: "
-        f"{plan['title']} — {plan['focus']}.\n\n"
+    Falls back to Korean when the session predates language-scoped teachers, so
+    old rows keep working.
+    """
+    code = "ko"
+    if session is not None and session.language_id is not None:
+        language = db.session.get(Language, session.language_id)
+        if language is not None and language.code in TEACHER_LANGUAGES:
+            code = language.code
+    return code, TEACHER_LANGUAGES[code]
+
+
+def _instructions(session, learner_name="Learner"):
+    """The language-scoped teaching prompt. Shared by every provider."""
+    plan = PLANS.get(session.plan_slug, PLANS["free_talk"])
+    _code, target = _session_language(session)
+    name = target["name"]
+
+    return (
+        f"You are Kiku, a warm {name} speaking tutor. The learner is "
+        f"{learner_name}, an English-speaking beginner ({target['level_hint']}). "
+        f"Today's plan: {plan['title']} — {plan['focus']}.\n\n"
         "How to run the session:\n"
-        "- Speak Korean first, slowly and naturally, then give a short English "
-        "gloss only when the learner seems stuck. Aim for 70-80% Korean.\n"
+        f"- Speak {name} first, slowly and naturally. Put a short English gloss "
+        f"in parentheses after every {name} sentence until the learner has "
+        f"answered in {name} twice in a row; after that, gloss only when they "
+        f"seem stuck. Aim for 70-80% {name}.\n"
+        "- If the learner answers in English or another language, do not repeat "
+        f"your last question. Acknowledge what they meant in English, give the "
+        f"{name} phrase for it, and ask them to repeat it.\n"
+        "- Never speak twice in a row. If the learner is silent, wait; if you "
+        "must prompt, ask one short question.\n"
+        f"- {target['style']}\n"
+        "- Keep every turn to at most two short sentences and about 12 words. "
+        "One question at a time. If you feel like explaining, ask a question "
+        "instead; the explanation belongs in the debrief.\n"
         "- Ask one question at a time and wait for the learner to finish. Never "
         "talk over them; a long pause is fine.\n"
-        "- Correct by recasting: repeat the corrected Korean naturally in your next "
-        "turn, then continue. Make at most 3 explicit corrections in the whole "
-        "session, each one sentence.\n"
-        "- If the learner uses the wrong politeness level, model the polite form "
-        "once and move on.\n"
-        "- Keep your turns to 1-2 sentences. This is a 7-minute lesson, not a "
-        "lecture.\n"
+        "- Correct by recasting: repeat the corrected sentence naturally in your "
+        "next turn, then continue. Make at most 3 explicit corrections in the "
+        "whole session, each one sentence.\n"
+        "- Teach the sound, not only the meaning. When the learner's sentence is "
+        "understandable but imperfect, recast it once and ask them to say it "
+        "back. Every few turns, model one word slowly, syllable by syllable, "
+        "and have them repeat it.\n"
+        "- If you cannot make out a word, say so plainly and ask them to repeat "
+        "it slowly. Never guess a word you did not hear.\n"
+        f"- {target['politeness']} If the learner uses the wrong politeness "
+        "level, model the right one once and move on.\n"
         "- At the end, say one concrete thing they did well.\n\n"
         "Tools:\n"
         "- Use lookup_dictionary when the learner asks what a word means.\n"
@@ -128,26 +217,62 @@ def _session_config(session, learner_name="Learner"):
         "use a simpler sentence."
     )
 
+
+def _session_config(session, learner_name="Learner"):
+    model = current_app.config.get(
+        "TEACHER_MODEL", "gpt-realtime-2.1-mini"
+    )
+    voice = current_app.config.get("TEACHER_VOICE", "marin")
+    transcribe_model = current_app.config.get(
+        "TEACHER_TRANSCRIBE_MODEL", "gpt-transcribe"
+    )
+    instructions = _instructions(session, learner_name)
+    _code, target = _session_language(session)
+
+    # Name the language when the provider supports it. Amharic is not a valid
+    # transcription language here (the provider rejects the session with a 400
+    # invalid_value), so it relies on auto-detection.
+    transcription = {"model": transcribe_model}
+    if target["transcription_language"] in SUPPORTED_TRANSCRIPTION_LANGUAGES:
+        transcription["language"] = target["transcription_language"]
+
     return {
         "type": "realtime",
         "model": model,
         "instructions": instructions,
         "output_modalities": ["audio"],
-        "max_output_tokens": 800,
+        # Audio tokens are coarse: 800 allowed roughly a minute of speech, which
+        # is what made turns feel like lectures. Kept in config so a language
+        # that needs a little more room can be tuned without a code change.
+        "max_output_tokens": int(
+            current_app.config.get("TEACHER_MAX_OUTPUT_TOKENS")
+            or target["max_output_tokens"]
+        ),
         "audio": {
             "input": {
                 "noise_reduction": {"type": "near_field"},
-                "transcription": {
-                    "model": transcribe_model,
-                    "language": "ko",
-                },
+                "transcription": transcription,
                 "turn_detection": {
                     "type": "server_vad",
-                    "threshold": 0.5,
-                    "prefix_padding_ms": 300,
-                    "silence_duration_ms": 700,
+                    # A learner pauses mid-sentence and speaks softly. A lower
+                    # threshold catches them, and a longer silence window stops
+                    # one sentence being split into three turns.
+                    "threshold": float(
+                        current_app.config.get("TEACHER_VAD_THRESHOLD", 0.4)
+                    ),
+                    "prefix_padding_ms": int(
+                        current_app.config.get("TEACHER_VAD_PREFIX_MS", 300)
+                    ),
+                    "silence_duration_ms": int(
+                        current_app.config.get("TEACHER_VAD_SILENCE_MS", 900)
+                    ),
                     "create_response": True,
-                    "interrupt_response": True,
+                    # Beginners repeat themselves while the reply is still
+                    # being generated; interrupting cancelled the answer over
+                    # and over, which looked like the teacher going silent.
+                    "interrupt_response": bool(
+                        current_app.config.get("TEACHER_INTERRUPT_RESPONSE", False)
+                    ),
                 },
             },
             "output": {"voice": voice, "speed": 0.95},
@@ -202,7 +327,16 @@ class OpenAIRealtimeProvider:
                 response.status_code,
                 response.text[:300],
             )
-            raise TeacherProviderError("The realtime provider rejected the session")
+            detail = ""
+            try:
+                payload = response.json()
+                detail = (payload.get("error") or {}).get("message", "")
+            except ValueError:
+                detail = ""
+            raise TeacherProviderError(
+                "The realtime provider rejected the session"
+                + (f": {detail[:220]}" if detail else "")
+            )
 
         location = response.headers.get("Location", "")
         provider_id = location.rstrip("/").rsplit("/", 1)[-1] or None
@@ -213,6 +347,11 @@ def _provider():
     injected = current_app.extensions.get("teacher_provider")
     if injected is not None:
         return injected
+    if current_app.config.get("TEACHER_PROVIDER") == "gemini_live":
+        # Imported here: the Gemini module reuses this module's prompt and tools.
+        from app.services.teacher_gemini import GeminiLiveProvider
+
+        return GeminiLiveProvider()
     return OpenAIRealtimeProvider()
 
 
@@ -244,7 +383,10 @@ def expire_if_over_limit(session, now=None):
     started = ensure_utc(session.started_at) or now
     if maximum > 0 and (now - started).total_seconds() > maximum * 60:
         session.status = "ended"
-        session.ended_at = now
+        # Charge the cap, not the wall clock. A browser closed mid-call leaves
+        # the row active; using `now` billed the gap (e.g. twelve hours overnight)
+        # and exhausted the learner's daily minutes.
+        session.ended_at = started + timedelta(minutes=maximum)
         session.summary_text = (
             f"Session ended at the {maximum}-minute limit."
         )
@@ -255,7 +397,11 @@ def expire_if_over_limit(session, now=None):
 def create_session(user_id, language_id, plan_slug, sdp):
     if not teacher_enabled():
         raise TeacherConfigError("The teacher is disabled")
-    if not isinstance(sdp, str) or "v=0" not in sdp[:200]:
+    provider = _provider()
+    transport = getattr(provider, "transport", "webrtc")
+    if transport == "webrtc" and (
+        not isinstance(sdp, str) or "v=0" not in sdp[:200]
+    ):
         raise ValueError("A valid SDP offer is required")
 
     daily_limit = int(current_app.config.get("TEACHER_DAILY_MINUTES", 20))
@@ -286,9 +432,20 @@ def create_session(user_id, language_id, plan_slug, sdp):
     db.session.add(session)
     db.session.commit()
 
+    learner_name = _learner_name(user_id)
     try:
-        provider_id, answer = _provider().create_call(
-            _session_config(session, learner_name=_learner_name(user_id)), sdp
+        if transport == "websocket":
+            handle = provider.create_handle(session, learner_name=learner_name)
+            session.status = "active"
+            session.provider_session_id = handle.get("provider_session_id")
+            session.metadata_json = json.dumps(
+                {"plan": session.plan_slug, "transport": "websocket"}
+            )
+            db.session.commit()
+            return session, handle
+
+        provider_id, answer = provider.create_call(
+            _session_config(session, learner_name=learner_name), sdp
         )
     except TeacherError:
         session.status = "failed"
@@ -299,7 +456,7 @@ def create_session(user_id, language_id, plan_slug, sdp):
     session.provider_session_id = provider_id
     session.metadata_json = json.dumps({"plan": session.plan_slug})
     db.session.commit()
-    return session, answer
+    return session, {"transport": "webrtc", "sdp": answer}
 
 
 def _learner_name(user_id):
@@ -425,11 +582,12 @@ def tool_lookup_dictionary(session, args):
     pattern = f"%{args.query.strip()}%"
     items = (
         Item.query.filter(
+            db.or_(Item.language_id.is_(None), Item.language_id == session.language_id),
             db.or_(
                 Item.target_text.ilike(pattern),
                 Item.gloss.ilike(pattern),
                 Item.transliteration.ilike(pattern),
-            )
+            ),
         )
         .order_by(Item.level.asc(), Item.id.asc())
         .limit(args.limit)
@@ -458,7 +616,7 @@ def tool_create_drill(session, args):
             prompt = f"Repeat after me: {item.target_text}"
             expected = item.target_text
         else:
-            prompt = f"Say in Korean: {item.gloss}"
+            prompt = f"Say in {_session_language(session)[1]['name']}: {item.gloss}"
             expected = item.target_text
         drill = Drill(
             uuid=str(uuid.uuid4()),
@@ -608,7 +766,7 @@ TOOL_SCHEMAS = [
     {
         "type": "function",
         "name": "lookup_dictionary",
-        "description": "Search the learner's Korean dictionary by Korean, English, or romanization.",
+        "description": "Search the learner's dictionary by target text, English, or romanization.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -702,6 +860,12 @@ def dispatch_tool(session, name, args):
     except TeacherToolError:
         db.session.rollback()
         raise
+    except Exception as error:
+        # A database or handler bug must reach the model as a tool error it can
+        # work around, not Flask's HTML 500 that the client cannot parse.
+        db.session.rollback()
+        current_app.logger.exception("Teacher tool %s failed", name)
+        raise TeacherToolError("tool_failed") from error
     db.session.commit()
     return result
 
@@ -730,12 +894,109 @@ def session_to_dict(session):
     return data
 
 
+# --- Coach hint: what the tutor said, and what to say back -----------------
+
+COACH_SYSTEM = (
+    "You help a beginner follow a spoken lesson. Given the transcript, return "
+    "JSON only with four keys: "
+    '"translation": an English translation of the tutor\'s LAST line, kept '
+    "short and literal; "
+    '"target": ONE short reply the learner could say next, at most 12 words, '
+    "in the same language and the same register the tutor used. Prefer a line "
+    "that answers the tutor's last question. Never suggest apologising for not "
+    "speaking the language, and never suggest ending the conversation. If the "
+    "learner's last line is in another language, give the target-language "
+    "version of what they said. Learner lines are machine transcripts and are "
+    "often wrong; when they look garbled, suggest an answer to the tutor's last "
+    "question rather than reacting to the transcript; "
+    '"romanization": that reply in simple Latin letters; '
+    '"gloss": that reply in short English. '
+    "No quotes around the values, no explanation, no extra keys."
+)
+
+
+class CoachHint(BaseModel):
+    translation: str = Field(default="", max_length=400)
+    target: str = Field(default="", max_length=200)
+    romanization: str = Field(default="", max_length=200)
+    gloss: str = Field(default="", max_length=200)
+
+
+def coach_reply(session, limit=10):
+    """English of the tutor's last line plus one line the learner could say.
+
+    This is a separate text call, never the realtime session, so it cannot
+    disturb the conversation. The translation is always requested; the learner
+    can hide the suggested reply without losing it.
+    """
+    _code, target = _session_language(session)
+    turns = (
+        TeacherTurn.query.filter(
+            TeacherTurn.session_id == session.id,
+            TeacherTurn.text.isnot(None),
+        )
+        .order_by(TeacherTurn.turn_index.desc())
+        .limit(limit)
+        .all()
+    )
+    turns.reverse()
+    transcript = "\n".join(
+        f"{turn.role}: {turn.text}" for turn in turns if turn.text
+    )
+    if not transcript:
+        raise TeacherNotReadyError("Nothing has been said yet")
+
+    user_prompt = (
+        f"Language: {target['name']}.\n"
+        "Learner: English-speaking beginner. Learner turns are rough phonetic "
+        "transcripts; read them for meaning, not for spelling.\n"
+        f"Transcript so far:\n{transcript}"
+    )
+    provider = current_app.config.get("TEACHER_PROVIDER", "openai_realtime")
+    try:
+        if provider == "gemini_live":
+            # The teacher has no OpenAI key when it runs on Gemini; the hint
+            # must use the same provider or it silently disappears.
+            from app.services.teacher_gemini import json_completion
+
+            content = json_completion(COACH_SYSTEM, user_prompt)
+        else:
+            client = get_openai_client()
+            model = current_app.config.get(
+                "TEACHER_SUGGEST_MODEL",
+                current_app.config.get("TRANSLATION_MODEL", "gpt-5.6-luna"),
+            )
+            response = client.chat.completions.create(
+                model=model,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": COACH_SYSTEM},
+                    {"role": "user", "content": user_prompt},
+                ],
+            )
+            content = response.choices[0].message.content or "{}"
+    except OpenAIConfigError:
+        raise
+    except TeacherError:
+        raise
+    except Exception as error:
+        current_app.logger.warning("Coach hint failed: %s", error)
+        raise TeacherError("Could not read the last turn") from error
+    try:
+        return CoachHint.model_validate_json(content).model_dump()
+    except ValidationError as error:
+        raise TeacherError("The coach hint was unusable") from error
+
+
 __all__ = [
     "PLANS",
+    "SUPPORTED_TEACHER_LANGUAGES",
     "TeacherConfigError",
     "TeacherError",
     "TeacherLimitError",
+    "TeacherNotReadyError",
     "TeacherProviderError",
+    "coach_reply",
     "create_session",
     "dispatch_tool",
     "end_session",

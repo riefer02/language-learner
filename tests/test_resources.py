@@ -48,7 +48,8 @@ def test_nav_uses_grouped_practice_and_words(client):
 
     assert b"Scenes" in response.data
     assert b"Look up" in response.data
-    assert b"Dictionary" in response.data
+    assert b"My terms" in response.data
+    assert b"Dictionary" not in response.data
     assert b"Resources" not in response.data
     assert b"New Phrase" not in response.data
     assert b">Library<" not in response.data

@@ -32,6 +32,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // Amharic's formal register does not change with the addressee's gender (see
+  // UNGENDERED_REGISTERS), so explain that instead of letting the result look
+  // like the wrong variant was produced.
+  const registerSelect = document.getElementById("register");
+  const addresseeHelp = document.getElementById("addressee-help");
+  const ungenderedRegisters = (form.dataset.ungenderedRegisters || "")
+    .split(",")
+    .filter(Boolean);
+
+  function syncAddresseeHelp() {
+    if (!registerSelect || !addresseeHelp) {
+      return;
+    }
+    const isUngendered =
+      ungenderedRegisters.indexOf(registerSelect.value) !== -1;
+    const message = isUngendered
+      ? addresseeHelp.dataset.ungendered
+      : addresseeHelp.dataset.default;
+    if (message) {
+      addresseeHelp.textContent = message;
+    }
+  }
+
+  if (registerSelect) {
+    registerSelect.addEventListener("change", syncAddresseeHelp);
+    syncAddresseeHelp();
+  }
+
   // The listener is attached once, before any src is assigned, so a cached
   // audio file cannot fire canplay before we are listening. autoplayPending is
   // cleared before play(), so play() can never run twice for one translation.

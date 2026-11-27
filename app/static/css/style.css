@@ -23,6 +23,7 @@
   --code-background: var(--surface-muted);
   --border: rgba(74, 111, 165, 0.22);
   --border-strong: rgba(74, 111, 165, 0.38);
+  --border-width: 1px;
 
   --orange-600: #c2410c;
   --orange-700: #9a3412;
@@ -138,7 +139,7 @@ body {
   outline-offset: 2px;
 }
 
-nav a:focus-visible {
+.site-nav a:focus-visible {
   outline: 3px solid white;
   outline-offset: 2px;
 }
@@ -167,7 +168,7 @@ nav a:focus-visible {
 }
 
 /* Navigation */
-nav {
+.site-nav {
   background-color: var(--primary);
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -183,35 +184,35 @@ nav {
   padding: 10px 20px;
 }
 
-nav h1 {
+.site-nav h1 {
   margin: 0;
   font-size: 1.5rem;
 }
 
-nav ul {
+.site-nav ul {
   display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-nav li {
+.site-nav li {
   margin-left: 20px;
 }
 
-nav a {
+.site-nav a {
   color: white;
   text-decoration: none;
   padding: 5px;
   border-radius: 4px;
 }
 
-nav a:hover,
-nav a:focus-visible {
+.site-nav a:hover,
+.site-nav a:focus-visible {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-nav a[aria-current="page"] {
+.site-nav a[aria-current="page"] {
   font-weight: bold;
   background-color: rgba(255, 255, 255, 0.2);
 }
@@ -224,22 +225,22 @@ nav a[aria-current="page"] {
     padding: 12px 15px;
   }
 
-  nav h1 {
+  .site-nav h1 {
     font-size: 1.25rem;
   }
 
-  nav ul {
+  .site-nav ul {
     width: 100%;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 4px;
   }
 
-  nav li {
+  .site-nav li {
     margin-left: 0;
   }
 
-  nav a {
+  .site-nav a {
     display: inline-block;
     padding: 6px 8px;
     font-size: 0.9rem;
@@ -906,6 +907,101 @@ audio {
 
 .review-count {
   color: var(--muted);
+}
+
+.listen-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.listen-question {
+  border: var(--border-width) solid var(--border);
+  margin: 0;
+}
+
+.listen-legend {
+  padding: 0 var(--space-2);
+  color: var(--ink-600);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.listen-audio {
+  width: 100%;
+  max-width: 26rem;
+  margin-bottom: var(--space-2);
+}
+
+.listen-options {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.listen-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.listen-option:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--surface-tint);
+}
+
+.listen-review {
+  list-style: none;
+  margin: var(--space-3) 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.listen-review-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border-width) solid var(--border);
+}
+
+.listen-review-mark {
+  font-weight: 700;
+}
+
+.listen-review-row[data-correct="1"] .listen-review-mark {
+  color: var(--success);
+}
+
+.listen-review-row[data-correct="0"] .listen-review-mark {
+  color: var(--danger);
+}
+
+.listen-review-target {
+  font-weight: 700;
+  color: var(--primary-ink);
+}
+
+.review-listen-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  font-weight: 600;
+}
+
+.review-listen-toggle .learn-meta {
+  font-weight: 400;
+}
+
+/* Listen first: the written prompt is hidden until the answer is revealed. */
+.review-card.is-listen-first .review-prompt {
+  filter: blur(7px);
+  user-select: none;
 }
 
 .review-progress {
@@ -2553,6 +2649,105 @@ progress {
   font-weight: 600;
 }
 
+/* Live call indicators: one state chip, a countdown, a mic level. */
+.teacher-live {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.teacher-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  border: var(--border-width) solid var(--border);
+  color: var(--ink-600);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.teacher-state::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--ink-300);
+}
+
+.teacher-state[data-state="listening"] {
+  background: var(--success-bg);
+  border-color: transparent;
+  color: var(--success);
+}
+
+.teacher-state[data-state="listening"]::before {
+  background: var(--success);
+}
+
+.teacher-state[data-state="speaking"] {
+  background: var(--primary-soft);
+  border-color: transparent;
+  color: var(--primary-ink);
+}
+
+.teacher-state[data-state="speaking"]::before {
+  background: var(--primary);
+}
+
+.teacher-state[data-state="connecting"]::before {
+  background: var(--accent);
+}
+
+.teacher-state[data-state="error"],
+.teacher-state[data-state="offline"] {
+  background: var(--danger-bg);
+  border-color: transparent;
+  color: var(--danger);
+}
+
+.teacher-state[data-state="error"]::before,
+.teacher-state[data-state="offline"]::before {
+  background: var(--danger);
+}
+
+.teacher-countdown {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  color: var(--ink-600);
+}
+
+.teacher-countdown.is-warning {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.teacher-meter {
+  position: relative;
+  flex: 0 1 8rem;
+  height: 0.35rem;
+  min-width: 5rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-tint);
+  overflow: hidden;
+}
+
+.teacher-meter-fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--primary);
+  transition: transform 80ms linear;
+}
+
+.teacher[data-session-active="1"] .teacher-meter-fill {
+  background: var(--success);
+}
+
 .teacher-controls select {
   padding: 0.55rem 0.75rem;
   border-radius: 10px;
@@ -2565,6 +2760,36 @@ progress {
   color: #3c4b60;
 }
 
+/* "Show me a line I could say": a scaffold the learner switches off. */
+.teacher-suggest-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.teacher-suggestion {
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-tint);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.teacher-suggestion p {
+  margin: 0;
+}
+
+.teacher-suggestion p + p {
+  margin-top: var(--space-1);
+}
+
+.teacher-suggestion-target {
+  color: var(--primary-ink);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
 .teacher-warning {
   background: var(--surface-warm-soft);
   border: 1px solid #f0c36d;
@@ -2572,10 +2797,62 @@ progress {
   padding: 0.85rem 1rem;
 }
 
+.teacher-transcript-wrap {
+  margin-top: var(--space-4);
+}
+
 .teacher-transcript-wrap h3,
 .teacher-debrief h3,
 .teacher-history h3 {
   margin: 0 0 0.5rem;
+}
+
+.teacher-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.teacher-history .teacher-history-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: var(--border-width) solid var(--border);
+}
+
+.teacher-history-state {
+  margin-left: auto;
+  padding: 0.05rem var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.teacher-history-state[data-state="failed"] {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.teacher-history-state[data-state="active"] {
+  background: var(--surface-tint);
+  color: var(--primary-ink);
+}
+
+.teacher-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+}
+
+.teacher-quick .btn {
+  padding: 0.35rem var(--space-3);
+  font-size: var(--text-sm);
 }
 
 .teacher-transcript {
@@ -2610,6 +2887,12 @@ progress {
 
 .teacher-line {
   line-height: 1.45;
+}
+
+.teacher-translation {
+  color: var(--ink-500);
+  font-size: var(--text-sm);
+  font-style: italic;
 }
 
 .teacher-drills {
@@ -2783,6 +3066,32 @@ progress {
   border-radius: 8px;
 }
 
+/* Keep the player from eating the row: it is a preview, not the page. */
+.dictionary-actions audio {
+  flex: 1 1 18rem;
+  max-width: 26rem;
+}
+
+/* The sentence is optional, so it stays behind one quiet word instead of
+   making every result two rows tall. */
+.save-context {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+.save-context > summary {
+  color: var(--primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.save-context input[type="text"] {
+  margin-top: var(--space-1);
+  min-width: 14rem;
+}
+
 .term-library {
   background: var(--surface);
   border: 1px solid rgba(74, 111, 165, 0.18);
@@ -2814,6 +3123,240 @@ progress {
 
 .term-card p {
   margin: 0.2rem 0;
+}
+
+/* Views inside one page: navigation tabs. Server-rendered links with
+   aria-current, so they deep-link and work without JavaScript. */
+.tab-bar {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 var(--space-3);
+  border-bottom: var(--border-width) solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tab-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: calc(var(--border-width) * -1);
+  border-bottom: calc(var(--border-width) * 2) solid transparent;
+  color: var(--ink-600);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tab:hover {
+  color: var(--primary-ink);
+}
+
+.tab[aria-current="page"] {
+  border-bottom-color: var(--primary);
+  color: var(--primary-ink);
+}
+
+.tab-count {
+  min-width: var(--space-5);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--surface-tint);
+  color: var(--primary-ink);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 37.5rem) {
+  .tab {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-sm);
+  }
+}
+
+.tab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+}
+
+/* Looked-up phrases: one list, one row per phrase, opened in place. The rows
+   share a single surface with hairline dividers so ten lookups read as a list
+   instead of ten cards, and the whole row stays one line until opened. */
+.phrase-list {
+  margin: var(--space-3) 0;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.phrase-entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+}
+
+.phrase-entry + .phrase-entry {
+  border-top: var(--border-width) solid var(--border);
+}
+
+.phrase-entry-details > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  list-style: none;
+}
+
+.phrase-entry-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.phrase-entry:hover .phrase-entry-details > summary,
+.phrase-entry-details[open] > summary {
+  background: var(--surface-muted);
+}
+
+.phrase-entry-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.1rem 0.6rem;
+}
+
+.phrase-entry-source {
+  color: var(--ink-500);
+  font-size: var(--text-sm);
+}
+
+.phrase-entry-target {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.phrase-entry-translit {
+  color: var(--ink-500);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
+.phrase-entry-addressee {
+  color: var(--ink-500);
+  font-size: var(--text-sm);
+}
+
+/* Top-level listen: the row plays without being opened. */
+.phrase-entry-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  margin: var(--space-2) 0 0 var(--space-3);
+  padding: 0;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.phrase-entry-play:hover,
+.phrase-entry-play:focus-visible {
+  border-color: var(--primary);
+}
+
+.phrase-entry-play-icon {
+  width: 0;
+  height: 0;
+  border-top: 0.32rem solid transparent;
+  border-bottom: 0.32rem solid transparent;
+  border-left: 0.45rem solid var(--primary-ink);
+}
+
+.phrase-entry-play.is-playing .phrase-entry-play-icon {
+  width: 0.45rem;
+  height: 0.55rem;
+  border: 0;
+  background: linear-gradient(
+    to right,
+    var(--primary-ink) 35%,
+    transparent 35% 65%,
+    var(--primary-ink) 65%
+  );
+}
+
+.phrase-entry-meta {
+  flex: none;
+}
+
+.phrase-entry-meta .chip {
+  padding: 0.05rem var(--space-2);
+  border-color: transparent;
+  background: var(--surface-tint);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+/* The open control reads as a button, and the whole row still toggles. */
+.phrase-entry-caret {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-pill);
+}
+
+.phrase-entry-caret::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: calc(var(--border-width) * 2) solid var(--ink-500);
+  border-bottom: calc(var(--border-width) * 2) solid var(--ink-500);
+  transform: rotate(45deg) translateY(-0.1rem);
+  transition: transform var(--transition-fast);
+}
+
+.phrase-entry-details[open] .phrase-entry-caret::before {
+  transform: rotate(225deg) translateY(-0.1rem);
+}
+
+@media (max-width: 37.5rem) {
+  .phrase-entry-translit,
+  .phrase-entry-addressee {
+    display: none;
+  }
+}
+
+.phrase-entry-body {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-3);
+  border-top: var(--border-width) solid var(--border);
+}
+
+.phrase-entry-body .phrase-romanization,
+.phrase-entry-body .learn-meta {
+  margin: 0;
+}
+
+.phrase-entry-body .audio-player,
+.phrase-entry-body .learn-library-link {
+  margin: 0;
 }
 
 .teacher-drill-form {
@@ -3007,8 +3550,8 @@ summary:focus-visible,
   outline-offset: 3px;
 }
 
-nav a:focus-visible,
-nav button:focus-visible {
+.site-nav a:focus-visible,
+.site-nav button:focus-visible {
   outline-color: var(--surface);
 }
 
@@ -3584,7 +4127,7 @@ abbr[title] {
 .space-5 { width: var(--space-5); }
 .space-6 { width: var(--space-6); }
 
-@media (max-width: 600px) {
+@media (max-width: 37.5rem) {
   .language-label {
     display: none;
   }

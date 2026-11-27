@@ -104,7 +104,7 @@ def api_translate():
             "target_text": target_text,
             "romanization": result.romanization,
             "addressee": addressee,
-            "addressee_label": addressee_label(target_code, addressee),
+            "addressee_label": addressee_label(target_code, addressee, register),
             "register": register,
             "register_label": register_label(target_code, register),
             "target_lang": target_code,

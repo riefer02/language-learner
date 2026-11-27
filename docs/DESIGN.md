@@ -60,8 +60,8 @@ Navigation is grouped so the learner does not have to parse eight equal links:
 | Group | Contents |
 |---|---|
 | **Learn** | Today, Review, Progress, Hangul/Fidel |
-| **Practice** | Teacher, Scenes, Sound Gym (Korean only) |
-| **Words** | Look up, Dictionary, My terms |
+| **Practice** | Teacher (Korean, Amharic), Scenes and Sound Gym (Korean only) |
+| **Words** | Look up, My terms (Find words / Saved words / Looked up) |
 | **Settings** | Language, goal, timezone, reminders (one page) |
 
 - The current language is a persistent select in the header. Changing it lands
@@ -70,10 +70,13 @@ Navigation is grouped so the learner does not have to parse eight equal links:
   `?q=…` to the Look up page, which searches/translates and plays the audio.
 - Script courses sit under **Learn**, not **Practice**; lessons carry a
   clickable course stepper.
-- “My terms” is the saved-term library. “Dictionary” searches and saves deck
-  terms. **Resources** remains a deeper browse view linked from the dictionary,
-  not a top-level destination.
-- Korean-only surfaces (Teacher, Scenes, Sound Gym) are hidden for Amharic
+- “My terms” is one page with three tabs: **Find words** (deck search + save),
+  **Saved words** (terms you kept), **Looked up** (your phrase history with
+  audio). There is no separate Dictionary destination; `/dictionary` redirects
+  to the Find words tab. **Resources** remains a deeper browse view, not a
+  top-level destination.
+- Scenes and Sound Gym are Korean-only and hidden for Amharic; the Teacher is
+  offered in both
   rather than shown and then rejected; Fidel replaces Hangul under Learn.
 
 ## Components
@@ -92,6 +95,11 @@ Live reference: **`/design`** (not linked from the learner nav).
 | `.btn`, `.btn-primary`, `.btn-large`, `.link-button` | Actions |
 | `.learn-meta` | Secondary text |
 | `.term-list` / `.term-card` | Saved terms |
+| `.tab-bar` / `.tab` / `.tab-count` | In-page view tabs (links with `aria-current="page"`, counts as pills) |
+| `.listen-question` / `.listen-option` | Audio multiple choice: a clip plus four meaning options, checked in one submit |
+| `.review-listen-toggle` | Per-card “Listen first”: hides the written prompt until the answer is revealed |
+| `.teacher-suggest-toggle` / `.teacher-suggestion` | Teacher scaffold: the learner's suggested line, switched off in one click |
+| `.phrase-list` / `.phrase-entry` | Looks-up phrases: one row each with pronunciation, transliteration, addressee, a play button that works collapsed, and a caret that opens the detail |
 | `.fidel-glyph`, `.fidel-progress-bar` | Fidel trainer |
 | `.scene-reply` (with `.help-tip`) | Collapsed natural reply + audio on a scene step |
 | `.content-flag` (with `.help-tip`) | Quiet correction form; flat until opened |
@@ -152,6 +160,9 @@ Live reference: **`/design`** (not linked from the learner nav).
    caches same-origin `/static/` files by exact URL, so versioned assets are
    immutable and old releases cannot be served.
 6. Update this file and `AGENTS.md` if a convention changed.
+7. Header navigation styles live on `.site-nav`; never style a bare `nav`
+   element. Any other `<nav>` (view tabs, breadcrumbs) would inherit the
+   header's blue bar.
 
 **Dated audits (snapshots):**
 [`design-audit-2026-11-25.md`](design-audit-2026-11-25.md) ·

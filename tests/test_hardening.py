@@ -86,14 +86,14 @@ def test_legacy_new_conversation_preserves_the_path(client):
     assert response.headers["Location"].endswith("/ko/conversations/new")
 
 
-def test_amharic_teacher_redirects_to_today(client, app):
+def test_amharic_teacher_page_is_available(client, app):
     _seed_both(client, app)
     _prefer(app, "am")
 
     response = client.get("/am/learn/teacher")
 
-    assert response.status_code == 302
-    assert response.headers["Location"].endswith("/am/learn/")
+    assert response.status_code == 200
+    assert b"Talk to Kiku." in response.data
 
 
 def test_manifest_has_no_hardcoded_language_urls():

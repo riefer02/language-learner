@@ -1,112 +1,197 @@
 {% extends "base.html" %}
 {% block title %} - My terms{% endblock %}
 {% block content %}
+{% from "_macros.html" import page_help %}
 <div class="library">
-  <div class="page-hero">
-    <p class="learn-eyebrow">My terms</p>
-    <h2>Words you kept.</h2>
-    <p>
-      Every term here carries the sentence where you met it, and most are
-      already in your review queue.
-    </p>
-    <p>
-      <a class="btn" href="{{ url_for('main.dictionary') }}">Find more terms</a>
-      <a class="btn" href="{{ url_for('learn.review') }}">Practice terms</a>
-    </p>
+  <div class="page-head">
+    <div>
+      <p class="learn-eyebrow">My terms</p>
+      {% if tab == 'find' %}
+      <h2>Find words.</h2>
+      <p class="learn-meta">
+        Search the deck by word, meaning, or romanization, then save it with the
+        sentence where you met it.
+      </p>
+      {% elif tab == 'terms' %}
+      <h2>Words you kept.</h2>
+      <p class="learn-meta">
+        Each one keeps the sentence where you met it, and saving it put it in
+        your review queue.
+      </p>
+      {% else %}
+      <h2>Phrases you looked up.</h2>
+      <p class="learn-meta">
+        Everything you have looked up, newest first. Open a row for audio and
+        the register.
+      </p>
+      {% endif %}
+    </div>
+    {% if tab == 'find' %}
+    {% call page_help("kiku-help-dictionary", "How saving works") %}
+      <h3>How saving works</h3>
+      <p>
+        Saving keeps the word, its translation, and the sentence you heard it
+        in. It also adds the word to your review queue so it comes back later.
+      </p>
+    {% endcall %}
+    {% endif %}
   </div>
 
-  <section class="term-library">
-    {% if terms %}
-    <ul class="term-list">
-      {% for term in terms %}
-      <li class="term-card">
-        <div>
-          {% if term.item %}
-          <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text }}</strong>
-          <span class="learn-meta" lang="en">{{ term.item.transliteration }}</span>
-          <p>{{ term.item.gloss }}</p>
-          {% if term.item.review_status == "native_checked" %}
-          <p class="learn-meta">Native-checked.</p>
-          {% else %}
-          <p class="learn-meta">Starter content.</p>
-          {% endif %}
-          {% else %}
-          <strong>Removed term</strong>
-          <p class="learn-meta">The item is no longer in this deck.</p>
-          {% endif %}
-          {% if term.context_sentence %}
-          <p class="learn-meta">“{{ term.context_sentence }}”</p>
-          {% endif %}
-          {% if term.item %}
-          {% with surface="library", item_id=term.item.id, uid="term-" ~ term.id %}
-            {% include "_content_flag.html" %}
-          {% endwith %}
-          {% endif %}
-        </div>
-        <span class="learn-meta">{{ term.source }}</span>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <div class="empty-state">
-      <p>
-        No saved terms yet. Search the
-        <a href="{{ url_for('main.dictionary') }}">dictionary</a>{% if not (language and language.code == 'am') %}, or say “save that” during a teacher call{% endif %}.
-      </p>
-    </div>
-    {% endif %}
-  </section>
+  <div class="tab-bar" role="navigation" aria-label="My terms views">
+    <a
+      class="tab"
+      href="{{ url_for('main.library', tab='find') }}"
+      {% if tab == 'find' %}aria-current="page"{% endif %}
+    >
+      Find words
+    </a>
+    <a
+      class="tab"
+      href="{{ url_for('main.library', tab='terms') }}"
+      {% if tab == 'terms' %}aria-current="page"{% endif %}
+    >
+      Saved words <span class="tab-count">{{ term_count }}</span>
+    </a>
+    <a
+      class="tab"
+      href="{{ url_for('main.library', tab='lookups') }}"
+      {% if tab == 'lookups' %}aria-current="page"{% endif %}
+    >
+      Looked up <span class="tab-count">{{ phrase_count }}</span>
+    </a>
+  </div>
+
+  {% if tab == 'find' %}
+  {% include "_find_words.html" %}
+
+  {% elif tab == 'terms' %}
+  <p class="tab-actions">
+    <a class="btn" href="{{ url_for('main.library', tab='find') }}">Find more words</a>
+    <a class="btn" href="{{ url_for('learn.review') }}">Practice saved words</a>
+  </p>
+
+  {% if terms %}
+  <ul class="term-list">
+    {% for term in terms %}
+    <li class="term-card">
+      <div>
+        {% if term.item %}
+        <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ term.item.target_text }}</strong>
+        <span class="learn-meta" lang="en">{{ term.item.transliteration }}</span>
+        <p>{{ term.item.gloss }}</p>
+        {% if term.item.review_status == "native_checked" %}
+        <p class="learn-meta">Native-checked.</p>
+        {% else %}
+        <p class="learn-meta">Starter content.</p>
+        {% endif %}
+        {% else %}
+        <strong>Removed term</strong>
+        <p class="learn-meta">The item is no longer in this deck.</p>
+        {% endif %}
+        {% if term.context_sentence %}
+        <p class="learn-meta">“{{ term.context_sentence }}”</p>
+        {% endif %}
+        {% if term.item %}
+        {% with surface="library", item_id=term.item.id, uid="term-" ~ term.id %}
+          {% include "_content_flag.html" %}
+        {% endwith %}
+        {% endif %}
+      </div>
+      <span class="learn-meta">{{ term.source }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <h3>No saved words yet</h3>
+    <p>
+      Save a word from
+      <a href="{{ url_for('main.library', tab='find') }}">Find words</a>{% if not (language and language.code == 'am') %}, or say “save that” during a teacher call{% endif %}.
+      Saved words join your review queue.
+    </p>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <p class="tab-actions">
+    <a class="btn" href="{{ url_for('main.index') }}">Look up a new phrase</a>
+  </p>
 
   {% if phrases.items %}
-  <h3>Phrases you looked up</h3>
-  <div id="phrases-container">
+  <div id="phrases-container" class="phrase-list">
     {% for phrase in phrases.items %}
-    <div class="phrase-card" data-id="{{ phrase.id }}">
-      <div class="phrase-english" lang="en">{{ phrase.source_text }}</div>
-      <div class="phrase-korean" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ phrase.target_text }}</div>
-      {% if phrase.target_transliteration %}
-      <div class="phrase-romanization" lang="en">{{ phrase.target_transliteration }}</div>
-      {% endif %}
-      {% if language and language.code == 'am' %}
-      {% set phrase_addressee_label = addressee_labels.get(phrase.addressee, '') %}
-      {% if phrase_addressee_label %}
-      <p class="learn-meta">{{ phrase_addressee_label }}</p>
-      {% endif %}
-      {% endif %}
-      {% set phrase_register_label = register_labels.get(phrase.register, '') %}
-      {% if phrase_register_label %}
-      <p class="learn-meta">{{ phrase_register_label }}</p>
-      {% endif %}
-      <div class="audio-player">
-        <audio
-          src="{{ phrase.audio_path }}"
-          controls
-          preload="none"
-          aria-label="Play pronunciation for {{ phrase.target_text }}"
-        ></audio>
-        <button
-          type="button"
-          class="repeat-btn"
-          aria-label="Repeat pronunciation for {{ phrase.target_text }}"
-        >
-          Repeat
-        </button>
+    {% set phrase_register_label = register_labels.get(phrase.register, '') %}
+    <div class="phrase-entry" data-id="{{ phrase.id }}">
+      <button
+        type="button"
+        class="phrase-entry-play"
+        aria-label="Play pronunciation for {{ phrase.target_text }}"
+        data-label-play="Play pronunciation for {{ phrase.target_text }}"
+        data-label-pause="Pause pronunciation for {{ phrase.target_text }}"
+      >
+        <span class="phrase-entry-play-icon" aria-hidden="true"></span>
+      </button>
+      <details class="phrase-entry-details">
+      <summary>
+        <span class="phrase-entry-main">
+          <span class="phrase-entry-source" lang="en">{{ phrase.source_text }}</span>
+          <span class="phrase-entry-target" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ phrase.target_text }}</span>
+          {% if phrase.target_transliteration %}
+          <span class="phrase-entry-translit" lang="en">{{ phrase.target_transliteration }}</span>
+          {% endif %}
+          {% if language and language.code == 'am' and phrase.addressee in ['male', 'female', 'group'] and phrase.register not in ungendered_registers %}
+          <span class="phrase-entry-addressee">{{ addressee_label(language.code, phrase.addressee, phrase.register) }}</span>
+          {% endif %}
+        </span>
+        {% if phrase_register_label %}
+        <span class="phrase-entry-meta"><span class="chip">{{ phrase_register_label }}</span></span>
+        {% endif %}
+        <span class="phrase-entry-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="phrase-entry-body">
+        {% if phrase.target_transliteration %}
+        <p class="phrase-romanization" lang="en">{{ phrase.target_transliteration }}</p>
+        {% endif %}
+        {% if language and language.code == 'am' %}
+        {% set phrase_addressee_label = addressee_label(language.code, phrase.addressee, phrase.register) %}
+        {% if phrase_addressee_label %}
+        <p class="learn-meta">{{ phrase_addressee_label }}</p>
+        {% endif %}
+        {% endif %}
+        <div class="audio-player">
+          <audio
+            src="{{ phrase.audio_path }}"
+            data-phrase-audio
+            controls
+            preload="none"
+            aria-label="Play pronunciation for {{ phrase.target_text }}"
+          ></audio>
+          <button
+            type="button"
+            class="repeat-btn"
+            aria-label="Repeat pronunciation for {{ phrase.target_text }}"
+          >
+            Repeat
+          </button>
+        </div>
+        <p class="learn-library-link">
+          <a href="{{ url_for('main.index', phrase=phrase.uuid) }}">Open saved result</a>
+        </p>
+        {% with surface="translate", phrase_id=phrase.id, uid="phrase-" ~ phrase.id %}
+          {% include "_content_flag.html" %}
+        {% endwith %}
       </div>
-      <p class="learn-library-link">
-        <a href="{{ url_for('main.index', phrase=phrase.uuid) }}">Open saved result</a>
-      </p>
-      {% with surface="translate", phrase_id=phrase.id, uid="phrase-" ~ phrase.id %}
-        {% include "_content_flag.html" %}
-      {% endwith %}
+      </details>
     </div>
     {% endfor %}
   </div>
 
-  <!-- Pagination -->
   {% if phrases.pages > 1 %}
   <div class="pagination">
     {% if phrases.has_prev %}
-    <a href="{{ url_for('main.library', page=phrases.prev_num) }}" class="btn"
+    <a
+      href="{{ url_for('main.library', tab='lookups', page=phrases.prev_num) }}"
+      class="btn"
       >&laquo; Previous</a
     >
     {% endif %}
@@ -116,12 +201,29 @@
     >
 
     {% if phrases.has_next %}
-    <a href="{{ url_for('main.library', page=phrases.next_num) }}" class="btn"
+    <a
+      href="{{ url_for('main.library', tab='lookups', page=phrases.next_num) }}"
+      class="btn"
       >Next &raquo;</a
     >
     {% endif %}
   </div>
   {% endif %}
+  {% else %}
+  <div class="empty-state">
+    <h3>Nothing looked up yet</h3>
+    <p>
+      <a href="{{ url_for('main.index') }}">Look up a word or phrase</a> and it
+      will be kept here with its audio, so you can replay it later.
+    </p>
+  </div>
+  {% endif %}
   {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% if tab == 'find' %}
+<script src="{{ url_for('static', filename='js/dictionary.js') }}?v={{ asset_version }}"></script>
+{% endif %}
 {% endblock %}

@@ -7,6 +7,8 @@
   data-card-id="{{ card.id }}"
   data-language-code="{{ language.code if language else 'ko' }}"
   data-tts-lang="{{ 'am-ET' if item_lang == 'am' else 'ko-KR' }}"
+  data-prompt-side="{{ prompt_side }}"
+  data-has-audio="{{ '1' if item.audio_path else '0' }}"
 >
   <div class="review-top">
     <a href="{{ url_for('learn.today') }}">← Today</a>
@@ -14,6 +16,14 @@
       {{ session_remaining }} left · {{ due_count }} due
     </span>
   </div>
+
+  {% if item.audio_path and prompt_side == "target" %}
+  <label class="review-listen-toggle">
+    <input type="checkbox" id="review-listen" />
+    Listen first
+    <span class="learn-meta">hear it, then reveal</span>
+  </label>
+  {% endif %}
 
   <div class="review-progress">
     <span>{{ skill_label }} · {{ type_label }}</span>

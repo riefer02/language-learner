@@ -685,6 +685,12 @@ def test_register_and_addressee_are_normalized_per_language():
     assert normalize_addressee("am", "female") == "female"
     assert normalize_addressee("es", "female") == "any"
     assert addressee_label("am", "female") == "To a woman"
+    assert addressee_label("am", "female", "casual") == "To a woman"
+    assert (
+        addressee_label("am", "female", "formal")
+        == "Anyone — formal is not gendered"
+    )
+    assert addressee_label("am", "group", "formal") == "To a group"
     assert addressee_label("ko", "female") == ""
     assert register_label("am", "casual") == "Everyday"
     assert register_label("am", "polite") == ""

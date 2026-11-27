@@ -215,6 +215,8 @@ preference → `ko` fallback. Content packs should not edit core routes.
 2. **No accounts.** Every feature assumes the single local user.
 3. **Amharic ASR/TTS quality is not usable**; do not enable speech features.
 4. **Korean-only surfaces remain** (scenes, Hangul, Sound Gym, conversations).
+   The live Teacher is the exception: its prompt, transcription, and items are
+   language-scoped, so it runs in Korean and Amharic.
    They redirect for Amharic, but are not yet generalized.
 5. **Onboarding is generic**, but the goals/experience wording and first-word
    choice still need language-specific packs beyond Korean and Amharic.

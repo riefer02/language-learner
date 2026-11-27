@@ -1,0 +1,110 @@
+{# Find words: the deck search that used to be its own Dictionary page. It sits
+   on My terms so "find a word" and "the words I have" read as one surface. #}
+{% if saved %}
+<div class="settings-saved" role="status">
+  Saved. It is in Saved words and your review queue.
+</div>
+{% endif %}
+
+<form
+  class="dictionary-search"
+  method="get"
+  action="{{ url_for('main.library') }}"
+  role="search"
+  aria-label="Search the deck"
+>
+  <input type="hidden" name="tab" value="find" />
+  <label class="sr-only" for="dictionary-q">Search</label>
+  <input
+    id="dictionary-q"
+    name="q"
+    type="search"
+    value="{{ find_q }}"
+    placeholder="Search {{ language.name if language else 'the deck' }}, English, or romanization"
+    autocomplete="off"
+  />
+  <select name="type" aria-label="Type">
+    <option value="">Any type</option>
+    {% for value, label in [("lexeme", "Word"), ("chunk", "Phrase"), ("grammar", "Grammar"), ("sentence", "Sentence")] %}
+    <option value="{{ value }}" {% if item_type == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+{% if items %}
+<p class="learn-meta" role="status">
+  {{ items|length }} result{% if items|length != 1 %}s{% endif %}
+  {% if find_q %}for “{{ find_q }}”{% endif %}
+</p>
+<div class="dictionary-results">
+  {% for item in items %}
+  <article class="dictionary-entry">
+    <div class="dictionary-head">
+      <strong lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">{{ item.target_text }}</strong>
+      {% if item.transliteration %}<span class="learn-meta">{{ item.transliteration }}</span>{% endif %}
+    </div>
+    <p>{{ item.gloss }}</p>
+    {% if item.notes %}<p class="learn-meta">{{ item.notes }}</p>{% endif %}
+    <div class="dictionary-actions">
+      {% if item.audio_path %}
+      <audio src="{{ item.audio_path }}" controls preload="none" aria-label="Play {{ item.target_text }}"></audio>
+      {% else %}
+      <button
+        type="button"
+        class="btn"
+        data-speak="{{ item.target_text }}"
+        data-lang="{{ 'am-ET' if language and language.code == 'am' else 'ko-KR' }}"
+      >
+        Hear it
+      </button>
+      {% endif %}
+      <form method="post" action="{{ url_for('main.save_dictionary_item', item_id=item.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="q" value="{{ find_q }}" />
+        <input type="hidden" name="type" value="{{ item_type }}" />
+        <input type="hidden" name="browse" value="{{ '1' if browsing else '' }}" />
+        <input type="hidden" name="level" value="{{ level or '' }}" />
+        <details class="save-context">
+          <summary>Add the sentence</summary>
+          <label class="sr-only" for="context-{{ item.id }}">Where you saw it</label>
+          <input
+            id="context-{{ item.id }}"
+            name="context_sentence"
+            type="text"
+            placeholder="The sentence you heard it in (optional)"
+            maxlength="500"
+          />
+        </details>
+        <button type="submit" class="btn">Save word</button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% elif find_q or item_type or level or browsing %}
+<p class="empty-state">
+  No matches{% if find_q %} for “{{ find_q }}”{% endif %}. Try a shorter word, the English meaning, or
+  <a href="{{ url_for('main.library', tab='find', browse=1) }}">browse the deck</a>.
+</p>
+{% else %}
+<div class="empty-state">
+  <p>
+    Try a word in the target language, the English meaning, or a romanization.
+    Saving a result puts it in your saved words and your review queue.
+  </p>
+  {% if suggestions %}
+  <p class="learn-meta">Try one of these:</p>
+  <div class="chip-row">
+    {% for item in suggestions %}
+    <a class="chip" href="{{ url_for('main.library', tab='find', q=item.target_text) }}">
+      {{ item.target_text }} · {{ item.gloss }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <p>
+    <a class="btn" href="{{ url_for('main.library', tab='find', browse=1) }}">See all entries</a>
+  </p>
+</div>
+{% endif %}

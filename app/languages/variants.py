@@ -320,6 +320,14 @@ ADDRESSEE_LABELS = {
     "group": "To a group",
 }
 
+# Registers in which the addressee's gender does not change the wording. The
+# Amharic prompt forbids -ህ/-ሽ forms in the formal register, so two lookups of
+# the same phrase ("formal, to a woman" and "formal, to a man") produce the same
+# text. Labelling those "To a woman" made the library look like it held two
+# conflicting versions of one phrase.
+UNGENDERED_REGISTERS = {"am": {"formal"}}
+UNGENDERED_ADDRESSEE_LABEL = "Anyone — formal is not gendered"
+
 
 def normalize_addressee(code, value):
     if code in ADDRESSEE_LANGUAGES and value in {"male", "female", "group"}:
@@ -327,9 +335,19 @@ def normalize_addressee(code, value):
     return "any"
 
 
-def addressee_label(code, value):
+def addressee_label(code, value, register=None):
+    """Label for who a stored phrase is addressed to.
+
+    When the register does not change with the addressee's gender (Amharic
+    formal), the gender the learner picked in the form is not a property of the
+    phrase, so say it works for anyone rather than echoing the form value.
+    """
     if code not in ADDRESSEE_LANGUAGES:
         return ""
+    if value in {"male", "female"} and register in UNGENDERED_REGISTERS.get(
+        code, ()
+    ):
+        return UNGENDERED_ADDRESSEE_LABEL
     return ADDRESSEE_LABELS.get(value, "")
 
 

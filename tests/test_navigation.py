@@ -60,16 +60,16 @@ def test_lookup_opens_on_the_interface_with_help_hidden(client):
     assert html.index('id="english-text"') > html.index('class="page-help"')
 
 
-def test_teacher_and_dictionary_use_first_visit_help(client):
+def test_teacher_and_find_words_use_first_visit_help(client):
     client.get("/ko/learn")
 
     teacher = client.get("/ko/learn/teacher")
     assert teacher.status_code == 200
     assert b'data-first-visit="kiku-help-teacher"' in teacher.data
 
-    dictionary = client.get("/ko/dictionary")
-    assert dictionary.status_code == 200
-    assert b'data-first-visit="kiku-help-dictionary"' in dictionary.data
+    find_words = client.get("/ko/library?tab=find")
+    assert find_words.status_code == 200
+    assert b'data-first-visit="kiku-help-dictionary"' in find_words.data
 
 
 def test_amharic_nav_hides_practice_and_moves_fidel_to_learn(client, app):
@@ -85,7 +85,13 @@ def test_amharic_nav_hides_practice_and_moves_fidel_to_learn(client, app):
     if page.status_code == 302:
         page = client.get(page.headers["Location"])
 
-    assert b"<summary>Practice</summary>" not in page.data
+    # Amharic has the spoken teacher but not the Korean-only scenes or gym.
+    assert b"<summary>Practice</summary>" in page.data
+    practice = page.data.split(b"<summary>Practice</summary>", 1)[1]
+    practice = practice.split(b"</details>", 1)[0]
+    assert b"Teacher" in practice
+    assert b"Scenes" not in practice
+    assert b"Sound Gym" not in practice
     assert b"Fidel" in page.data
 
     fidel = client.get("/am/learn/fidel/fidel-1")

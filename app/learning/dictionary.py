@@ -97,6 +97,14 @@ def list_terms(user_id, language_id=None, limit=200):
     return query.order_by(TermCard.created_at.desc()).limit(limit).all()
 
 
+def count_terms(user_id, language_id=None):
+    """Exact number of saved terms, for tab badges that must not truncate."""
+    query = TermCard.query.filter_by(user_id=user_id)
+    if language_id is not None:
+        query = query.filter(TermCard.language_id == language_id)
+    return query.count()
+
+
 def serialize_item(item):
     return {
         "id": item.id,

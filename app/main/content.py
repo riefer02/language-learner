@@ -4,8 +4,13 @@ from flask import abort, jsonify, redirect, render_template, request, url_for
 from sqlalchemy import or_
 
 from app import db
-from app.languages.variants import ADDRESSEE_LABELS, REGISTER_LABELS
+from app.languages.variants import (
+    REGISTER_LABELS,
+    UNGENDERED_REGISTERS,
+    addressee_label,
+)
 from app.learning.dictionary import (
+    count_terms,
     list_terms,
     save_term,
     search_items,
@@ -42,55 +47,76 @@ def library():
     terms = list_terms(
         user.id, language_id=language.id if language else None
     )
+    # The tabs are about finding your own things fast, so the saved-word tab is
+    # only the default when it has something in it.
+    term_count = count_terms(
+        user.id, language_id=language.id if language else None
+    )
+    phrase_count = phrase_query.count()
+    tab = (request.args.get("tab") or "").strip()
+    if tab not in {"terms", "lookups", "find"}:
+        tab = "terms" if term_count else ("lookups" if phrase_count else "terms")
+    # The "Find words" tab owns the old dictionary search, so looking a word up
+    # and keeping it live on one page instead of two that each had a list.
+    find_q = (request.args.get("q") or "").strip()[:100]
+    item_type = request.args.get("type", "")
+    level = request.args.get("level", type=int)
+    browsing = request.args.get("browse") == "1"
+    items = []
+    suggestions = []
+    if tab == "find":
+        language_id = language.id if language else None
+        show_results = bool(find_q or item_type or level or browsing)
+        items = (
+            search_items(
+                language_id=language_id,
+                query_text=find_q,
+                item_type=item_type,
+                level=level,
+                limit=200 if browsing else 50,
+            )
+            if show_results
+            else []
+        )
+        if not show_results:
+            suggestions = search_items(language_id=language_id, limit=6)
+
     return render_template(
         "library.html",
         phrases=phrases,
         terms=terms,
+        term_count=term_count,
+        phrase_count=phrase_count,
+        tab=tab,
+        items=items,
+        suggestions=suggestions,
+        find_q=find_q,
+        item_type=item_type,
+        level=level,
+        browsing=browsing,
+        saved=request.args.get("saved") == "1",
         language=language,
         register_labels=(
             REGISTER_LABELS.get(language.code, {}) if language else {}
         ),
-        addressee_labels=ADDRESSEE_LABELS,
+        ungendered_registers=(
+            sorted(UNGENDERED_REGISTERS.get(language.code, ())) if language else []
+        ),
+        addressee_label=addressee_label,
     )
 
 
 @main.route("/<lang_code>/dictionary")
 def dictionary():
-    query_text = (request.args.get("q") or "").strip()[:100]
-    item_type = request.args.get("type", "")
-    level = request.args.get("level", type=int)
-    user = get_or_create_local_user()
-    language = current_language(user)
-    language_id = language.id if language else None
-    browsing = request.args.get("browse") == "1"
-    show_results = bool(query_text or item_type or level or browsing)
-    items = (
-        search_items(
-            language_id=language_id,
-            query_text=query_text,
-            item_type=item_type,
-            level=level,
-            limit=200 if browsing else 50,
-        )
-        if show_results
-        else []
-    )
-    suggestions = (
-        []
-        if show_results
-        else search_items(language_id=language_id, limit=6)
-    )
-    return render_template(
-        "dictionary.html",
-        items=items,
-        suggestions=suggestions,
-        q=query_text,
-        item_type=item_type,
-        level=level,
-        language=language,
-        browsing=browsing,
-        saved=request.args.get("saved") == "1",
-    )
+    """Legacy entry point: the search lives on My terms → Find words."""
+    params = {"tab": "find"}
+    for key in ("q", "type", "browse", "level"):
+        value = request.args.get(key)
+        if value:
+            params[key] = value
+    if request.args.get("saved") == "1":
+        params["saved"] = "1"
+    return redirect(url_for("main.library", **params), code=302)
 
 
 @main.route("/api/dictionary")
@@ -123,7 +149,12 @@ def save_dictionary_item(item_id):
     except ValueError as error:
         db.session.rollback()
         abort(400, description=str(error))
-    return redirect(url_for("main.dictionary", q=request.form.get("q", ""), saved=1))
+    params = {"tab": "find", "saved": "1"}
+    for key in ("q", "type", "browse", "level"):
+        value = request.form.get(key)
+        if value:
+            params[key] = value
+    return redirect(url_for("main.library", **params))
 
 
 @main.route("/api/terms")

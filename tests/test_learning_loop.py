@@ -221,3 +221,71 @@ def test_seed_content_tags_korean_items_and_cards(app):
         cards = ReviewCard.query.filter_by(user_id=1).all()
         assert cards
         assert all(card.item.language_id == korean.id for card in cards)
+
+
+def _handoff_fixture(app, reps=3):
+    from app.learning.scheduler import new_review_card
+    from app.learning.service import get_or_create_local_user
+    from app.models_language import Language
+
+    language = Language.query.filter_by(code="ko").first()
+    if language is None:
+        language = Language(code="ko", name="Korean", native_name="한국어")
+        db.session.add(language)
+        db.session.commit()
+    item = Item(
+        item_type="lexeme",
+        target_text="커피",
+        gloss="coffee",
+        level=1,
+        language_id=language.id,
+        default_skill="recognize",
+    )
+    db.session.add(item)
+    db.session.commit()
+    user = get_or_create_local_user()
+    card = new_review_card(user.id, item.id, "recognize")
+    card.reps = reps
+    db.session.add(card)
+    db.session.commit()
+    return item, card
+
+
+def test_recognition_graduates_to_production(app):
+    from app.learning.scheduler import maybe_add_production_card, utcnow
+
+    with app.app_context():
+        item, card = _handoff_fixture(app)
+
+        created = maybe_add_production_card(
+            card, rating=3, now=utcnow(), scheduled_days=10
+        )
+
+        assert created is not None
+        assert created.skill == "produce"
+        assert created.item_id == item.id
+
+
+def test_production_handoff_waits_for_a_stable_card(app):
+    from app.learning.scheduler import maybe_add_production_card
+
+    with app.app_context():
+        _item, card = _handoff_fixture(app)
+
+        # Too soon, or graded badly: no production card yet.
+        assert maybe_add_production_card(card, rating=3, scheduled_days=2) is None
+        assert maybe_add_production_card(card, rating=1, scheduled_days=30) is None
+
+
+def test_production_handoff_is_idempotent(app):
+    from app.learning.scheduler import maybe_add_production_card
+
+    with app.app_context():
+        _item, card = _handoff_fixture(app, reps=4)
+
+        first = maybe_add_production_card(card, rating=4, scheduled_days=20)
+        db.session.commit()
+        second = maybe_add_production_card(card, rating=4, scheduled_days=20)
+
+        assert first is not None
+        assert second is None

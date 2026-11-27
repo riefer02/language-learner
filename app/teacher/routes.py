@@ -1,6 +1,6 @@
 """HTTP and page routes for the real-time teacher."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from flask import (
     Blueprint,
@@ -15,10 +15,11 @@ from flask_wtf.csrf import validate_csrf
 from werkzeug.exceptions import BadRequest
 
 from app import db
+from app.learning.scheduler import ensure_utc
 from app.learning.service import current_language, get_or_create_local_user
-from app.models_language import Language
 from app.models_teacher import Drill, TeacherSession
 from app.services import teacher as teacher_service
+from app.services.ai import OpenAIConfigError
 from app.utils.rate_limit import rate_limit
 
 teacher = Blueprint("teacher", __name__)
@@ -32,8 +33,10 @@ def _csrf():
             raise BadRequest("Invalid or missing CSRF token") from error
 
 
-def _language():
-    return Language.query.filter_by(code="ko").first()
+def _supported(language):
+    return language is None or (
+        language.code in teacher_service.SUPPORTED_TEACHER_LANGUAGES
+    )
 
 
 def _error(message, status):
@@ -46,22 +49,61 @@ def panel():
         return _error("The teacher is disabled", 404)
     user = get_or_create_local_user()
     language = current_language(user)
-    if language is not None and language.code != "ko":
+    if not _supported(language):
         return redirect(url_for("learn.today"))
-    sessions = (
-        TeacherSession.query.filter_by(user_id=user.id)
-        .order_by(TeacherSession.started_at.desc())
-        .limit(5)
-        .all()
-    )
+    session_query = TeacherSession.query.filter_by(user_id=user.id)
+    if language is not None:
+        # History belongs to the language it was spoken in.
+        session_query = session_query.filter(
+            TeacherSession.language_id == language.id
+        )
+    sessions = session_query.order_by(
+        TeacherSession.started_at.desc()
+    ).limit(5).all()
+    session_rows = []
+    for item in sessions:
+        minutes = None
+        if item.started_at and item.ended_at:
+            minutes = max(
+                1, round((item.ended_at - item.started_at).total_seconds() / 60)
+            )
+        session_rows.append(
+            {
+                "plan_title": item.plan_title,
+                "when": item.started_at.strftime("%d %b %H:%M")
+                if item.started_at
+                else "",
+                "minutes": minutes,
+                "turns": item.turn_count or 0,
+                "status": item.status,
+                "status_label": {
+                    "ended": "",
+                    "failed": "didn't connect",
+                    "active": "in progress",
+                }.get(item.status, item.status),
+            }
+        )
+
     return render_template(
         "teacher.html",
         user=user,
         language=language,
         plans=teacher_service.PLANS,
-        sessions=sessions,
+        sessions=session_rows,
         provider_configured=bool(current_app.config.get("OPENAI_API_KEY")),
-        voice_supported=bool(language and language.code == "ko"),
+        max_minutes=int(current_app.config.get("TEACHER_MAX_SESSION_MINUTES", 15)),
+        provider=current_app.config.get("TEACHER_PROVIDER", "openai_realtime"),
+        voice_supported=_supported(language),
+        speech_language=(
+            teacher_service.TEACHER_LANGUAGES[language.code]["greeting"]
+            if language and language.code in teacher_service.TEACHER_LANGUAGES
+            else teacher_service.TEACHER_LANGUAGES["ko"]["greeting"]
+        ),
+        speech_name=(
+            teacher_service.TEACHER_LANGUAGES[language.code]["name"]
+            if language and language.code in teacher_service.TEACHER_LANGUAGES
+            else teacher_service.TEACHER_LANGUAGES["ko"]["name"]
+        ),
     )
 
 
@@ -75,10 +117,12 @@ def create_session():
     payload = request.get_json(silent=True) or {}
     user = get_or_create_local_user()
     language = current_language(user)
-    if language is not None and language.code != "ko":
-        return _error("The voice teacher is Korean-only for now", 503)
+    if not _supported(language):
+        return _error(
+            "The voice teacher does not support this language yet", 503
+        )
     try:
-        session, answer = teacher_service.create_session(
+        session, handle = teacher_service.create_session(
             user_id=user.id,
             language_id=language.id if language else None,
             plan_slug=payload.get("plan") or "free_talk",
@@ -94,7 +138,17 @@ def create_session():
     except ValueError as error:
         return _error(str(error), 400)
 
-    return jsonify({"session_id": session.id, "sdp": answer}), 201
+    max_minutes = int(current_app.config.get("TEACHER_MAX_SESSION_MINUTES", 15))
+    expires_at = (ensure_utc(session.started_at) or datetime.now(UTC)) + timedelta(
+        minutes=max_minutes
+    )
+    body = {
+        "session_id": session.id,
+        "max_minutes": max_minutes,
+        "expires_at": expires_at.isoformat(),
+    }
+    body.update(handle if isinstance(handle, dict) else {"sdp": handle})
+    return jsonify(body), 201
 
 
 @teacher.route("/api/teacher/tools/<name>", methods=["POST"])
@@ -174,6 +228,26 @@ def grade_drill(drill_id):
     )
     db.session.commit()
     return jsonify(attempt.to_dict())
+
+
+@teacher.route("/api/teacher/sessions/<int:session_id>/coach", methods=["POST"])
+@rate_limit(limit=30, window_seconds=60, scope="teacher_suggest")
+def coach(session_id):
+    """English of the tutor's last line plus a suggested reply. Text only."""
+    _csrf()
+    user = get_or_create_local_user()
+    session = teacher_service.get_session(user.id, session_id)
+    if session is None or session.status != "active":
+        return _error("Teacher session is not active", 404)
+
+    try:
+        return jsonify(teacher_service.coach_reply(session))
+    except teacher_service.TeacherNotReadyError as error:
+        return _error(str(error), 409)
+    except teacher_service.TeacherError as error:
+        return _error(str(error), 502)
+    except OpenAIConfigError:
+        return _error("The suggestion service is not configured", 503)
 
 
 @teacher.route("/api/teacher/sessions/<int:session_id>")

@@ -46,6 +46,7 @@
     id="phrase-form"
     data-lang="{{ language.code if language else 'ko' }}"
     data-run="{{ '1' if run else '0' }}"
+    data-ungendered-registers="{{ ungendered_registers|join(',') }}"
   >
     <div class="form-group">
       <label for="english-text">English word or phrase</label>
@@ -91,8 +92,15 @@
         <option value="female"{% if selected_addressee == 'female' %} selected{% endif %}>A woman</option>
         <option value="group"{% if selected_addressee == 'group' %} selected{% endif %}>A group</option>
       </select>
-      <small id="addressee-help" class="learn-meta">
-        Amharic changes with the person you address.
+      <small
+        id="addressee-help"
+        class="learn-meta"
+        data-default="Amharic changes with the person you address."
+        data-ungendered="Formal Amharic is the same for anyone — gender only changes the Everyday form."
+      >
+        {% if selected_register in ungendered_registers %}Formal Amharic is the
+        same for anyone — gender only changes the Everyday form.{% else
+        %}Amharic changes with the person you address.{% endif %}
       </small>
     </div>
     {% endif %}

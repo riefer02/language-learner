@@ -6,8 +6,10 @@ between its in-memory Card and our persisted ReviewCard row.
 
 from datetime import UTC, datetime, timedelta
 
+from flask import current_app
 from fsrs import Card, Rating, Scheduler, State
 
+from app import db
 from app.models import ReviewCard
 
 DESIRED_RETENTION = 0.90
@@ -95,6 +97,40 @@ def apply_rating(card, rating, now=None, elapsed_ms=None):
         "stability": card.stability,
         "difficulty": card.difficulty,
     }
+
+
+def maybe_add_production_card(card, rating, now=None, scheduled_days=0):
+    """Graduate a stable recognition card into a production card.
+
+    Recognition is a scaffold, not the goal: once a lexeme's recognize card has
+    been answered well several times and is scheduled at least a week out, the
+    same item is queued as a produce card. Returns the new card or ``None``.
+    """
+    if card.skill != "recognize":
+        return None
+    minimum_reps = int(current_app.config.get("PRODUCTION_HANDOFF_REPS", 3))
+    minimum_days = float(current_app.config.get("PRODUCTION_HANDOFF_DAYS", 7))
+    if (
+        int(rating) < 3
+        or (card.reps or 0) < minimum_reps
+        or scheduled_days < minimum_days
+    ):
+        return None
+
+    item = card.item
+    if item is None or item.item_type != "lexeme":
+        return None
+    if item.default_skill == "produce":
+        return None
+    existing = ReviewCard.query.filter_by(
+        user_id=card.user_id, item_id=card.item_id, skill="produce"
+    ).first()
+    if existing is not None:
+        return None
+
+    new_card = new_review_card(card.user_id, card.item_id, "produce", now=now)
+    db.session.add(new_card)
+    return new_card
 
 
 def upcoming_interval(card):

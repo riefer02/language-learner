@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %} - Listen{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="learn-eyebrow">Listening</p>
+    <h2>Listen, then choose the meaning.</h2>
+    <p class="learn-meta">
+      Recorded {{ language.name if language else "deck" }} audio. Play a clip,
+      pick what it means, and check at the end — no typing, no translation.
+    </p>
+  </div>
+</div>
+
+{% if results is not none %}
+<section class="surface-card listen-result" aria-labelledby="listen-result-heading">
+  <h3 id="listen-result-heading">
+    {{ score }} / {{ total }} correct
+  </h3>
+  <p class="learn-meta">
+    {% if score == total %}
+    Every one. Try a fresh set with different words.
+    {% elif score >= total * 0.7 %}
+    Solid. The misses below are the ones worth another listen.
+    {% else %}
+    Keep it audio-only: the misses are exactly what review will bring back.
+    {% endif %}
+  </p>
+  <ol class="listen-review">
+    {% for row in results %}
+    <li class="listen-review-row" data-correct="{{ '1' if row.ok else '0' }}">
+      <span class="listen-review-mark" aria-hidden="true">
+        {{ '✓' if row.ok else '✕' }}
+      </span>
+      {% if row.item %}
+      <span class="listen-review-target" lang="{{ 'am' if language and language.code == 'am' else 'ko' }}">
+        {{ row.item.target_text }}
+      </span>
+      <span class="listen-review-gloss" lang="en">{{ row.item.gloss }}</span>
+      {% if not row.ok and row.chosen %}
+      <span class="learn-meta">
+        You chose “{{ row.chosen.gloss }}”.
+      </span>
+      {% endif %}
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  <p>
+    <a class="btn btn-primary" href="{{ url_for('learn.listen') }}">
+      Another set
+    </a>
+    <a class="btn" href="{{ url_for('learn.progress') }}">See progress</a>
+  </p>
+</section>
+{% else %}
+<form method="post" action="{{ url_for('learn.listen') }}" class="listen-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  {% for question in questions %}
+  <fieldset class="surface-card listen-question">
+    <legend class="listen-legend">Question {{ loop.index }}</legend>
+    {% if question.item.audio_path %}
+    <audio
+      class="listen-audio"
+      src="{{ question.item.audio_path }}"
+      controls
+      preload="metadata"
+      aria-label="Play clip {{ loop.index }}"
+    ></audio>
+    {% endif %}
+    <div class="listen-options">
+      {% for option in question.options %}
+      <label class="listen-option">
+        <input
+          type="radio"
+          name="answer-{{ question.item.id }}"
+          value="{{ option.id }}"
+        />
+        <span>{{ option.gloss }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  {% endfor %}
+  <p>
+    <button type="submit" class="btn btn-primary">Check answers</button>
+  </p>
+</form>
+{% endif %}
+{% endblock %}

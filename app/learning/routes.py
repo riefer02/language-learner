@@ -1,5 +1,6 @@
 """The first learner-facing loop: today's plan and FSRS review."""
 
+import random
 from datetime import UTC, datetime
 
 from flask import (
@@ -40,6 +41,7 @@ from app.learning.scenes import (
 from app.learning.scheduler import (
     apply_rating,
     ensure_utc,
+    maybe_add_production_card,
     upcoming_interval,
     utcnow,
 )
@@ -427,6 +429,88 @@ def sound_gym():
     )
 
 
+def _listen_items(language_id):
+    """Items that can be played in a listening quiz."""
+    return (
+        Item.query.filter(
+            Item.language_id == language_id,
+            Item.audio_path.isnot(None),
+            Item.audio_path != "",
+        )
+        .order_by(Item.level.asc(), Item.id.asc())
+        .all()
+    )
+
+
+@learn.route("/listen", methods=["GET", "POST"])
+def listen():
+    """Listen and choose the meaning. Audio-first practice for languages whose
+    deck ships recorded audio (Amharic today; Korean synthesises on demand)."""
+    user = _current_user()
+    if _needs_onboarding(user):
+        return redirect(url_for("onboarding.welcome"))
+    language = current_language(user)
+    if language is None:
+        abort(404)
+    items = _listen_items(language.id)
+    if len(items) < 4:
+        return redirect(url_for("learn.today"))
+
+    if request.method == "POST":
+        quiz = session.pop("listen_quiz", None)
+        if not quiz:
+            return redirect(url_for("learn.listen"))
+        ids = {entry["item_id"] for entry in quiz}
+        by_id = {item.id: item for item in Item.query.filter(Item.id.in_(ids))}
+        results = []
+        score = 0
+        for entry in quiz:
+            chosen = request.form.get(f"answer-{entry['item_id']}", type=int)
+            correct = by_id.get(entry["item_id"])
+            ok = chosen == entry["item_id"]
+            score += 1 if ok else 0
+            results.append(
+                {
+                    "item": correct,
+                    "chosen": by_id.get(chosen) if chosen else None,
+                    "ok": ok,
+                }
+            )
+        record_event(
+            user.id, "listen_quiz_submitted", score=score, total=len(quiz)
+        )
+        return render_template(
+            "listen_gym.html",
+            language=language,
+            questions=None,
+            results=results,
+            score=score,
+            total=len(quiz),
+        )
+
+    sample = random.sample(items, min(8, len(items)))
+    quiz = []
+    questions = []
+    for item in sample:
+        distractors = random.sample(
+            [other for other in items if other.id != item.id], 3
+        )
+        options = distractors + [item]
+        random.shuffle(options)
+        quiz.append({"item_id": item.id, "options": [o.id for o in options]})
+        questions.append({"item": item, "options": options})
+    session["listen_quiz"] = quiz
+    record_event(user.id, "listen_opened", total=len(questions))
+    return render_template(
+        "listen_gym.html",
+        language=language,
+        questions=questions,
+        results=None,
+        score=0,
+        total=len(questions),
+    )
+
+
 @learn.route("/api/speech-score", methods=["POST"])
 @rate_limit(
     limit=lambda: current_app.config.get("RATE_LIMIT_SPEECH", 20),
@@ -725,6 +809,9 @@ def submit_review(card_id):
             abort(409, description="Today's new-card limit has been reached")
 
     result = apply_rating(card, rating, now=now, elapsed_ms=elapsed_ms)
+    maybe_add_production_card(
+        card, rating, now=now, scheduled_days=result["scheduled_days"]
+    )
     db.session.add(
         ReviewLog(
             card_id=card.id,

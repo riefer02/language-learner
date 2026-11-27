@@ -113,9 +113,9 @@
       <strong>Look up a word or phrase</strong>
       <span>English → {{ language.name if language else 'Korean' }} with audio</span>
     </a>
-    <a class="resource-quick-card" href="{{ url_for('main.dictionary') }}">
-      <strong>Dictionary</strong>
-      <span>Search and save a term</span>
+    <a class="resource-quick-card" href="{{ url_for('main.library', tab='find') }}">
+      <strong>Find words</strong>
+      <span>Search the deck and save a term</span>
     </a>
     <a class="resource-quick-card" href="{{ url_for('main.settings') }}">
       <strong>Settings &amp; reminders</strong>

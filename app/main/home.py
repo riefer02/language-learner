@@ -4,6 +4,7 @@ from flask import abort, redirect, render_template, request, session, url_for
 
 from app import db
 from app.languages.variants import (
+    UNGENDERED_REGISTERS,
     addressee_label,
     normalize_addressee,
     normalize_register,
@@ -134,7 +135,9 @@ def index():
     phrase_register_label = register_label(
         code, phrase.register if phrase is not None else None
     )
-    phrase_addressee_label = addressee_label(code, selected_addressee)
+    phrase_addressee_label = addressee_label(
+        code, selected_addressee, selected_register
+    )
 
     return render_template(
         "index.html",
@@ -148,6 +151,7 @@ def index():
         phrase=phrase,
         phrase_error=phrase_error,
         registers=register_choices(code),
+        ungendered_registers=sorted(UNGENDERED_REGISTERS.get(code, ())),
         selected_register=selected_register,
         selected_addressee=selected_addressee,
         phrase_register_label=phrase_register_label,

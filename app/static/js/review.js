@@ -34,6 +34,56 @@ document.addEventListener("DOMContentLoaded", function () {
     answer.addEventListener("toggle", syncGradeLock);
   }
 
+  // Listen-first mode: hide the written prompt, play the clip, and reveal both
+  // together. Off by default; the choice sticks for this browser.
+  const listenToggle = document.getElementById("review-listen");
+  const promptAudio =
+    card && card.querySelector("audio.review-audio");
+
+  function listenFirstEnabled() {
+    if (!listenToggle) {
+      return false;
+    }
+    try {
+      return window.localStorage.getItem("kiku-review-listen") === "1";
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function applyListenFirst() {
+    const on = !!(listenToggle && listenToggle.checked);
+    if (card) {
+      card.classList.toggle("is-listen-first", on);
+    }
+    try {
+      window.localStorage.setItem("kiku-review-listen", on ? "1" : "0");
+    } catch (_error) {
+      /* private mode */
+    }
+    if (on && promptAudio) {
+      promptAudio.play().catch(function () {
+        /* autoplay may be blocked; the player is still there */
+      });
+    }
+  }
+
+  if (listenToggle) {
+    listenToggle.checked = listenFirstEnabled();
+    if (listenToggle.checked) {
+      applyListenFirst();
+    }
+    listenToggle.addEventListener("change", applyListenFirst);
+  }
+
+  if (answer && card) {
+    answer.addEventListener("toggle", function () {
+      if (answer.open) {
+        card.classList.remove("is-listen-first");
+      }
+    });
+  }
+
   // The summary remains the semantic control; this just makes the whole prompt
   // card a larger target for touch and mouse.
   if (card && answer) {

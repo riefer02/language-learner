@@ -52,7 +52,7 @@
   <p>
     <button type="button" class="btn btn-primary">Primary action</button>
     <button type="button" class="btn">Secondary action</button>
-    <a class="btn" href="{{ url_for('main.dictionary') }}">Link action</a>
+    <a class="btn" href="{{ url_for('main.library', tab='find') }}">Link action</a>
     <button type="button" class="link-button">Quiet action</button>
   </p>
   <p class="chip-row">
@@ -66,7 +66,91 @@
   <div class="empty-state">
     <h4>Empty state</h4>
     <p>Say what is missing, why it matters, and the next action.</p>
-    <a class="btn" href="{{ url_for('main.dictionary') }}">Next action</a>
+    <a class="btn" href="{{ url_for('main.library', tab='find') }}">Next action</a>
+  </div>
+
+  <h4>View tabs</h4>
+  <p class="learn-meta">
+    Switch between the two halves of one page without a full navigation bar.
+    Server-rendered links with <code>aria-current="page"</code>, so the tab is
+    deep-linkable and works without JavaScript.
+  </p>
+  <div class="tab-bar" role="navigation" aria-label="Example views">
+    <a class="tab" href="#" aria-current="page">Saved words <span class="tab-count">3</span></a>
+    <a class="tab" href="#">Looked up <span class="tab-count">12</span></a>
+  </div>
+
+  <h4>Looked-up phrase</h4>
+  <p class="learn-meta">
+    One compact row per saved phrase in My terms: the row plays from the round
+    play button without opening, and the caret on the right opens it for the
+    full player, register, and corrections. Native <code>details</code>, so the
+    row still works without JavaScript.
+  </p>
+  <div class="phrase-list">
+    <div class="phrase-entry">
+      <button
+        type="button"
+        class="phrase-entry-play"
+        aria-label="Play pronunciation for እንደምን አደሩ"
+        data-label-play="Play pronunciation for እንደምን አደሩ"
+        data-label-pause="Pause pronunciation for እንደምን አደሩ"
+      >
+        <span class="phrase-entry-play-icon" aria-hidden="true"></span>
+      </button>
+    <details class="phrase-entry-details">
+      <summary>
+        <span class="phrase-entry-main">
+          <span class="phrase-entry-source" lang="en">good morning</span>
+          <span class="phrase-entry-target" lang="am">እንደምን አደሩ</span>
+          <span class="phrase-entry-translit" lang="en">Endemin aderu</span>
+        </span>
+        <span class="phrase-entry-meta"><span class="chip">Formal</span></span>
+        <span class="phrase-entry-caret" aria-hidden="true"></span>
+      </summary>
+      <div class="phrase-entry-body">
+        <p class="phrase-romanization" lang="en">Endemin aderu</p>
+        <p class="learn-meta">Anyone — formal is not gendered</p>
+      </div>
+    </details>
+    </div>
+  </div>
+
+  <h4>Listening question</h4>
+  <p class="learn-meta">
+    Audio-first practice: one clip and four meanings. The whole row is the
+    label, and the selected option tints with the primary border.
+  </p>
+  <fieldset class="surface-card listen-question">
+    <legend class="listen-legend">Question 1</legend>
+    <div class="listen-options">
+      <label class="listen-option">
+        <input type="radio" name="design-listen" />
+        <span>Coffee</span>
+      </label>
+      <label class="listen-option">
+        <input type="radio" name="design-listen" checked />
+        <span>Water</span>
+      </label>
+    </div>
+  </fieldset>
+
+  <h4>Teacher scaffold</h4>
+  <p class="learn-meta">
+    One line the learner could say next, offered while they are still learning
+    the pattern. A single switch turns it off; the card then disappears with it.
+  </p>
+  <div class="teacher-suggest">
+    <label class="teacher-suggest-toggle" for="design-suggest-toggle">
+      <input type="checkbox" id="design-suggest-toggle" checked />
+      Show me a line I could say
+    </label>
+    <div class="teacher-suggestion">
+      <p class="learn-meta">Try saying</p>
+      <p class="teacher-suggestion-target" lang="am">ቡና እፈልጋለሁ።</p>
+      <p class="learn-meta">Buna efeligalehu.</p>
+      <p class="learn-meta">I would like coffee.</p>
+    </div>
   </div>
 
   <h4>Scene reply</h4>
